@@ -2,6 +2,20 @@
 
 Kurze Architecture Decision Records. Neueste zuerst.
 
+## 2026-08-18 — Extrahiertes Herstellermaterial bleibt lokal, nicht im Repo
+
+**Kontext:** Statische Analyse der Windows-App (`docs/evidence/windows-app-static-analysis.md`)
+hat proprietäre JSON-Manifeste (Gerätedaten, LED-Tabellen, UI-Layouts) freigelegt.
+
+**Entscheidung:** Rohe extrahierte Dateien liegen unter `vendor-extracts-private/`
+(git-ignoriert), analog zu `captures-private/`. Ins Repo fließen nur destillierte,
+in eigenen Worten zusammengefasste Fakten (Zahlen, Namen, Struktur) plus kurze,
+punktuelle Zitate zur Beleglage — keine vollständigen Kopien der Hersteller-JSON-Dateien.
+
+**Konsequenz:** Reverse Engineering zu Interoperabilitätszwecken bleibt der erklärte
+Zweck (siehe `README.md`), aber ohne unnötige Vervielfältigung fremden proprietären
+Materials im (später eventuell öffentlichen) Repository.
+
 ## 2026-08-18 — Sequenznummern nicht frei vergeben, sondern aus Gerätezustand fortführen
 
 **Kontext:** Hardwaretest zeigte, dass das Gerät Sequenznummern bei Static-Color-

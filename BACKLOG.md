@@ -31,9 +31,16 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
 - [x] Prüfen ob Web-Capture Per-Key-Kommandos enthält (2026-08-18: bestätigt NEIN — IO
       Center Web bietet nur vorgeformte Effekte, keine Einzeltasten-UI, Nutzer hat UI
       direkt geprüft; siehe `PROTOCOL.md`)
-- [ ] Windows-Client-Capture-Plan (VM + USB-Passthrough) für Per-Key-Adressierung
-      ausarbeiten — großer Schritt, nicht ohne Rücksprache beginnen (Master-Prompt
-      Phase 1)
+- [x] Windows-App statisch analysiert (2026-08-18, ohne VM/Ausführung) — vollständiges
+      Gerätemanifest + 168-LED-Tabelle gefunden, siehe `PROTOCOL.md`/
+      `docs/evidence/windows-app-static-analysis.md`. VM-Capture-Plan damit vorerst
+      nicht mehr nötig — falls das Wire-Kommando für Per-Key doch noch per Live-Capture
+      gebraucht wird, bleibt das als Option offen.
+- [ ] Wire-Kommando für Per-Key-Adressierung finden (Manifest kennt nur die 168
+      LED-Namen/Indizes, nicht das Byte-Protokoll dafür — vermutlich Interface 3,
+      bisher unerforscht, siehe eigener Backlog-Punkt oben)
+- [ ] `light_mount_main_iso.json`/`_ansi.json` (Pixel-Koordinaten pro Taste) mit den
+      LED-Indizes verknüpfen — Grundlage für ein künftiges OpenRGB-Layout (Phase 3)
 - [x] Mountain- vs. Light-Mount-Pakete strukturell vergleichen (2026-08-18, siehe Phase 0, widerlegt)
 - [x] Offline-Tests mit gespeicherten Paketen (ohne Hardware) (2026-08-18, `tests/test_protocol.cpp`, 20/20 Fixtures)
 

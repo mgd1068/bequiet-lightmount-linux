@@ -426,6 +426,39 @@ weiter eingrenzen (z. B. Geschwindigkeit ändern, Rest gleich lassen, erneut cap
 (3) Richtung Phase 3 (OpenRGB-Controller) weitergehen, da das Kernprotokoll für
 Static-Color bereits belastbar ist.
 
+## Update — Iteration 16 (2026-08-18) — größter Einzelfund im Projekt: vollständiges Gerätemanifest
+
+- Auf Nutzervorschlag: Windows-IO-Center-Installer (vom Nutzer bereitgestellt, aus
+  `~/Claude-Memory/IO Center Installer.zip`) rein statisch analysiert — nie ausgeführt.
+  `innoextract` aus Git-Hauptzweig gebaut (Release 1.9 kennt Inno-Setup-6.3.0 noch
+  nicht), Qt-Ressourcenarchive (`.rcc`) per Brute-Force-Zlib-Scan entpackt.
+- **Vollständiges offizielles Gerätemanifest gefunden**, inkl.:
+  - Alle 6 Effektnamen (Static, ColorWave, Tornado, Breathing, Reactive, Matrix) —
+    exakt wie im Mountain-Referenzcode.
+  - **Vollständige Per-Key-LED-Tabelle: 168 individuell adressierbare LEDs**,
+    durchnummeriert und benannt (45 obere Leiste + 113 Einzeltasten + 10 seitliche
+    Leiste). Löst die seit Iteration 1 offene Per-Key-Frage strukturell (welche LEDs
+    existieren), auch wenn das Wire-Kommando dafür weiterhin unbekannt ist.
+  - Macro-Limits, Polling-Rate, Keybinding-Layer, Bootloader-PID.
+- Rohe extrahierte Dateien bleiben lokal (`vendor-extracts-private/`, neu
+  git-ignoriert) — nur destillierte Fakten im Repo, siehe neue ADR in `DECISIONS.md`.
+- App ist Qt6/QML mit separatem `bequietIOCenterService.exe` + `hidapi.dll` (nicht
+  Electron wie zunächst vermutet) — bestätigt native `hidapi`-Kommunikation auf dem
+  Windows-Client statt WebHID.
+- Kein Byte-Protokoll (Kommandotabellen) im Service-Binary per `strings` gefunden —
+  keine Disassembly versucht.
+
+## Nächster konkreter Schritt
+
+Größere Wahlmöglichkeiten, noch nicht entschieden:
+1. `light_mount_main_iso.json` (Pixel-Koordinaten) mit der LED-Tabelle verknüpfen —
+   Grundlage für ein OpenRGB-Layout, reine Offline-Arbeit.
+2. Versuchen, das Per-Key-Wire-Kommando doch noch zu finden — z. B. gezielt Interface 3
+   (der bisher unerforschte zweite Vendor-Kanal) untersuchen, da die 168-LED-Tabelle
+   jetzt ein klares Ziel gibt, wonach zu suchen ist.
+3. Mit dem jetzt sehr detaillierten Verständnis (Effekte, LED-Zählung, Sequenznummer-
+   Regel) Richtung Phase 3 (OpenRGB-Controller-Grundgerüst) weitergehen.
+
 ## Blocker
 
 Keiner für Analyse-/Doku-/Code-Schritte. Weitere Hardwaretests weiterhin nur mit kurzer

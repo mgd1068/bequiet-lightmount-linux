@@ -205,6 +205,27 @@ Payload-Struktur als Static-Color/Rainbow identifiziert — die genaue Bedeutung
 einzelnen Payload-Bytes (vermutlich mehrere Parameter: Farben, Geschwindigkeit,
 Richtung) ist weiterhin nicht vollständig geklärt, um nicht zu raten.
 
+## Statische Analyse der Windows-App: vollständiges Gerätemanifest (2026-08-18)
+
+Rein statische Analyse (kein Ausführen, kein Wine/VM) des vom Nutzer bereitgestellten
+Windows-Installers. Vollständige Details: `docs/evidence/windows-app-static-analysis.md`.
+Rohdateien lokal unter `vendor-extracts-private/` (git-ignoriert, proprietäres
+Herstellermaterial).
+
+| Fakt | Beleg |
+|---|---|
+| **Genau 6 Effekte bestätigt:** Static, ColorWave, Tornado, Breathing, Reactive, Matrix — identische Namen/Reihenfolge wie im Mountain-Referenzcode-Enum | offizielles Gerätemanifest, `light_mount_device_full.json` |
+| **168 individuell adressierbare LEDs, vollständig durchnummeriert** (45 obere Leiste + 113 Einzeltasten inkl. ISO-Varianten + 10 seitliche Leiste) | `light_mount_leds_mapping.json`, siehe Evidence-Dokument |
+| VID `0x373F`/PID `0x0002` exakt bestätigt, Bootloader-PID `0x000A` (separate USB-Identität, **kein** Zusammenhang mit Subcmd `0x0a`) | dito |
+| Macro-Limits (10 Makros, 58 Events), Polling-Rate 1000Hz, 2 Keybinding-Layer (Common/Fn1) | dito |
+
+**Bedeutung für Per-Key-Adressierung (seit Iteration 1 offene Frage):** Per-Key-Steuerung
+**existiert in der Firmware** (168 benannte, durchnummerierte LEDs) — sie ist nur in IO
+Center Web nicht freigeschaltet. Das konkrete Wire-Kommando dafür ist weiterhin
+**nicht bekannt** (kein solches Kommando in einem Capture beobachtet, da die Web-UI es
+nie sendet) — die Analyse liefert das Ziel-Schema (welche 168 LEDs), nicht das Protokoll
+dafür.
+
 ## Bekannter Firmwarefehler
 
 Ungezielter Lesezugriff auf ein herstellerspezifisches `hidraw`-Interface kann die

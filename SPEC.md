@@ -30,7 +30,9 @@ erfüllt **und mit realen Testbelegen dokumentiert** sind:
 - [ ] Offline-Tests für Paketaufbau und Tasten-/LED-Mapping bestehen (Paketaufbau: ja,
       `tests/test_protocol.cpp`; Tasten-/LED-Mapping: nein, Matrix noch unbekannt)
 - [ ] Mindestens zwei einzelne reale Tasten unabhängig in verschiedenen Farben setzbar
-      (bisher nur Vollflächen-/einheitliche Farben getestet, keine Per-Key-Kommandos bekannt)
+      (bisher nur Vollflächen-/einheitliche Farben getestet; Ziel-LED-Tabelle jetzt
+      bekannt — 168 LEDs, siehe `PROTOCOL.md` „Statische Analyse der Windows-App" —
+      aber das Wire-Kommando dafür weiterhin unbekannt)
 - [ ] Vollständige statische Tastenbelegung auf echter Hardware darstellbar
 - [ ] Obere/seitliche Lichtleisten als getrennte Zonen steuerbar (oder Einschränkung mit Capture-Belegen dokumentiert)
 - [ ] USB-Disconnect/Reset führt nicht zu Absturz oder unbegrenzter Reconnect-Schleife

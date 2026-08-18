@@ -22,6 +22,11 @@ Primärquellen, wie im Master-Prompt (`LIGHTMOUNT_AGENT_LOOP_PROMPT.md`) benannt
 - [be quiet! IO Center](https://www.bequiet.com/en/software)
 - [be quiet! IO-Center-Tutorial](https://www.bequiet.com/de/software/tutorial)
 - [IO Center Web](https://iocenter.bequiet.com/)
+- IO Center Windows-Installer (`IO Center Installer.exe`, Version 1.2.0, Inno Setup
+  6.3.0) — vom Nutzer manuell heruntergeladen (bequiet.com ist per Cloudflare
+  bot-geschützt, kein automatisierter Zugriff möglich), statisch analysiert, siehe
+  `docs/evidence/windows-app-static-analysis.md`. Datei selbst nicht im Repo (Rohdaten
+  proprietär, siehe `DECISIONS.md`).
 
 ## Community
 
