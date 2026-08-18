@@ -97,10 +97,10 @@ noch nicht einzeln zugeordnet.
 
 == Offene, nicht entschlüsselte Kommandos ==
 
-- frame 2341/3109 (29 Byte, byteidentisch untereinander): enthält ebenfalls
-  Werte 0x64/0x32 (100/50, evtl. Geschwindigkeit/Helligkeit) und einzelne
-  Byte-Paare, die NICHT dem [pos][R][G][B]-Schema von oben folgen. Eventuell
-  ein anderer Effekttyp (z. B. Breathing mit 2 Farben) — nicht sicher.
+- frame 2341/3109 (29 Byte, byteidentisch untereinander): **GEKLÄRT (2026-08-18)** —
+  siehe `own_capture_matrix_effect.md`: byteidentisch mit einem eigenen Capture, in
+  dem der Nutzer gezielt den "Matrix"-Effekt in IO Center Web ausgewählt hat. Genaue
+  Byte-für-Byte-Bedeutung der Parameter weiterhin nicht vollständig entschlüsselt.
 - frame 2447/2605 (15 Byte): **Korrektur (2026-08-18, per `report_dump` neu
   geprüft):** es unterscheiden sich ZWEI Payload-Bytes, nicht nur eines —
   Byte 8 (0x01→0x00) UND Byte 9 (0x03→0x00), alle übrigen Payload-Bytes

@@ -404,6 +404,28 @@ entschieden:
 3. Mit dem jetzt belastbar verstandenen Kernprotokoll (Farbe setzen, Sequenznummer-
    Regel bekannt) Richtung Phase 3 (OpenRGB-Controller-Grundstruktur) weitergehen.
 
+## Update — Iteration 15 (2026-08-18) — Matrix-Effekt gezielt gecaptured
+
+- Zweiter gezielter Capture (wie Iteration 11, diesmal Matrix-Effekt statt Farbwahl).
+  Genau ein reales Kommando im Mitschnitt gefunden.
+- **Ergebnis: löst eine seit Iteration 2 offene Frage** — das Kommando ist byteidentisch
+  mit dem bis dahin unentschlüsselten Frame 2341/3109 aus dem alten Fremd-Capture. Damit
+  ist klar: das war die ganze Zeit der Matrix-Effekt. Details in
+  `docs/evidence/own_capture_matrix_effect.md`.
+- Response war eine normale kurze Bestätigung (Byte3=0x00) — Kommando wurde vom Gerät
+  akzeptiert, passt zur live beobachteten echten Sequenznummer (`0x10c7`).
+- Genaue Payload-Byte-Bedeutung (vermutlich mehrere Parameter: Farben/Geschwindigkeit/
+  Richtung) weiterhin nicht vollständig entschlüsselt — bewusst nicht geraten.
+- Kein Schreibzugriff — nur Mitschnitt einer Nutzeraktion in IO Center Web.
+
+## Nächster konkreter Schritt
+
+Möglichkeiten, noch nicht entschieden: (1) Tornado-Effekt ebenso gezielt capturen für
+einen weiteren Datenpunkt, (2) Matrix-Payload durch einen gezielten Parameter-Vergleich
+weiter eingrenzen (z. B. Geschwindigkeit ändern, Rest gleich lassen, erneut capturen),
+(3) Richtung Phase 3 (OpenRGB-Controller) weitergehen, da das Kernprotokoll für
+Static-Color bereits belastbar ist.
+
 ## Blocker
 
 Keiner für Analyse-/Doku-/Code-Schritte. Weitere Hardwaretests weiterhin nur mit kurzer

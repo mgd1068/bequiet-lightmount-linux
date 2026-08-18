@@ -195,6 +195,16 @@ die genaue Akzeptanzregel (Toleranzfenster? exakte Fortsetzung?) ist nicht besti
 Auch nicht geklärt, ob diese Validierung nur diese eine Kommandofamilie betrifft (Rainbow-
 und Preset-Kommandos akzeptierten in früheren Tests beliebige alte Sequenznummern).
 
+## Frame 2341/3109 identifiziert: Matrix-Effekt (2026-08-18)
+
+Gezielter eigener Capture (Nutzer wählt explizit "Matrix" in IO Center Web) ergab ein
+Kommando, das **byteidentisch** mit dem seit Iteration 2 unentschlüsselten Frame
+2341/3109 aus dem alten Fremd-Capture ist. Details: `docs/evidence/own_capture_matrix_effect.md`.
+Damit ist der Matrix-Effekt als Subcmd `0x06`, Länge 29, mit einer deutlich komplexeren
+Payload-Struktur als Static-Color/Rainbow identifiziert — die genaue Bedeutung der
+einzelnen Payload-Bytes (vermutlich mehrere Parameter: Farben, Geschwindigkeit,
+Richtung) ist weiterhin nicht vollständig geklärt, um nicht zu raten.
+
 ## Bekannter Firmwarefehler
 
 Ungezielter Lesezugriff auf ein herstellerspezifisches `hidraw`-Interface kann die

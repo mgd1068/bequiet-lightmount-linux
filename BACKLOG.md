@@ -11,7 +11,11 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
 - [ ] Baseline dokumentieren: aktuelles Profil, sichtbare Beleuchtung, Verhalten nach USB-Reconnect
 - [ ] Interface-3-Report-Struktur (Vendor Page 0x59, 6 Report-IDs) genauer aufschlüsseln
 - [x] Checksum-Algorithmus der letzten 2 Report-Byte offline gegen alle 20 bekannten usbmon3-Frames verifizieren (2026-08-18, CRC16/MODBUS bestätigt, 20/20)
-- [ ] Verbleibende unentschlüsselte usbmon3-Kommandos (29/15/18/7 Byte) weiter eingrenzen, siehe `docs/evidence/usbmon3_decoded_commands.txt`
+- [ ] Verbleibende unentschlüsselte usbmon3-Kommandos (15/18/7 Byte) weiter eingrenzen,
+      siehe `docs/evidence/usbmon3_decoded_commands.txt` (29-Byte-Kommando als
+      Matrix-Effekt identifiziert, 2026-08-18, siehe `PROTOCOL.md`)
+- [ ] Weitere Effekte (Tornado, ...) gezielt capturen und Payload-Byte-Bedeutung für
+      Matrix genauer eingrenzen (Farben/Geschwindigkeit/Richtung vermutet, nicht bestätigt)
 - [x] Mountain-Everest-Referenzcode besorgt und strukturell verglichen (2026-08-18, Protokollverwandtschaft widerlegt, siehe `PROTOCOL.md`)
 
 ## Phase 1
