@@ -58,6 +58,14 @@ Schreibvorgang, kein Retry, `crc_valid=yes` vor dem Senden per `report_dump` gep
   Geräte-/Interfaceidentität geöffnet") ist damit für einen realen Schreibpfad erstmals
   belegt. Die Kriterien zu einzeln ansteuerbaren Tasten sind davon **nicht** berührt —
   dieses Kommando steuert alle LEDs gemeinsam, keine Einzeltasten-Adressierung.
+- **Zusatzbefund (USB-Replug ist kein Reset):** Nutzer hat danach die Light Mount kurz
+  vom USB getrennt und wieder verbunden, um den Zyklus-Effekt zu beenden — der Effekt
+  lief unverändert weiter. Der in `docs/first-write-test-plan.md` genannte Replug-
+  Fallback ist damit für laufende Effekte **nicht zuverlässig**. Vermutlich behält der
+  Light-Mount-Controller seinen Zustand über einen reinen Host-seitigen USB-Replug hinweg
+  (z. B. weiterhin mit Strom versorgt, oder Effekt läuft MCU-seitig unabhängig weiter).
+  Ein echtes, verifiziertes "Off"/Static-Kommando fehlt weiterhin — siehe `SECURITY.md`
+  Regel 7 und `BACKLOG.md`.
 
 ## Strukturvergleich mit Mountain Everest — Protokollverwandtschaft widerlegt
 

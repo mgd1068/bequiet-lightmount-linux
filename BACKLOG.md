@@ -28,7 +28,7 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
 ## Phase 2 (RGB-MVP)
 
 - [x] Geräteerkennung/-öffnen (2026-08-18, `report_send`, exakt Interface 2 via sysfs-ermitteltem `hidraw`-Pfad)
-- [ ] Statische Gesamtfarbe + Off (bisher nur Zyklus-Effekt getestet, kein statisches Einzelfarb- oder Off-Kommando bekannt)
+- [ ] Statische Gesamtfarbe + Off (bisher nur Zyklus-Effekt getestet, kein statisches Einzelfarb- oder Off-Kommando bekannt; USB-Replug ist KEIN verlässlicher Reset, siehe `PROTOCOL.md`/`SECURITY.md`-Erfahrungswert 2026-08-18 — Off-Kommando ist damit dringlicher geworden)
 - [ ] Direct Mode
 - [ ] ≥2 einzelne Tasten unabhängig einfärben (blockiert: kein Per-Key-Kommando im bisherigen Capture identifiziert)
 - [ ] Vollständige Tastenmatrix/LED-Reihenfolge bestimmen

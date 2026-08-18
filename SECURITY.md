@@ -15,7 +15,11 @@ verhandelbar und gelten für jede Iteration des Entwicklungsloops.
 6. Jeder Hardwarebefehl braucht Timeout, Fehlerbehandlung, Reconnect und nachvollziehbare
    Hex-Dump-Protokollierung ohne sensible Nutzdaten.
 7. Immer einen bekannten sicheren Zustand bereitstellen (Beleuchtung aus oder vorhandenes
-   Profil reaktivieren).
+   Profil reaktivieren). **Erfahrungswert (2026-08-18):** Ein einfacher USB-Replug ist
+   bei dieser Hardware **kein zuverlässiger Reset** für einen laufenden Effekt — nach
+   Aus-/Wiedereinstecken lief ein zuvor gesendeter Zeitzyklus-Effekt unverändert weiter.
+   Ein echtes "sicherer Zustand"-Kommando (z. B. Off) ist noch nicht bekannt/verifiziert;
+   bis dahin nicht von einem Replug-Fallback ausgehen, siehe `PROTOCOL.md`.
 8. USB-Reset ist ein erwartbarer Testfehler: erkennen, Handle schließen, Gerät neu
    enumerieren, nur nach begrenztem Retry fortsetzen. Keine Endlosschleife gegen ein
    resettendes Gerät.
