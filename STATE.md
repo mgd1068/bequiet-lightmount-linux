@@ -48,36 +48,45 @@ Phase 0 — Bestand und Reproduzierbarkeit.
 - Kein `hidraw`-Zugriff, kein Schreiben ans Gerät — weiterhin nur Analyse vorhandener
   Deskriptoren und eines fremden, bereits öffentlichen Captures.
 
+## Update — Iteration 3 (2026-08-18, ralph-loop)
+
+- Checksum-Hypothese offline gegen alle 20 bekannten Frames verifiziert: letzte 2 Byte
+  jedes 64-Byte-Reports = **CRC16/MODBUS** (Poly `0x8005`, Init `0xFFFF`, reflektiert,
+  kein XOR-Out) über Byte 0–61, Little-Endian angehängt. 20/20 Treffer, siehe
+  `docs/evidence/checksum_verification.py` (reproduzierbar, `python3` ausführen).
+  Damit ist die vollständige Interface-2-Report-Struktur (Länge, konstantes Feld,
+  Sequenznummer, Subcommand, Flags, Payload, CRC) für alle bisher beobachteten
+  Kommandotypen bekannt — nur die genaue Payload-Semantik einzelner Subcommands
+  (außer dem Rainbow-Gradient) ist noch offen.
+- Kein Gerätezugriff, keine Hardware angefasst — reine Offline-Verifikation bekannter
+  Bytes.
+
 ## Nächster konkreter Schritt
 
-1. Verbleibende, noch nicht entschlüsselte Kommandos aus `usbmon3_decoded_commands.txt`
-   (29-Byte-, 15-Byte-, 18-Byte-, 7-Byte-Kommandos) strukturell weiter eingrenzen, soweit
-   ohne Hardwaretest möglich (Vergleich mit Mountain-Referenzcode: welche Felder ähneln
-   Speed/Brightness/Mode-Parametern aus `MountainKeyboardController.cpp`).
-2. Lokal installierten OpenRGB-Quellstand (`apt source openrgb` oder GitLab-Clone,
-   Submodule-Entscheidung noch offen) holen und `MountainKeyboardController.{cpp,h}`
-   strukturell mit der hier gefundenen Header-Struktur vergleichen (Report-ID
-   vorhanden/fehlend, Checksum-Position, Sequenzzähler-Konzept).
-3. Sicheres Offline-Testgerüst (Dry-Run-CLI/Testbibliothek, C++, funktionaler Stil laut
-   `DECISIONS.md`) beginnen: Report-Aufbau (Header + Payload + Checksum) mit den hier
-   dekodierten Kommandos als Fixtures nachbilden und gegen die aufzeichneten Bytes prüfen
-   — weiterhin **kein** Schreibzugriff auf `hidraw`.
-4. Erst danach (Phase 1 laut `SPEC.md`/`BACKLOG.md`): Testplan für einen ersten,
-   risikoarmen realen Schreibtest ("LED aus" bzw. minimale Farbänderung) ausarbeiten,
-   inklusive Timeout/Reconnect-Verhalten — noch nicht ausführen.
+1. Sicheres Offline-Testgerüst in C++ beginnen (funktionaler Stil laut `DECISIONS.md`):
+   freie Funktionen für CRC16/MODBUS-Berechnung, Report-Aufbau (Header+Payload+CRC) und
+   Report-Parsing; als erste Tests die 20 hier bekannten Frames aus
+   `docs/evidence/checksum_verification.py` als Fixtures nachbilden und die CRC-Funktion
+   dagegen verifizieren (Portierung der bereits verifizierten Python-Logik).
+2. Build-Grundgerüst anlegen (CMake, minimal — kein OpenRGB-Abhängigkeit in Phase 1,
+   das kommt erst in Phase 3), Testframework-Entscheidung treffen (klein/header-only,
+   passend zum funktionalen Stil, keine schwere Abhängigkeit ohne Not).
+3. Danach: verbleibende unentschlüsselte Kommandos (29/15/18/7 Byte) mit dem neuen
+   Report-Parser strukturiert ausgeben, um Muster leichter zu erkennen als per Hand.
+4. Erst danach (weiterhin Phase 1, kein Hardwarezugriff): Testplan für einen ersten,
+   risikoarmen realen Schreibtest ausarbeiten, inklusive Timeout/Reconnect-Verhalten —
+   noch nicht ausführen.
 
 ## Hypothese / erwartetes Ergebnis / Risiko / Rückfall (für den nächsten Schritt)
 
-- **Hypothese:** Die Checksum in den letzten 2 Byte jedes Interface-2-Reports lässt sich
-  aus einem Standardalgorithmus (CRC16, z. B. CRC16/CCITT oder ein einfaches Summen-
-  Prüfbyte) über den restlichen Report herleiten — analog zu bekannten Mountain-Mustern.
-- **Erwartetes Ergebnis:** Ein Offline-Test bestätigt oder widerlegt den Algorithmus
-  gegen alle 20 bekannten Frames aus dem Capture, ohne Gerätezugriff.
-- **Sicherheitsrisiko:** keins — reine Offline-Berechnung/Vergleich bekannter Bytes.
-- **Rückfall:** falls kein Standardalgorithmus passt — Checksum als weiterhin unbekannt
-  markieren und für den ersten Hardwaretest zunächst nur bekannte, byteidentische
-  Kommandos (samt ihrer Original-Checksum) wiederverwenden, statt eigene Reports zu
-  konstruieren.
+- **Hypothese:** Eine C++-Portierung der bereits in Python verifizierten CRC16/MODBUS-
+  Funktion reproduziert exakt dieselben 20/20 Treffer gegen die bekannten Fixtures.
+- **Erwartetes Ergebnis:** Kompilierender, laufender Offline-Test ohne Gerätezugriff,
+  der als Fundament für den späteren Report-Builder dient.
+- **Sicherheitsrisiko:** keins — reiner Code/Build/Test-Schritt, keine Hardware beteiligt.
+- **Rückfall:** falls CMake/Testframework-Wahl Reibung erzeugt — minimal mit einer
+  einzelnen `main.cpp` und `assert()`-basierten Tests starten, Testframework erst
+  ergänzen, wenn der Umfang es rechtfertigt (kein Overengineering laut `DECISIONS.md`).
 
 ## Blocker
 
