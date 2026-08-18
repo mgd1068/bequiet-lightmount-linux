@@ -1,0 +1,116 @@
+Decodierte Interface-2-Kommandos aus dem usbmon3-Capture (OpenRGB Issue #4950,
+Anhang "usbmon3 capture.pcapng.gz", https://gitlab.com/CalcProgrammer1/OpenRGB/-/issues/4950).
+
+Herkunft: von einem Dritten (Issue-Ersteller) veröffentlichter, bereits öffentlicher
+GitLab-Anhang. Kein eigener Mitschnitt, keine eigenen Tastendrücke. Enthält laut
+Melder auch fremden Maus-Traffic (Adresse 3.3.1) — hier bewusst ausgefiltert, nur
+Light-Mount-Traffic (Bus 3, Device 2) verwendet.
+
+Filter (Wireshark/tshark, gegen die entpackte pcapng):
+  usb.dst=="3.2.4" && usb.src=="host"   -> Kommandos (host -> EP4 OUT, Interface 2)
+  usb.src=="3.2.3" && usb.dst=="host"   -> Antworten (EP3 IN -> host, Interface 2)
+Payload-Feld: usbhid.data (usbmon-Header ist bereits von tshark geparst, nicht
+mehr Teil dieses Felds).
+
+== Rohdaten: alle 10 Kommando/Antwort-Paare ==
+
+frame 1453 CMD len=41 idx2,3=0200 seq=0x103e idx6=06 idx7=00 checksum=f3d0
+  payload[8:43] = 030064320207ff000000ffff001100ff002100ffff320000ff43ff00ff53ff00006400
+frame 1455 RESP len=6  seq=0x103e idx6=06 idx7=00 checksum=a106
+
+frame 1731 CMD len=7  idx2,3=0200 seq=0x103f idx6=02 idx7=00 checksum=4de8
+  payload[8:9] = 00
+frame 1733 RESP len=6  seq=0x103f idx6=02 idx7=00 checksum=4c69
+
+frame 1739 CMD len=7  idx2,3=0200 seq=0x1040 idx6=02 idx7=01 checksum=6d23
+  payload[8:9] = 00
+frame 1741 RESP len=6  seq=0x1040 idx6=02 idx7=00 checksum=c719
+
+frame 2341 CMD len=29 idx2,3=0200 seq=0x1041 idx6=06 idx7=00 checksum=9a12
+  payload[8:31] = 0501643202040d020800003b0021008f114300ff416400
+frame 2343 RESP len=6  seq=0x1041 idx6=06 idx7=00 checksum=2a76
+
+frame 2447 CMD len=15 idx2,3=0200 seq=0x1042 idx6=06 idx7=00 checksum=e02f
+  payload[8:17] = 0103643200e6300000
+frame 2449 RESP len=6  seq=0x1042 idx6=06 idx7=00 checksum=2f46
+
+frame 2605 CMD len=15 idx2,3=0200 seq=0x1043 idx6=06 idx7=00 checksum=ec3b
+  payload[8:17] = 0000643200e6300000
+frame 2607 RESP len=6  seq=0x1043 idx6=06 idx7=00 checksum=2c56
+
+frame 2747 CMD len=18 idx2,3=0200 seq=0x1044 idx6=06 idx7=00 checksum=2d87
+  payload[8:20] = 0400640a0100ff00ff370000
+frame 2749 RESP len=6  seq=0x1044 idx6=06 idx7=00 checksum=2526
+
+frame 2997 CMD len=6  idx2,3=0200 seq=0x1245 idx6=0a idx7=00 checksum=6a30
+  payload[8:8] = (leer)
+frame 2999 RESP len=6  seq=0x1245 idx6=0a idx7=00 checksum=6a30
+
+frame 3109 CMD len=29 idx2,3=0200 seq=0x1046 idx6=06 idx7=00 checksum=9362
+  payload[8:31] = 0501643202040d020800003b0021008f114300ff416400   (identisch zu frame 2341)
+frame 3127 RESP len=6  seq=0x1046 idx6=06 idx7=00 checksum=2306
+
+frame 3531 CMD len=41 idx2,3=0200 seq=0x1047 idx6=06 idx7=00 checksum=72c0
+  payload[8:43] = 030064320207ff000000ffff001100ff002100ffff320000ff43ff00ff53ff00006400   (identisch zu frame 1453)
+frame 3533 RESP len=6  seq=0x1047 idx6=06 idx7=00 checksum=2016
+
+== Bestätigte Header-Struktur (10/10 Kommandos + 10/10 Antworten konsistent) ==
+
+Byte 0-1  (LE u16): Längenfeld. Kommandos: 41,7,7,29,15,15,18,6,29,41.
+                     Antworten: immer 6.
+Byte 2-3:            konstant 0x0002 in allen 20 Frames.
+Byte 4-5  (LE u16): monoton steigender Sequenzzähler über ALLE Kommandos hinweg:
+                     0x103e,0x103f,0x1040,0x1041,0x1042,0x1043,0x1044,0x1245,
+                     0x1046,0x1047 — Antwort echot exakt denselben Wert.
+                     Byte 5 ist normalerweise 0x10 ("Kommandoklasse"?), nur bei
+                     frame 2997 ist Byte5=0x12 UND Byte6=0x0a (siehe unten) —
+                     zusammen mit dem Sprung auf 0x1245 spricht das für eine
+                     andere Kommandoklasse, kein reiner Fehlerfall.
+Byte 6:              vermutliche Sub-Kommando-/Typ-ID: 0x06 (7×), 0x02 (2×,
+                     kurze Toggle-artige Kommandos), 0x0a (1×, leeres Kommando).
+Byte 7:              meist 0x00, bei frame 1739 = 0x01 (direkt nach frame 1731
+                     mit Byte7=0x00 — sieht nach einem Flag-Toggle 0→1 aus).
+Byte -2..-1 (Ende):  variiert pro Frame, ändert sich mit dem Inhalt — sehr
+                     wahrscheinlich eine Prüfsumme/CRC über den Rest des
+                     Reports. Noch nicht als konkreter Algorithmus verifiziert.
+
+== Entschlüsselte Nutzlast: Farbverlauf (frame 1453 UND 3531, byteidentisch) ==
+
+Ab Byte 17, in 4er-Gruppen [Position 0-100][R][G][B]:
+
+  Position   0 %  RGB (ff,ff,00)  = Gelb
+  Position  17 %  RGB (00,ff,00)  = Grün
+  Position  33 %  RGB (00,ff,ff)  = Cyan
+  Position  50 %  RGB (00,00,ff)  = Blau
+  Position  67 %  RGB (ff,00,ff)  = Magenta
+  Position  83 %  RGB (ff,00,00)  = Rot
+  Byte 41: 0x64 (100 dezimal) — vermutlich Positions-Byte des 7. (letzten)
+           Stopps; zugehörige RGB-Bytes fehlen (Report endet in Nullpadding).
+
+Interpretation (Hypothese, durch zweifache identische, zeitlich getrennte
+Übertragung gestützt, aber NICHT durch eigenen Hardwaretest verifiziert):
+Dies ist die Definition eines 6-stufigen Regenbogen-/Spektrum-Verlaufs über
+den vollen Farbkreis (Gelb→Grün→Cyan→Blau→Magenta→Rot→[Gelb]), passend zu
+einem "Rainbow"/"Spectrum"-Hardwareeffekt. Byte 8-16 davor (03 00 64 32 02 07
+ff 00 00) sind vermutlich Effekt-ID/Geschwindigkeit/Helligkeit-Parameter,
+noch nicht einzeln zugeordnet.
+
+== Offene, nicht entschlüsselte Kommandos ==
+
+- frame 2341/3109 (29 Byte, byteidentisch untereinander): enthält ebenfalls
+  Werte 0x64/0x32 (100/50, evtl. Geschwindigkeit/Helligkeit) und einzelne
+  Byte-Paare, die NICHT dem [pos][R][G][B]-Schema von oben folgen. Eventuell
+  ein anderer Effekttyp (z. B. Breathing mit 2 Farben) — nicht sicher.
+- frame 2447/2605 (15 Byte): sehr ähnlich zueinander (nur Byte 8 unterscheidet
+  sich: 0x01 vs 0x00), enthalten ebenfalls 0x64/0x32 — evtl. Helligkeits-
+  oder Geschwindigkeitsänderung an einem bestehenden Effekt.
+- frame 2747 (18 Byte): enthält "01 00 ff 00 ff" — evtl. eine einzelne
+  Zweifarb-Konfiguration.
+- frame 1731/1739 (7 Byte, Byte6=0x02): kurze Kommandos, vermutlich ein
+  Modus-/Tab-Wechsel oder Ein/Aus-Toggle (Byte7 wechselt 0x00→0x01).
+- frame 2997 (6 Byte, Byte6=0x0a, Byte5=0x12 statt 0x10): einziges Kommando
+  ganz ohne Payload — evtl. eine Abfrage (GET) oder ein "Apply/Commit"-Signal.
+
+Keine dieser Hypothesen ist bestätigt. Nächster Schritt laut STATE.md: gezielte
+Einzelaktions-Captures (eine Änderung pro Aufnahme) statt fremdem Mehrfach-Klick-
+Capture, um obige Zuordnungen zu verifizieren oder zu widerlegen.

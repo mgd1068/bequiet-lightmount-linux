@@ -7,9 +7,11 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
 
 - [x] System/Kernel/OpenRGB-Version/USB-Topologie erfassen (2026-08-18)
 - [x] sysfs-HID-Report-Deskriptoren der vier Interfaces sichern (2026-08-18, `docs/evidence/`)
-- [ ] OpenRGB Issue #4950 auf neue Aktivität prüfen, Capture-Anhang aus Originalquelle laden
+- [x] OpenRGB Issue #4950 auf neue Aktivität prüfen, Capture-Anhang laden (2026-08-18, keine neue Aktivität, Capture analysiert)
 - [ ] Baseline dokumentieren: aktuelles Profil, sichtbare Beleuchtung, Verhalten nach USB-Reconnect
 - [ ] Interface-3-Report-Struktur (Vendor Page 0x59, 6 Report-IDs) genauer aufschlüsseln
+- [ ] Checksum-Algorithmus der letzten 2 Report-Byte offline gegen alle 20 bekannten usbmon3-Frames verifizieren
+- [ ] Verbleibende unentschlüsselte usbmon3-Kommandos (29/15/18/7 Byte) weiter eingrenzen, siehe `docs/evidence/usbmon3_decoded_commands.txt`
 
 ## Phase 1
 
