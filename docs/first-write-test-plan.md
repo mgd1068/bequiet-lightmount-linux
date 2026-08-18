@@ -93,3 +93,12 @@ möglicher kurzer USB-Reset/Verbindungsabriss während der Nutzung).
   Interpretation der Payload-Semantik, jetzt in `PROTOCOL.md` korrigiert.
 - Schritt 8 (keine Wiederholung mit eigenen/veränderten Bytes) eingehalten — es wurde
   ausschließlich das exakt bekannte Kommando einmalig gesendet.
+
+## Zweiter Test nach demselben Plan (2026-08-18): Frame 2747
+
+Gleiches Muster, erneute kurze Nutzerfreigabe eingeholt. Erkenntnis: USB-Replug ist
+**kein** verlässlicher Rückfall für diese Hardware (Effekt lief nach Replug unverändert
+weiter) — der tatsächlich funktionierende Rückfall war ein physischer Hotkey auf der
+Tastatur selbst, den der Nutzer genutzt hat, um vor diesem zweiten Test einen definierten
+Ausgangszustand herzustellen. `SECURITY.md` entsprechend aktualisiert. Ergebnis des
+zweiten Kommandos: statische Farbe (Orange), kein Reset — siehe `PROTOCOL.md`.

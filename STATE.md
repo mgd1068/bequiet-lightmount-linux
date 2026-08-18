@@ -228,8 +228,46 @@ und volle Matrix noch offen).
 - **Rückfall:** wie in `docs/first-write-test-plan.md` — USB-Replug, falls unerwarteter
   Fehlerzustand (bisher nie eingetreten).
 
+## Update — Iteration 10 (2026-08-18, ralph-loop) — zweiter Hardwaretest
+
+- Nutzer hat vor dem Test per physischem Hotkey einen definierten Ausgangszustand
+  hergestellt (gleichförmige Farbe) — USB-Replug hatte den vorherigen Zyklus-Effekt NICHT
+  gestoppt (wichtiger Erfahrungswert, in `SECURITY.md`/`PROTOCOL.md` festgehalten).
+- Frame 2747 (18 Byte, Subcmd `0x06`, Payload `04 00 64 0a 01 00 ff 00 ff 37` +
+  Nullpadding) mit `report_send --confirm` gesendet — bekanntes, byteidentisches
+  Kommando, `crc_valid=yes` vorab per `report_dump` bestätigt, ein einziger Schreibvorgang.
+- **Ergebnis: statische (nicht zeitlich veränderliche) Farbe, vom Nutzer als Orange
+  beschrieben.** Kein USB-Reset.
+- **Hypothese widerlegt:** Die naheliegende Byte-14-16-als-RGB-Lesart (`ff,00,ff` =
+  Magenta) passt nicht zu Orange — verworfen, nicht in `PROTOCOL.md` als Fakt übernommen.
+- **Neue, gestützte Hypothese:** Byte 8 ist (zumindest teilweise) ein Preset-/Effekt-
+  Index (`0x03`=Rainbow-Zyklus, `0x04`=dieses Orange-Preset), keine direkte RGB-Eingabe
+  in dieser kurzen Kommandoform. Farbcodierung für frei wählbare Farben bleibt offen.
+- `SPEC.md`-Kriterium „statische Gesamtfarbe" im Kern erstmals demonstriert (Farbe ist
+  aber preset-fest, nicht frei wählbar) — als Teilerfolg in `BACKLOG.md` vermerkt.
+
+## Nächster konkreter Schritt
+
+1. Kein bekanntes Kommando mehr aus dem Capture, das mit vertretbarer Sicherheit neue,
+   noch nicht getestete Erkenntnisse liefert, ohne zu raten (Frame 2341/3109 bleibt
+   unklar strukturiert, Frame 1731/1739 sind sehr kurze Toggle-Kommandos mit unklarer
+   Wirkung, Frame 2997 wirkt wie eine leere Abfrage). Weitere Hardwaretests mit diesen
+   Kommandos sind möglich, aber der Erkenntnisgewinn ist ungewisser als bei den bisherigen
+   zwei erfolgreichen Tests — vor jedem weiteren Test erneut kurz beim Nutzer nachfragen.
+2. Alternativ und vermutlich ergiebiger: einen eigenen, gezielten Einzelaktions-Capture
+   planen (IO Center Web im Browser öffnen, eine einzelne bekannte Aktion wie "Farbe X
+   wählen" ausführen, dabei mitschneiden) — das würde die offene Frage nach der
+   RGB-Codierung für freie Farben direkt beantworten, statt an fremden Mehrfach-Klick-
+   Daten zu raten. Das ist ein größerer Schritt (Browser-Interaktion, ggf. eigener
+   `usbmon`-Mitschnitt) und sollte dem Nutzer vor Beginn kurz vorgeschlagen werden.
+3. Weiterhin ohne Rückfrage möglich: `PROTOCOL.md`/`ARCHITECTURE.md` konsolidieren, damit
+   der aktuelle Stand (2 erfolgreiche Hardwaretests, mehrere offene Fragen) für eine
+   künftige Session klar lesbar bleibt.
+
 ## Blocker
 
-Keiner. Nächster Hardwaretest würde erneut kurze Nutzerfreigabe brauchen (gleiches
-niedrig-riskantes Muster wie hier), ist aber kein externer Blocker im Sinne der
-Stopbedingung — der Loop kann mit Analyse-/Code-Schritten ohne Rückfrage weiterlaufen.
+Keiner für Analyse-/Doku-Schritte. Ein dritter Hardwaretest oder ein eigener
+Capture-Versuch (Browser-Interaktion mit IO Center Web) sollte vor Beginn kurz mit dem
+Nutzer abgestimmt werden — kein harter externer Blocker im Sinne der Stopbedingung,
+aber ein sinnvoller Punkt für eine kurze Rückfrage laut bisherigem Muster in dieser
+Session.

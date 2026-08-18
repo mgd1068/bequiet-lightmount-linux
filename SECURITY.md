@@ -18,8 +18,12 @@ verhandelbar und gelten für jede Iteration des Entwicklungsloops.
    Profil reaktivieren). **Erfahrungswert (2026-08-18):** Ein einfacher USB-Replug ist
    bei dieser Hardware **kein zuverlässiger Reset** für einen laufenden Effekt — nach
    Aus-/Wiedereinstecken lief ein zuvor gesendeter Zeitzyklus-Effekt unverändert weiter.
-   Ein echtes "sicherer Zustand"-Kommando (z. B. Off) ist noch nicht bekannt/verifiziert;
-   bis dahin nicht von einem Replug-Fallback ausgehen, siehe `PROTOCOL.md`.
+   Ein echtes, per Software gesendetes "sicherer Zustand"-Kommando (z. B. Off) ist noch
+   nicht bekannt/verifiziert. **Tatsächlich funktionierender Rückfall:** die Tastatur hat
+   eine physische Hotkey-Kombination, die den Effekt zuverlässig auf eine gleichförmige
+   statische Farbe zurücksetzt (vom Nutzer bestätigt) — bis ein Software-Off-Kommando
+   verifiziert ist, gilt dieser physische Hotkey als der verlässliche Rückfall für
+   Hardwaretests, nicht der USB-Replug.
 8. USB-Reset ist ein erwartbarer Testfehler: erkennen, Handle schließen, Gerät neu
    enumerieren, nur nach begrenztem Retry fortsetzen. Keine Endlosschleife gegen ein
    resettendes Gerät.

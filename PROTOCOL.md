@@ -65,7 +65,32 @@ Schreibvorgang, kein Retry, `crc_valid=yes` vor dem Senden per `report_dump` gep
   Light-Mount-Controller seinen Zustand über einen reinen Host-seitigen USB-Replug hinweg
   (z. B. weiterhin mit Strom versorgt, oder Effekt läuft MCU-seitig unabhängig weiter).
   Ein echtes, verifiziertes "Off"/Static-Kommando fehlt weiterhin — siehe `SECURITY.md`
-  Regel 7 und `BACKLOG.md`.
+  Regel 7 und `BACKLOG.md`. **Tatsächlich funktionierender Rückfall:** eine physische
+  Hotkey-Kombination auf der Tastatur selbst setzt zuverlässig auf eine gleichförmige
+  statische Farbe zurück (vom Nutzer bestätigt, benutzt) — siehe `SECURITY.md`.
+
+### Zweiter Hardwaretest: Frame 2747 (2026-08-18)
+
+Gleiches Verfahren wie beim ersten Test (bekanntes, byteidentisches Kommando aus dem
+Capture, `report_send --confirm`, ein einziger Schreibvorgang, `crc_valid=yes` vorab
+geprüft). Payload: `04 00 64 0a 01 00 ff 00 ff 37` + Nullpadding (18 Byte Gesamtlänge,
+deutlich kürzer als das Rainbow-Kommando mit 41 Byte).
+
+- **Bestätigt:** Erzeugt eine **statische** (nicht zeitlich veränderliche) einheitliche
+  Farbe auf allen Tasten — vom Nutzer als **Orange** beschrieben. Kein USB-Reset.
+- **Bytehypothese explizit widerlegt:** Die naheliegende Lesart „Byte 14-16 = RGB"
+  (`ff,00,ff` = Magenta) passt **nicht** zur beobachteten Farbe Orange. Damit ist diese
+  kurze Payload-Form vermutlich **kein** direkter RGB-Träger.
+- **Neue, besser gestützte Hypothese:** Byte 8 fungiert (zumindest teilweise) als
+  **Preset-/Effekt-Index**: `0x03` = Rainbow-Zyklus (voller Farbkreis über Zeit),
+  `0x04` = dieses feste Orange-Preset. Die genaue Farbcodierung für „beliebige eigene
+  Farbe setzen" ist damit weiterhin **nicht** bekannt — möglich, dass sehr kurze
+  Kommandos wie dieses aus einer festen Presetliste wählen, statt Rohfarben zu
+  übertragen. Nicht weiter geraten, bis ein gezielter Einzeltest das klärt.
+- Damit ist das `SPEC.md`-Kriterium „statische Gesamtfarbe … sicher schalten" im Kern
+  erstmals demonstriert (eine statische Farbe lässt sich setzen) — aber noch nicht im
+  Sinne von „beliebige selbst gewählte Farbe", da die Farbe hier fest im Kommando steckt
+  und nicht durch uns kontrolliert wurde.
 
 ## Strukturvergleich mit Mountain Everest — Protokollverwandtschaft widerlegt
 
