@@ -6,7 +6,7 @@ Windows-/Web-Hersteller-Software (IO Center) unter Linux nachzubilden —
 bevorzugt als Controller in [OpenRGB](https://openrgb.org/), nicht als
 eigene RGB-Plattform.
 
-Status: **Phase 1 — Sicheres Protokolllabor.** Siehe [`STATE.md`](STATE.md)
+Status: **Phase 3 — OpenRGB-Integration (Grundgerüst).** Siehe [`STATE.md`](STATE.md)
 für den aktuellen Loop-Zustand und den nächsten konkreten Schritt.
 
 ## Bauen und Testen
@@ -42,6 +42,11 @@ Payload, siehe `PROTOCOL.md`):
 `report_send <hidraw-Pfad> <Hex>` schreibt einen Report tatsächlich ans Gerät — nur mit
 explizitem `--confirm`-Flag, sonst reiner Dry-Run (kein `open()`). Siehe
 `docs/first-write-test-plan.md` für das Vorgehen bei echten Hardwaretests.
+
+## OpenRGB-Integration
+
+`openrgb-integration/Controllers/LightMountController/` enthält den (bewusst minimalen)
+OpenRGB-Controller — siehe `openrgb-integration/README.md` zum lokalen Bauen/Testen.
 
 ## Zielumfang
 

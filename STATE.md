@@ -2,8 +2,8 @@
 
 ## Aktuelle Phase
 
-Phase 2 — RGB-MVP (erster echter Hardwareschreibzugriff erfolgreich, Einzeltasten
-und volle Matrix noch offen).
+Phase 3 — OpenRGB-Integration (Grundgerüst geschrieben, Build-Verifikation läuft,
+Hardwaretest steht noch aus).
 
 ## Letzter Stand
 
@@ -500,6 +500,37 @@ Per-Key-Frage als „strukturell verstanden, Wire-Protokoll offen" festhalten, (
 Richtung Phase 3 (OpenRGB-Controller-Grundgerüst) weitergehen — Static Color und Matrix
 sind gut genug verstanden für einen ersten Controller, Per-Key kann als spätere
 Erweiterung nachgezogen werden, sobald neue Erkenntnisse vorliegen.
+
+## Update — Iteration 19 (2026-08-18) — OpenRGB-Controller-Grundgerüst geschrieben
+
+- Nutzerentscheidung: kein weiterer Interface-3-Vorstoß, stattdessen Phase 3 beginnen.
+- OpenRGB-Quellstand lokal geklont (`openrgb-src-private/`, git-ignoriert), Build-System
+  untersucht (qmake, automatisches Glob-Include für `Controllers/*`), Mountain-Referenz
+  (`RGBController_MountainKeyboard.{h,cpp}`) als Konventions-Vorlage gelesen.
+- Neue ADR in `DECISIONS.md`: kein Submodule, Controller-Dateien leben getrackt in
+  diesem Repo unter `openrgb-integration/Controllers/LightMountController/`.
+- Controller geschrieben — **bewusst minimal**: nur `SendStaticColor(r,g,b)`, ein
+  Zone/ein LED ("Keyboard" als Ganzes), Detection über die schon verifizierten Werte
+  (VID `0x373F`, PID `0x0002`, Interface 2, Usage Page `0xFF00`, Usage `0x01`). Kein
+  Per-Key, keine Effekte, kein Save/Brightness — nichts geraten, was nicht in
+  `PROTOCOL.md` als bestätigt steht. CRC16/MODBUS + Report-Aufbau selbstständig im
+  Controller neu implementiert (Mountain-Stil: kein Link gegen unsere separate
+  CMake-`protocol`-Bibliothek, OpenRGB-Controller sind traditionell in sich geschlossen).
+- Baseline-Build des unveränderten OpenRGB-Quellstands angestoßen (Build-Abhängigkeiten
+  installiert, `qmake && make -j$(nproc)`), lief bei Sitzungsende noch (großes Projekt,
+  hunderte Controller) — Ergebnis und Test mit unserem Controller stehen noch aus.
+- Kein Gerätezugriff in dieser Iteration.
+
+## Nächster konkreter Schritt
+
+1. Baseline-Build abwarten/prüfen, dann unsere Controller-Dateien in den Checkout
+   kopieren und neu bauen — prüfen, ob unser Code fehlerfrei kompiliert.
+2. Falls Build erfolgreich: `./openrgb --list-devices` bzw. echten Start prüfen, ob die
+   Light Mount erkannt wird (Detection-Parameter sind bereits verifiziert, aber die
+   Registrierung selbst noch nicht real getestet).
+3. Erst danach, mit erneuter Nutzerfreigabe: echten Hardwaretest über den neuen
+   Controller-Code (nicht mehr über `report_send`) versuchen — insbesondere die
+   unverifizierte Sequenznummer-Strategie (Start bei 1) auf die Probe stellen.
 
 ## Blocker
 

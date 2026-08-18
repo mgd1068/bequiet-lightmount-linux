@@ -2,6 +2,26 @@
 
 Kurze Architecture Decision Records. Neueste zuerst.
 
+## 2026-08-18 — OpenRGB-Anbindung: kein Submodule, Contribution-Dateien im Hauptrepo
+
+**Kontext:** Phase 3 (OpenRGB-Controller) beginnt. Offene Frage aus Iteration 2
+("Submodule-Entscheidung noch offen") muss geklärt werden.
+
+**Entscheidung:**
+- Der OpenRGB-Quellstand selbst ist **kein Git-Submodule** dieses Repos — er lebt lokal
+  unter `openrgb-src-private/` (git-ignoriert), nur als Build-/Testumgebung, analog zu
+  `vendor-extracts-private/`.
+- Die eigentlichen Controller-Dateien (`LightMountController.{h,cpp}`,
+  `RGBController_LightMount.{h,cpp}`, `LightMountControllerDetect.cpp`) sind **von uns
+  verfasster Code** und leben getrackt in diesem Repo unter
+  `openrgb-integration/Controllers/LightMountController/` — sie werden zum Bauen/Testen
+  in den lokalen OpenRGB-Checkout kopiert, siehe `openrgb-integration/README.md`.
+
+**Konsequenz:** Unser Repo bleibt schlank (kein Kopieren von OpenRGBs kompletter
+Historie/Codebase), die Contribution-Dateien sind trotzdem versioniert und
+nachvollziehbar, und ein künftiger Merge Request lässt sich direkt aus
+`openrgb-integration/Controllers/LightMountController/` heraus vorbereiten.
+
 ## 2026-08-18 — Extrahiertes Herstellermaterial bleibt lokal, nicht im Repo
 
 **Kontext:** Statische Analyse der Windows-App (`docs/evidence/windows-app-static-analysis.md`)

@@ -75,9 +75,19 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
 
 ## Phase 3 (OpenRGB-Integration)
 
-- [ ] Idiomatischer OpenRGB-Controller (Detection, Zonen, LED-Namen, Layout, Direct Mode)
+- [x] Idiomatischer OpenRGB-Controller-Grundgerüst (2026-08-18,
+      `openrgb-integration/Controllers/LightMountController/`) — bewusst minimal:
+      nur statische Vollflächenfarbe (einzige mit selbst gewähltem Wert verifizierte
+      Funktion), Detection über Interface/UsagePage/Usage, ein Zone/ein LED
+- [ ] Lokaler Build gegen echten OpenRGB-Quellstand verifizieren (angestoßen, Ergebnis
+      noch ausstehend)
+- [ ] Hardwaretest des neuen Controller-Codes (insbesondere: startet der
+      Sequenznummer-Zähler bei 1 zuverlässig, oder wird er wie unsere früheren
+      `0x2000`-Versuche abgelehnt? — noch nicht getestet, siehe `openrgb-integration/README.md`)
+- [ ] Per-Key-Adressierung ergänzen, sobald Wire-Kommando bekannt ist
+- [ ] Effekte (Matrix, Tornado, ColorWave, Breathing, Reactive) ergänzen, sobald
+      Byte-Parameter bekannt sind
 - [ ] udev-Regeln mit minimalen Rechten
-- [ ] Lokaler Build + Regressionstests
 - [ ] Upstream-tauglicher Patch/MR vorbereiten
 
 ## Phase 4

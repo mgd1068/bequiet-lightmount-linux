@@ -1,5 +1,6 @@
 captures-private/
 vendor-extracts-private/
+openrgb-src-private/
 *.pcap
 *.pcapng
 build/
