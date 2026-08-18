@@ -40,6 +40,23 @@ verhandelbar und gelten für jede Iteration des Entwicklungsloops.
 - Nur sanitisiertes, minimales Testmaterial wird committet.
 - Vor jeder Veröffentlichung (auch nur des Repos) explizit prüfen, ob Captures/Logs
   sensible Daten enthalten.
+- Für Live-Mitschnitte: `tshark`/`dumpcap` sind auf diesem System per AppArmor auf
+  Netzwerk-Interfaces beschränkt, `/dev/usbmon*` ist nicht freigegeben. Mitschnitte
+  laufen stattdessen über `/sys/kernel/debug/usb/usbmon/<bus><u|t>` (debugfs, `sudo`
+  nötig) — bewusste, dokumentierte Abweichung, keine AppArmor-Policy verändert.
+
+## Privacy-Hinweis: Vendor-Kanal spiegelt Tastendrücke (2026-08-18)
+
+Eigener Capture hat gezeigt, dass die Firmware ausgewählte Tastendrücke (beobachtet:
+Pfeiltasten, Enter) zusätzlich zum normalen Boot-Keyboard-Interface (Interface 0) auch
+unaufgefordert über den Vendor-Kanal (Interface 2, denselben, den WebHID im Browser
+nutzt) sendet — siehe `docs/evidence/own_capture_iocenter_decoded.md`. Das bedeutet:
+**jede Website mit WebHID-Zugriff auf Interface 2 kann potenziell einzelne Tastendrücke
+mitlesen**, obwohl Browser den direkten WebHID-Zugriff auf echte Tastatur-Interfaces aus
+Keylogging-Schutzgründen normalerweise verweigern. Für dieses Projekt selbst ändert das
+nichts an den obigen Regeln (weiterhin keine Protokollierung sensibler Nutzdaten), ist
+aber als eigenständiger, für den Nutzer relevanter Befund festgehalten — kein Bug in
+diesem Projekt, sondern ein Verhalten der Hersteller-Firmware.
 
 ## Repository-Sichtbarkeit
 

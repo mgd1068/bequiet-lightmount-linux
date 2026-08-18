@@ -10,7 +10,11 @@
 // against real hardware writes (SPEC.md Phase 2 criterion).
 //
 //   bytes[0:2]  length, u16 LE (exact semantics still a hypothesis, see PROTOCOL.md)
-//   bytes[2:4]  constant 0x0002
+//   bytes[2:4]  session/connection id (u16 LE?) - observed 0x0002 in the third-party
+//               usbmon3 capture fixtures and 0x0001 in our own later capture from a
+//               different browser session. NOT a fixed protocol constant - build_report
+//               currently hardcodes 0x02 to reproduce the known fixtures exactly, see
+//               PROTOCOL.md ("Korrektur: Byte 2-3 ist KEIN fester Protokoll-Konstantenwert").
 //   bytes[4:6]  seq, u16 LE, monotonically increasing across observed commands
 //   byte[6]     subcmd
 //   byte[7]     flags

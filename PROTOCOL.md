@@ -153,6 +153,25 @@ Byte-Protokoll-Vorlage.
   wiederholenden Muster) — schwacher, indirekter Hinweis, keine sichere Widerlegung, da
   der Capture nur einen kleinen Ausschnitt der UI abdeckt.
 
+## Eigener Capture: RGB-Kodierung bestätigt (2026-08-18)
+
+Eigener, gezielter Mitschnitt (nicht aus dem OpenRGB-Ticket) einer einzelnen freien
+Farbwahl in IO Center Web — vollständige Rohdaten und Analyse in
+`docs/evidence/own_capture_iocenter_decoded.md`. Kernergebnisse:
+
+| Fakt | Beleg |
+|---|---|
+| **RGB-Kodierung für frei wählbare Farben bestätigt:** bei einer Static-Color-Kommandofamilie (Länge 15, Subcmd `0x06`, Byte 8-12 = `00 00 64 32 00`) tragen Byte 13-15 direkt Rot/Grün/Blau. Exakter Treffer gegen vom Nutzer aus der UI abgelesenen Hex-Wert `#1FB4FF` | `docs/evidence/own_capture_iocenter_decoded.md`, 2026-08-18 |
+| Byte 10 (`0x64`=100) = Helligkeit, vom Nutzer bestätigt (UI stand auf 100%) | dito |
+| Neues Subkommando `0x03` = periodisches Keepalive (~1,5s Intervall, leerer Payload, Länge 6), unabhängig von Nutzeraktionen | dito |
+| **Korrektur:** Byte 2-3 ("konstant 0x0002") ist **kein** universeller Protokollwert, sondern session-/verbindungsabhängig — eigener Capture zeigte `0x0001` statt `0x0002` | dito, `report.h` entsprechend präzisiert |
+| Unaufgeforderte Geräte→Host-Push-Frames (Subcmd `0x02`) spiegeln Tastendrücke (Pfeiltasten/Enter) vom Boot-Keyboard-Interface fast zeitgleich über den Vendor-Kanal — Hypothese: Umgehung der WebHID-Tastatur-Zugriffssperre im Browser | dito, siehe auch `SECURITY.md` (Privacy-Hinweis) |
+
+**Methodischer Hinweis:** `tshark`/`dumpcap` waren für `/dev/usbmon*` durch AppArmor
+gesperrt (siehe `SECURITY.md`); Mitschnitt erfolgte über das debugfs-Textinterface
+(`/sys/kernel/debug/usb/usbmon/1u`), das Payloads auf 32 Byte kürzt — für die hier
+beobachteten kurzen Kommandos ausreichend.
+
 ## Bekannter Firmwarefehler
 
 Ungezielter Lesezugriff auf ein herstellerspezifisches `hidraw`-Interface kann die

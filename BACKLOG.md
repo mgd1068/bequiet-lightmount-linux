@@ -32,7 +32,12 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
       aber feste Preset-Farbe, keine frei wählbare RGB-Eingabe bestätigt — siehe `PROTOCOL.md`)
 - [ ] Off-Kommando identifizieren/verifizieren (USB-Replug ist KEIN verlässlicher Reset,
       physischer Hotkey ist der bisher einzige bekannte verlässliche Rückfall — siehe `SECURITY.md`)
-- [ ] Farbcodierung für frei wählbare (nicht Preset-)Farben identifizieren
+- [x] Farbcodierung für frei wählbare (nicht Preset-)Farben identifizieren (2026-08-18,
+      eigener Capture, exakter Treffer gegen `#1FB4FF`, siehe `PROTOCOL.md`)
+- [ ] Static-Color-Kommando (Länge 15, Subcmd `0x06`) real auf Hardware testen (bisher nur
+      aus eigenem Capture entschlüsselt, noch nicht selbst mit `report_send` gesendet)
+- [ ] Bedeutung von Payload-Byte 11 (`0x32`) im Static-Color-Kommando klären
+- [ ] Push-Frame-Mechanismus (Subcmd `0x02`, Tastendruck-Spiegelung) weiter untersuchen (Flags-Byte-Bedeutung)
 - [ ] Direct Mode
 - [ ] ≥2 einzelne Tasten unabhängig einfärben (blockiert: kein Per-Key-Kommando im bisherigen Capture identifiziert)
 - [ ] Vollständige Tastenmatrix/LED-Reihenfolge bestimmen

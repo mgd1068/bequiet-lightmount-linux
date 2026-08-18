@@ -264,10 +264,68 @@ und volle Matrix noch offen).
    der aktuelle Stand (2 erfolgreiche Hardwaretests, mehrere offene Fragen) für eine
    künftige Session klar lesbar bleibt.
 
+## Update — Iteration 11 (2026-08-18, ralph-loop) — eigener gezielter Capture, großer Fortschritt
+
+- Nutzer hat zugestimmt, einen eigenen gezielten Capture durchzuführen (statt zu raten).
+- Technisches Problem gelöst: `tshark`/`dumpcap` sind per AppArmor auf `/dev/usbmon*`
+  gesperrt (bestätigt per `dmesg`-DENIED-Eintrag), auch mit `sudo` (Policy gilt unabhängig
+  von der UID). Keine AppArmor-Policy verändert — stattdessen debugfs-Textinterface
+  (`/sys/kernel/debug/usb/usbmon/1u`, `sudo cat`) genutzt, das nicht durch das
+  tshark-Profil mediiert wird. In `SECURITY.md` als Vorgehen dokumentiert.
+- Mitschnitt während einer einzelnen Nutzeraktion (freie Farbwahl `#1FB4FF` in IO Center
+  Web) auf Interface 2 (Device 061) durchgeführt, auf unser Gerät gefiltert.
+- **Mehrere bedeutende neue, hardwarebestätigte Fakten** (Details in `PROTOCOL.md` und
+  `docs/evidence/own_capture_iocenter_decoded.md`):
+  1. RGB-Kodierung für frei wählbare Farben entschlüsselt und exakt gegen den vom
+     Nutzer abgelesenen Hex-Wert verifiziert (Payload-Byte 5-7 = R,G,B direkt).
+  2. Helligkeits-Byte (Payload-Byte 2 = `0x64`) durch Nutzerangabe (UI auf 100%)
+     zusätzlich bestätigt.
+  3. Neues Subkommando `0x03` entdeckt: periodisches Keepalive, unabhängig von
+     Nutzeraktionen.
+  4. Korrektur: das bisher als "konstant 0x0002" dokumentierte Feld (Byte 2-3) ist
+     session-abhängig, nicht universell — `report.h`/`report.cpp`-Kommentare
+     entsprechend präzisiert (Verhalten selbst unverändert, nur Dokumentation).
+  5. Unaufgeforderte Push-Frames entdeckt, die Tastendrücke vom Boot-Keyboard-Interface
+     über den Vendor-Kanal spiegeln — inklusive Privacy-relevanter Nebenfolge
+     (WebHID-Tastatur-Zugriffssperre wird dadurch faktisch umgangen), in `SECURITY.md`
+     als eigenständiger Hinweis festgehalten.
+- Kein `hidraw`-Schreibzugriff in dieser Iteration — nur Lese-/Mitschnitt-Zugriff auf
+  `/sys/kernel/debug/usb/usbmon/1u` (kein Kommando an das Gerät gesendet).
+
+## Nächster konkreter Schritt
+
+1. Das jetzt entschlüsselte Static-Color-Kommando (Länge 15, Subcmd `0x06`, RGB an
+   Payload-Byte 5-7) selbst mit `report_send` auf Hardware testen — bisher nur aus dem
+   Capture entschlüsselt, noch nicht selbst als Kommando gesendet/gebaut. Erfordert
+   erneut kurze Nutzerfreigabe vor Ausführung (gleiches Muster wie bisher) und einen
+   `build_report`-Aufruf mit selbst gewählten RGB-Werten (erstes Mal ein **nicht**
+   byteidentisch aus einem Capture übernommenes Kommando — CRC wird lokal neu berechnet,
+   nicht aus einem bekannten Beispiel kopiert; erfordert daher besondere Sorgfalt beim
+   Report-Aufbau vor dem Senden, siehe `SECURITY.md` Regel 10).
+2. Vor diesem Test: `report_dump`/eigene Unit-Tests nutzen, um den neu gebauten Report
+   offline zu verifizieren (Längenfeld, Byte-2-3-Wert für die aktuelle Session, CRC),
+   bevor überhaupt an Hardware gedacht wird.
+3. Danach `BACKLOG.md`-Punkt „Static-Color-Kommando real testen" abschließen und
+   `SPEC.md`-Kriterium „statische Gesamtfarbe … sicher schalten" von „preset-fest" auf
+   „frei wählbar, verifiziert" upgraden.
+
+## Hypothese / erwartetes Ergebnis / Risiko / Rückfall (für den nächsten Schritt)
+
+- **Hypothese:** Ein mit `build_report` selbst konstruierter Static-Color-Report
+  (Subcmd `0x06`, Payload `00 00 64 32 00 <R> <G> <B>`, aktuelle Session-ID statt der
+  Fixture-`0x0002`) wird vom Gerät akzeptiert und erzeugt die gewählte Farbe — auch wenn
+  er nicht byteidentisch aus einem Capture kopiert ist.
+- **Erwartetes Ergebnis:** Sichtbare, vom Nutzer bestätigbare Farbänderung passend zu den
+  gewählten RGB-Werten.
+- **Sicherheitsrisiko:** minimal höher als bei den ersten zwei Tests, da erstmals ein
+  Report nicht byteidentisch aus einem echten Capture stammt, sondern aus bekannten,
+  aber neu kombinierten Feldern besteht. Weiterhin kein Speicherbefehl, weiterhin
+  Timeout/Single-Write/No-Retry.
+- **Rückfall:** physischer Hotkey auf der Tastatur (siehe `SECURITY.md` Regel 7), falls
+  das Ergebnis unerwartet ist.
+
 ## Blocker
 
-Keiner für Analyse-/Doku-Schritte. Ein dritter Hardwaretest oder ein eigener
-Capture-Versuch (Browser-Interaktion mit IO Center Web) sollte vor Beginn kurz mit dem
-Nutzer abgestimmt werden — kein harter externer Blocker im Sinne der Stopbedingung,
-aber ein sinnvoller Punkt für eine kurze Rückfrage laut bisherigem Muster in dieser
-Session.
+Keiner für Analyse-/Doku-Schritte. Der nächste Schritt (selbst konstruierter, nicht aus
+einem Capture kopierter Report an die Hardware) sollte vor Ausführung erneut kurz mit
+dem Nutzer abgestimmt werden.
