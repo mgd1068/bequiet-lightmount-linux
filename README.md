@@ -20,6 +20,16 @@ ctest --test-dir build --output-on-failure
 Reine Offline-Tests (CRC16/MODBUS, Report-Parsing/-Aufbau) gegen bekannte,
 aus dem öffentlichen usbmon3-Capture stammende Fixtures — kein Gerätezugriff.
 
+## Dry-Run-CLI
+
+`report_dump` liest einen 64-Byte-Interface-2-Report als 128-stelligen Hex-String
+(Argument oder stdin) und gibt die dekodierten Felder aus. Öffnet **niemals** `hidraw`,
+fasst keine Hardware an:
+
+```
+./build/report_dump "290002003e100600030064320207ff000000ffff001100ff002100ffff320000ff43ff00ff53ff0000640000000000000000000000000000000000000000f3d0"
+```
+
 ## Zielumfang
 
 1. Jede Tasten-LED einzeln adressieren

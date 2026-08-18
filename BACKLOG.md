@@ -18,7 +18,7 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
 
 - [x] CRC16/MODBUS + Report-Parsing/-Aufbau in C++ implementiert und gegen alle 20
       bekannten usbmon3-Fixtures getestet (2026-08-18, `src/protocol/`, `tests/`)
-- [ ] Dry-Run-CLI/Testbibliothek mit exakter Interfaceauswahl und strukturierten Hex-Dumps
+- [x] Dry-Run-CLI (`report_dump`) mit strukturierten Hex-Dumps, kein `hidraw`-Zugriff (2026-08-18)
 - [ ] PCAP-Parser/Wireshark-Auswertung reproduzierbar machen
 - [ ] IO-Center-Web-Aktionen den HID-Paketen zuordnen
 - [ ] Prüfen ob Web-Capture Per-Key-Kommandos enthält; falls nicht: Capture-Plan für Windows-Client

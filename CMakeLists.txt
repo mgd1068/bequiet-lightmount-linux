@@ -16,6 +16,9 @@ add_library(protocol
 )
 target_include_directories(protocol PUBLIC src)
 
+add_executable(report_dump src/cli/report_dump.cpp)
+target_link_libraries(report_dump PRIVATE protocol)
+
 enable_testing()
 add_executable(test_protocol tests/test_protocol.cpp)
 target_link_libraries(test_protocol PRIVATE protocol)

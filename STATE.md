@@ -100,32 +100,48 @@ Phase 1 — Sicheres Protokolllabor.
   nicht mehr als Byte-Protokoll-Quelle.
 - Kein Gerätezugriff — reiner Recherche-/Dokumentationsschritt.
 
+## Update — Iteration 6 (2026-08-18, ralph-loop)
+
+- Dry-Run-CLI `report_dump` gebaut (`src/cli/report_dump.cpp`, neues CMake-Target):
+  liest einen 64-Byte-Report als 128-stelligen Hex-String (Argument oder stdin), gibt
+  Länge/Sequenz/Subcmd/Flags/Payload/CRC-Gültigkeit lesbar aus. Öffnet **kein** `hidraw`,
+  keine Geräteinteraktion. Manuell gegen das bekannte Rainbow-Kommando (Frame 1453)
+  getestet: korrekt dekodiert, `crc_valid=yes`; mit manipuliertem letzten Byte getestet:
+  `crc_valid=NO` wie erwartet; mit ungültiger Eingabelänge getestet: sauberer Fehler,
+  Exit-Code 1.
+- `README.md` um CLI-Nutzung ergänzt.
+- Kein Gerätezugriff — reiner Code-Schritt.
+
 ## Nächster konkreter Schritt
 
 1. Verbleibende unentschlüsselte Kommandos (29/15/18/7 Byte, siehe
-   `docs/evidence/usbmon3_decoded_commands.txt`) ohne Mountain-Krücke neu betrachten —
-   jetzt, da die Mountain-Analogie widerlegt ist, keine falschen Feldnamen mehr daran
-   anlehnen, sondern rein aus den Light-Mount-eigenen Daten (Wiederholungen, Werte
-   0x64/0x32 als mögliche 100%/50%-Prozentwerte) argumentieren.
-2. Dry-Run-CLI (liest/baut Reports, druckt Hex-Dumps, öffnet **kein** `hidraw`) als
-   nächsten CMake-Target ergänzen — Grundlage für den späteren, sorgfältig geplanten
-   ersten echten Schreibtest.
-3. Erst danach (weiterhin kein Hardwarezugriff): Testplan für einen ersten,
-   risikoarmen realen Schreibtest ausarbeiten, inklusive Timeout/Reconnect-Verhalten.
+   `docs/evidence/usbmon3_decoded_commands.txt`) mit `report_dump` durchgehen und ohne
+   Mountain-Analogie (siehe Iteration 5, widerlegt) rein aus den Light-Mount-eigenen
+   Daten neu interpretieren — insbesondere die beiden sehr ähnlichen 15-Byte-Kommandos
+   (Frame 2447 vs. 2605, nur Byte 8 unterscheidet sich: `01` vs `00`) und die kurzen
+   7-Byte-Toggle-Kommandos (Frame 1731/1739).
+2. Sobald ein weiteres Kommando mit vertretbarer Sicherheit einem konkreten Feature
+   zugeordnet werden kann: Testplan-Entwurf für einen ersten, risikoarmen realen
+   Schreibtest beginnen (SECURITY.md-Regeln 1–10 explizit durchgehen, insbesondere
+   Timeout/Reconnect-Verhalten und Rückfall auf bekannten sicheren Zustand) — **noch
+   nicht ausführen**, nur Plan.
+3. Erst nach explizitem Testplan (nicht in dieser oder der nächsten Iteration ohne
+   weiteres): erster tatsächlicher `hidraw`-Schreibzugriff, ausschließlich mit einem der
+   hier bereits bekannten, byteidentischen Kommandos (keine selbst konstruierten Bytes),
+   um das Risiko unbekannter Nebenwirkungen zu minimieren.
 
 ## Hypothese / erwartetes Ergebnis / Risiko / Rückfall (für den nächsten Schritt)
 
-- **Hypothese:** Eine Dry-Run-CLI, die einen der bekannten 20 Fixture-Reports (z. B. das
-  Rainbow-Kommando aus Frame 1453) einliest und als lesbaren Hex-/Feld-Dump ausgibt,
-  lässt sich ohne jeden Gerätezugriff bauen und testen.
-- **Erwartetes Ergebnis:** Ein CLI-Tool, das später (nach explizitem Testplan) um einen
-  optionalen, klar gekennzeichneten `--write`-Pfad zum tatsächlichen Gerät erweitert
-  werden kann, aber in dieser Iteration ausschließlich liest/parst/druckt.
-- **Sicherheitsrisiko:** keins — reiner Code-Schritt ohne Geräteschreibzugriff.
-- **Rückfall:** falls CLI-Argumentparsing unnötig komplex wird — auf ein einzelnes
-  Test-/Demo-Executable ohne Argumentparser reduzieren (kein Overengineering laut
-  `DECISIONS.md`), CLI-Optionen erst ergänzen, wenn ein echter Bedarf (z. B. Testplan
-  für den ersten Schreibtest) es verlangt.
+- **Hypothese:** Die beiden 15-Byte-Kommandos (Frame 2447/2605) unterscheiden sich nur
+  in einem einzigen Payload-Byte (`01` vs `00`) und sind damit ein einfacher binärer
+  Toggle innerhalb desselben Features (z. B. ein Ein/Aus-Schalter oder eine Auswahl aus
+  zwei Optionen), nicht zwei unabhängige Kommandos.
+- **Erwartetes Ergebnis:** `report_dump` bestätigt den Byte-für-Byte-Unterschied exakt;
+  falls sich ein plausibles Feature (z. B. anhand der UI-Screenshots im OpenRGB-Ticket)
+  zuordnen lässt, wird das in `PROTOCOL.md` als neue Hypothese ergänzt.
+- **Sicherheitsrisiko:** keins — reine Offline-Analyse bekannter, bereits gesendeter Bytes.
+- **Rückfall:** falls keine plausible Zuordnung möglich ist — als weiterhin offen markiert
+  lassen, nicht raten und als Fakt hinstellen (siehe `PROTOCOL.md`-Grundregel).
 
 ## Blocker
 
