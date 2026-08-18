@@ -481,6 +481,26 @@ Per-Key-Wire-Kommando suchen (Interface 3), Leisten-LED-Geometrie ergänzen, ode
 Richtung Phase 3 (OpenRGB-Controller-Grundgerüst) weitergehen — dem Nutzer erneut
 vorlegen, bevor eigenmächtig eine größere Richtung gewählt wird.
 
+## Update — Iteration 18 (2026-08-18) — read-only Interface-3-Test
+
+- Mit Nutzerfreigabe: `HIDIOCGFEATURE`-ioctl auf `/dev/hidraw11` (Interface 3), alle
+  sechs Report-IDs, reines Lesen, kein Schreiben.
+- Erfolgreich, kein Fehler, kein USB-Reset, Gerät danach unverändert erreichbar.
+- Report-ID 1 und 3 liefern von Null verschiedene Rohwerte (vermutlich Telemetrie/
+  Zähler, Bedeutung nicht bekannt). Report-ID 2, 4, 5, 6 durchgehend Null — für den
+  Per-Key-Kandidaten (Report-ID 4) weder Bestätigung noch Widerlegung.
+- Kein Schreibversuch unternommen — kein bekanntes reales Kommando als Ausgangspunkt
+  vorhanden, `SECURITY.md` Regel 10 verlangt hier zusätzliche Vorsicht.
+
+## Nächster konkreter Schritt
+
+Interface-3-Spur ohne echten Traffic (weder fremd noch eigen) weitgehend ausgeschöpft,
+ohne zu raten. Optionen, dem Nutzer erneut vorzulegen: (1) hier stoppen und die
+Per-Key-Frage als „strukturell verstanden, Wire-Protokoll offen" festhalten, (2)
+Richtung Phase 3 (OpenRGB-Controller-Grundgerüst) weitergehen — Static Color und Matrix
+sind gut genug verstanden für einen ersten Controller, Per-Key kann als spätere
+Erweiterung nachgezogen werden, sobald neue Erkenntnisse vorliegen.
+
 ## Blocker
 
 Keiner für Analyse-/Doku-/Code-Schritte. Weitere Hardwaretests weiterhin nur mit kurzer

@@ -37,8 +37,11 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
       nicht mehr nötig — falls das Wire-Kommando für Per-Key doch noch per Live-Capture
       gebraucht wird, bleibt das als Option offen.
 - [ ] Wire-Kommando für Per-Key-Adressierung finden (Manifest kennt nur die 168
-      LED-Namen/Indizes, nicht das Byte-Protokoll dafür — vermutlich Interface 3,
-      bisher unerforscht, siehe eigener Backlog-Punkt oben)
+      LED-Namen/Indizes, nicht das Byte-Protokoll dafür — Interface 3 Report ID 4
+      als Kandidat identifiziert, aber `GET_FEATURE` liefert nur Nullen, siehe
+      `PROTOCOL.md`; noch kein Schreibversuch, kein bekanntes Kommando als Basis)
+- [ ] Bedeutung der Interface-3-Report-ID-1/3-Telemetriewerte klären (2026-08-18
+      per `GET_FEATURE` ausgelesen, nicht interpretiert)
 - [x] `light_mount_main_iso.json` (Pixel-Koordinaten pro Taste) mit den LED-Indizes
       verknüpft (2026-08-18, `docs/evidence/light_mount_led_layout_iso.json`, 166
       Einträge, 111 mit Geometrie)

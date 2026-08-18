@@ -49,13 +49,29 @@ dieser Kanal überhaupt dafür zuständig ist) über mehrere aufeinanderfolgende
 `SET_FEATURE`-Aufrufe verteilt werden, ähnlich Mountains `SendColorPacketCmd`-Chunking.
 **Reine Hypothese, nicht verifiziert.**
 
-**Bewusst nicht getestet:** Anders als bei allen bisherigen Hardwaretests gibt es hier
-**kein einziges bekanntes reales Kommando** als Ausgangspunkt — ein Schreibversuch wäre
-das erste komplett unbekannte Kommando dieses Projekts (`SECURITY.md` Regel 10 verlangt
-hier besondere Vorsicht). Nächster sinnvoller, risikoarmer Schritt wäre ein reiner
-**lesender** `GET_FEATURE`-Aufruf (kein Schreiben, keine Seiteneffekte) auf die sechs
-Report-IDs, um den aktuellen Gerätezustand zu beobachten, bevor überhaupt über einen
-Schreibversuch nachgedacht wird.
+**Bewusst nicht (blind) geschrieben:** Anders als bei allen bisherigen Hardwaretests gibt
+es hier kein bekanntes reales Kommando als Ausgangspunkt. Stattdessen zuerst ein rein
+**lesender** Test durchgeführt (`HIDIOCGFEATURE`-ioctl auf `/dev/hidraw11`, alle sechs
+Report-IDs, kein Schreiben, mit Nutzerfreigabe).
+
+**Ergebnis (2026-08-18):** Alle sechs `GET_FEATURE`-Aufrufe erfolgreich, kein Fehler,
+kein USB-Reset, Gerät danach unverändert erreichbar.
+
+- Report-ID 1 und 3 liefern **von Null verschiedene** Daten zurück (passend zur
+  Deskriptor-Struktur: mehrere 16-/32-/8-Bit-Felder). Rohwerte (little-endian dekodiert):
+  - Report 1: 16-bit=135, dann 5×32-bit = 452788, 157418, 42110, 1, 33333
+  - Report 3: 16-bit=0, dann 5×32-bit = 18970, 17390, 2890, 1, 2000, dann 6×8-bit =
+    255,255,255,255,1,41
+  - Bedeutung **nicht bekannt** — sehen nach Zählern/Telemetrie/Diagnosewerten aus
+    (z. B. Uptime, Firmware-Build, interne Statistik), reine Spekulation, nicht als Fakt
+    behandelt.
+- Report-ID 2, 4, 5, 6 liefern **durchgehend Null** zurück. Für Report-ID 4 (der
+  Per-Key-Kandidat) ist das **nicht eindeutig**: könnte bedeuten, dass der Kanal
+  ungenutzt/leer ist, oder dass es sich um einen reinen Schreibkanal ohne persistenten
+  Lesezustand handelt (typisch für einen Bulk-Upload-Slot). Weder bestätigt noch
+  widerlegt die Per-Key-Hypothese.
+
+Kein weiterer Test (insbesondere kein Schreiben) auf Interface 3 in dieser Iteration.
 
 ## Erster eigener Hardwaretest (2026-08-18) — bestätigt UND eine Hypothese korrigiert
 
