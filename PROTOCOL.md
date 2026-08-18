@@ -153,6 +153,17 @@ nicht zuverlässig** auf frisch gestarteten Sessions. Als bekannte Einschränkun
 `openrgb-integration/README.md` und `BACKLOG.md` festgehalten, nicht stillschweigend
 übergangen.
 
+**Interface-3-Telemetrie als Sequenznummer-Quelle geprüft und verworfen (2026-08-18):**
+Report-ID 1 zweimal im Abstand einiger Minuten gelesen (rein lesend, `GET_FEATURE`):
+zwei der fünf 32-Bit-Werte hatten sich verändert (450740→452788-Bereich,
+157418→157930-Bereich), **ohne dass in der Zwischenzeit etwas geschrieben wurde** — sehen
+nach frei laufenden Zählern/Timern (z. B. Uptime) aus, nicht nach einem
+"nächste-erwartete-Sequenznummer"-Feld. Die drei konstant gebliebenen Werte (42110, 1,
+33333) sind vermutlich feste Geräte-Kennungen. Keiner der Werte liegt plausibel nahe an
+der einzigen bekannten funktionierenden Sequenznummer (`0x10ad`=4269). **Hypothese
+verworfen, kein Schreibversuch mit einem dieser Werte unternommen** — zu spekulativ für
+einen weiteren realen Hardwarezugriff (`SECURITY.md` Regel 10).
+
 ## Strukturvergleich mit Mountain Everest — Protokollverwandtschaft widerlegt
 
 Quelle: `MountainKeyboardController.{h,cpp}` aus dem OpenRGB-Hauptzweig, per `curl` auf

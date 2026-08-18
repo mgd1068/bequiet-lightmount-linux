@@ -85,10 +85,15 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
 - [x] Hardwaretest des neuen Controller-Codes (2026-08-18): Sequenznummer-Start-bei-1
       **widerlegt** — genauso abgelehnt wie `0x2000`. Static-Modus funktioniert noch
       nicht zuverlässig, siehe `PROTOCOL.md`/`openrgb-integration/README.md`.
-- [ ] **Kritisch:** Herausfinden, wie ein frisch startender Client die vom Gerät
-      erwartete Sequenznummer lernen kann (Kandidat: Interface-3-Report-ID-1-Telemetrie
-      vor dem ersten Schreiben auslesen und auswerten) — ohne Lösung ist der
-      OpenRGB-Controller nicht praktisch nutzbar
+- [ ] **Kritisch, weiterhin ungelöst:** Herausfinden, wie ein frisch startender Client
+      die vom Gerät erwartete Sequenznummer lernen kann — ohne Lösung ist der
+      OpenRGB-Controller nicht praktisch nutzbar. Interface-3-Report-ID-1-Telemetrie
+      als Quelle geprüft und verworfen (2026-08-18, sieht nach Uptime-Zählern statt
+      Sequenznummer aus, siehe `PROTOCOL.md`). Nächste Ideen, keine davon verfolgt:
+      andere Report-IDs (2,4,5,6 lieferten nur Nullen, evtl. nach einer echten
+      IO-Center-Web-Session neu prüfen), oder grundsätzlich andere Bootstrap-Strategie
+      (z. B. erst einen bekannten harmlosen Kommando-Typ mit beliebiger Sequenz senden
+      und aus dessen Annahme/Ablehnung lernen — spekulativ, nicht bewertet).
 - [x] `Shutdown()`-Aufruf im `RGBController_LightMount`-Destruktor nachgerüstet
       (2026-08-18, verhinderte OpenRGB-Warnung beim Beenden)
 - [ ] Per-Key-Adressierung ergänzen, sobald Wire-Kommando bekannt ist

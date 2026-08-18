@@ -580,7 +580,29 @@ Hardwarezugriff (`GET_FEATURE`, kein Schreiben) — mit kurzer Nutzerfreigabe vo
 bisher etabliert. Alternativ: hier als bekannte, dokumentierte Einschränkung stehen
 lassen und andere Baustellen priorisieren.
 
+## Update — Iteration 22 (2026-08-18) — Telemetrie-Hypothese geprüft und verworfen
+
+- Interface 3 Report-ID 1 erneut rein lesend ausgelesen (`GET_FEATURE`, kein Schreiben)
+  und mit dem Wert aus Iteration 18 verglichen.
+- **Ergebnis:** Zwei der fünf 32-Bit-Werte hatten sich verändert, obwohl in der
+  Zwischenzeit nichts geschrieben wurde — sehen nach frei laufenden Zählern/Timern aus,
+  nicht nach einer "nächste erwartete Sequenznummer". Die übrigen drei Werte blieben
+  konstant (vermutlich feste Geräte-Kennungen) und liegen nicht plausibel nahe an der
+  einzigen bekannten funktionierenden Sequenznummer.
+- **Hypothese verworfen, bewusst kein weiterer Schreibversuch unternommen** — die
+  verbleibenden Kandidatenwerte sind zu spekulativ für einen weiteren realen
+  Hardwarezugriff. Sequenznummer-Frage bleibt offen, siehe `BACKLOG.md`.
+
+## Nächster konkreter Schritt
+
+Sequenznummer-Frage ist für diese Session ausgereizt, ohne zu raten. Guter Punkt zum
+Pausieren — 22 von 30 Loop-Iterationen genutzt, sehr ergiebiger Tag mit mehreren echten
+Durchbrüchen (RGB-Kodierung, Matrix-Effekt, 168-LED-Manifest, funktionierender
+OpenRGB-Detection-Nachweis) und einer ehrlich dokumentierten offenen Kernfrage.
+
 ## Blocker
 
-Keiner für Analyse-/Doku-/Code-Schritte. Weitere Hardwaretests weiterhin nur mit kurzer
-Nutzerfreigabe vorab, wie bisher etabliert.
+Sequenznummer-Bootstrapping für den OpenRGB-Controller — kein bekannter Weg, ohne
+weitere (aktuell nicht verfügbare) Datenquelle wie einen frischen echten
+IO-Center-Web-Capture. Kein reiner Analyse-/Doku-Blocker mehr, sondern eine echte
+offene technische Frage.
