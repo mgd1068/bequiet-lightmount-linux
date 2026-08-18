@@ -552,6 +552,34 @@ beobachten, ob die Farbe angenommen wird (Sequenznummer-Start-bei-1-Hypothese) o
 das Gerät ablehnt (analog zum `0x2000`-Fehlschlag aus Iteration 12). Danach Ergebnis in
 `PROTOCOL.md`/`openrgb-integration/README.md` festhalten.
 
+## Update — Iteration 21 (2026-08-18) — Sequenznummer-Start-bei-1 widerlegt
+
+- Mit Nutzerfreigabe: `./openrgb --device 0 --mode static --color 8000FF` ausgeführt.
+  Kein Fehler, kein USB-Reset, aber **keine sichtbare Farbänderung**.
+- Zur Diagnose das exakte Kommando (Session `0x0002`, Seq `0x0001`, wie vom Controller
+  gesendet) über `hidraw` nachgebaut und die Antwort ausgelesen: **identisches
+  Ablehnungsmuster** wie beim `0x2000`-Fehlschlag (Byte 3 = `0x0a`, volle Echo-Antwort).
+- **Hypothese widerlegt:** ein bei 1 startender Zähler ist NICHT die Lösung — sowohl
+  sehr niedrige als auch sehr hohe frei gewählte Werte werden abgelehnt. Nur die eine
+  real beobachtete Sequenznummer (`0x10ad`) hat je funktioniert. Deutet auf echten,
+  bisher nicht zugänglichen Gerätezustand hin.
+- Nebenbei echten Code-Bug gefunden und behoben: `RGBController_LightMount`-Destruktor
+  rief `Shutdown()` nicht auf (OpenRGB-Warnung beim Beenden) — gefixt, neu gebaut,
+  fehlerfrei.
+- Alle Doku-Stellen (`PROTOCOL.md`, `openrgb-integration/README.md`, `BACKLOG.md`)
+  ehrlich aktualisiert: Controller baut und wird erkannt, Kernfunktion (Farbe setzen)
+  ist noch **nicht praktisch nutzbar**, bis die Sequenznummer-Frage gelöst ist.
+
+## Nächster konkreter Schritt
+
+Vielversprechendster, noch nicht verfolgter Ansatz: die Interface-3-Report-ID-1-
+Telemetriewerte (siehe `PROTOCOL.md`) vor einem Schreibversuch auslesen und prüfen, ob
+sich daraus eine gültige/erwartete Sequenznummer ableiten lässt (z. B. eines der
+32-Bit-Felder als laufender Zähler). Erfordert erneuten, aber rein lesenden
+Hardwarezugriff (`GET_FEATURE`, kein Schreiben) — mit kurzer Nutzerfreigabe vorab, wie
+bisher etabliert. Alternativ: hier als bekannte, dokumentierte Einschränkung stehen
+lassen und andere Baustellen priorisieren.
+
 ## Blocker
 
 Keiner für Analyse-/Doku-/Code-Schritte. Weitere Hardwaretests weiterhin nur mit kurzer

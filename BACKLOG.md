@@ -82,9 +82,15 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
 - [x] Lokaler Build gegen echten OpenRGB-Quellstand verifiziert (2026-08-18, fehlerfrei
       kompiliert, `./openrgb --list-devices` erkennt "be quiet! Light Mount" korrekt
       mit richtigem `hidraw10`, Seriennummer, Static-Modus, Keyboard-Zone/LED)
-- [ ] Hardwaretest des neuen Controller-Codes (insbesondere: startet der
-      Sequenznummer-Zähler bei 1 zuverlässig, oder wird er wie unsere früheren
-      `0x2000`-Versuche abgelehnt? — noch nicht getestet, siehe `openrgb-integration/README.md`)
+- [x] Hardwaretest des neuen Controller-Codes (2026-08-18): Sequenznummer-Start-bei-1
+      **widerlegt** — genauso abgelehnt wie `0x2000`. Static-Modus funktioniert noch
+      nicht zuverlässig, siehe `PROTOCOL.md`/`openrgb-integration/README.md`.
+- [ ] **Kritisch:** Herausfinden, wie ein frisch startender Client die vom Gerät
+      erwartete Sequenznummer lernen kann (Kandidat: Interface-3-Report-ID-1-Telemetrie
+      vor dem ersten Schreiben auslesen und auswerten) — ohne Lösung ist der
+      OpenRGB-Controller nicht praktisch nutzbar
+- [x] `Shutdown()`-Aufruf im `RGBController_LightMount`-Destruktor nachgerüstet
+      (2026-08-18, verhinderte OpenRGB-Warnung beim Beenden)
 - [ ] Per-Key-Adressierung ergänzen, sobald Wire-Kommando bekannt ist
 - [ ] Effekte (Matrix, Tornado, ColorWave, Breathing, Reactive) ergänzen, sobald
       Byte-Parameter bekannt sind

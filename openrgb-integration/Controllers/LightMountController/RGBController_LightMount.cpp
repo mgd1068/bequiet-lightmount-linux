@@ -52,6 +52,8 @@ RGBController_LightMount::RGBController_LightMount(LightMountController* control
 
 RGBController_LightMount::~RGBController_LightMount()
 {
+    Shutdown();
+
     delete controller;
 }
 

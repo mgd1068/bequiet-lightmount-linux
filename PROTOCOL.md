@@ -128,6 +128,31 @@ deutlich kürzer als das Rainbow-Kommando mit 41 Byte).
   Sinne von „beliebige selbst gewählte Farbe", da die Farbe hier fest im Kommando steckt
   und nicht durch uns kontrolliert wurde.
 
+## OpenRGB-Controller-Test: Sequenznummer-Start-bei-1 widerlegt (2026-08-18)
+
+Nach dem erfolgreichen Build- und Detection-Test (siehe unten) ein echter Farbtest über
+`./openrgb --device 0 --mode static --color 8000FF` (Nutzerfreigabe vorab). **Keine
+sichtbare Wirkung.** Zur Diagnose per `report_send`/direktem `hidraw`-Zugriff exakt das
+Kommando nachgebaut, das der Controller gesendet hätte (Session `0x0002`, Seq `0x0001`)
+— **identisches Ablehnungsmuster** wie beim `0x2000`-Fehlschlag aus Iteration 12 (volle
+Echo-Antwort, Byte 3 = `0x0a` statt `0x00`).
+
+**Damit widerlegt:** Die Hypothese „ein bei 1 startender, monoton steigender Zähler
+funktioniert, weil das Gerät nach einem Reset auch bei 0/1 anfängt" ist **falsch** —
+sowohl sehr niedrige als auch sehr hohe frei gewählte Sequenzwerte werden abgelehnt. Nur
+der eine tatsächlich live beobachtete Wert (`0x10ad`) hat je funktioniert. Das deutet
+darauf hin, dass das Gerät einen **echten internen Zustand** verfolgt (z. B. den zuletzt
+gesehenen realen Wert), der nicht einfach durch einen frischen Client-Zähler
+nachgebildet werden kann, ohne diesen Zustand vorher zu kennen. Die
+Interface-3-Report-ID-1-Telemetriewerte (siehe eigener Abschnitt oben) sind ein noch
+nicht verifizierter Kandidat dafür, woher ein Client diesen Zustand lernen könnte.
+
+**Konsequenz:** Der OpenRGB-Controller (`openrgb-integration/`) baut fehlerfrei und wird
+korrekt erkannt (siehe unten), aber sein einziger Modus (`Static`) funktioniert **noch
+nicht zuverlässig** auf frisch gestarteten Sessions. Als bekannte Einschränkung in
+`openrgb-integration/README.md` und `BACKLOG.md` festgehalten, nicht stillschweigend
+übergangen.
+
 ## Strukturvergleich mit Mountain Everest — Protokollverwandtschaft widerlegt
 
 Quelle: `MountainKeyboardController.{h,cpp}` aus dem OpenRGB-Hauptzweig, per `curl` auf
