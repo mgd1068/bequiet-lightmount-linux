@@ -1,0 +1,4 @@
+captures-private/
+*.pcap
+*.pcapng
+build/
