@@ -172,6 +172,23 @@ gesperrt (siehe `SECURITY.md`); Mitschnitt erfolgte über das debugfs-Textinterf
 (`/sys/kernel/debug/usb/usbmon/1u`), das Payloads auf 32 Byte kürzt — für die hier
 beobachteten kurzen Kommandos ausreichend.
 
+## Erster selbst konstruierter Hardwaretest: Sequenznummer wird validiert (2026-08-18)
+
+Vollständige Diagnose in `docs/evidence/sequence-number-validation-test.md`. Kernergebnis:
+
+| Fakt | Beleg |
+|---|---|
+| **RGB-Kodierung erneut bestätigt** mit einem zweiten, unabhängigen Farbwert (`#00FF00`, selbst konstruiert, nicht aus einem Capture kopiert) | Nutzerbestätigung "jetzt grün", 2026-08-18 |
+| **Gerät validiert die Sequenznummer** bei Static-Color-Kommandos: frei erfundene Werte (`0x2000`+) werden abgelehnt (keine sichtbare Wirkung, abweichendes Antwortformat), ein Wert nahe am zuletzt real beobachteten Stand (`0x10ad`) wird akzeptiert | 6 kontrollierte Teilversuche, siehe Diagnose-Dokument |
+| **Widerlegt:** Sitzungs-ID-Mismatch (Byte 2) als Ursache — Session `0x01` und `0x02` beide gleichermaßen abgelehnt bei falscher Sequenznummer, beide gleichermaßen akzeptiert bei richtiger | dito |
+| **Widerlegt:** fehlendes „Commit"-Kommando (Subcmd `0x0a`) als Ursache | dito |
+| **Neu:** Ablehnungs-Antwortformat identifiziert — volles Echo der Anfrage (Länge = Anfragelänge) mit Byte 3 = `0x0a` statt der üblichen 6-Byte-Bestätigung mit Byte 3 = `0x00` | dito |
+
+**Einschränkung:** Nur ein akzeptierter und mehrere abgelehnte Sequenzwerte getestet —
+die genaue Akzeptanzregel (Toleranzfenster? exakte Fortsetzung?) ist nicht bestimmt.
+Auch nicht geklärt, ob diese Validierung nur diese eine Kommandofamilie betrifft (Rainbow-
+und Preset-Kommandos akzeptierten in früheren Tests beliebige alte Sequenznummern).
+
 ## Bekannter Firmwarefehler
 
 Ungezielter Lesezugriff auf ein herstellerspezifisches `hidraw`-Interface kann die

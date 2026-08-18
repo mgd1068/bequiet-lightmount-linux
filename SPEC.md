@@ -24,18 +24,29 @@ Keine unnötige zweite RGB-Plattform: Integration in OpenRGB hat Vorrang vor eig
 Der Loop darf den RGB-MVP nur als abgeschlossen markieren, wenn alle folgenden Punkte
 erfüllt **und mit realen Testbelegen dokumentiert** sind:
 
-- [ ] Repository sicher angelegt, privat, nachvollziehbare Historie
-- [ ] Quellen, Lizenzen, Architektur, Sicherheitsregeln dokumentiert
-- [ ] Light Mount wird ausschließlich über exakte Geräte-/Interfaceidentität geöffnet
-- [ ] Offline-Tests für Paketaufbau und Tasten-/LED-Mapping bestehen
+- [x] Repository sicher angelegt, privat, nachvollziehbare Historie
+- [x] Quellen, Lizenzen, Architektur, Sicherheitsregeln dokumentiert
+- [x] Light Mount wird ausschließlich über exakte Geräte-/Interfaceidentität geöffnet
+- [ ] Offline-Tests für Paketaufbau und Tasten-/LED-Mapping bestehen (Paketaufbau: ja,
+      `tests/test_protocol.cpp`; Tasten-/LED-Mapping: nein, Matrix noch unbekannt)
 - [ ] Mindestens zwei einzelne reale Tasten unabhängig in verschiedenen Farben setzbar
+      (bisher nur Vollflächen-/einheitliche Farben getestet, keine Per-Key-Kommandos bekannt)
 - [ ] Vollständige statische Tastenbelegung auf echter Hardware darstellbar
 - [ ] Obere/seitliche Lichtleisten als getrennte Zonen steuerbar (oder Einschränkung mit Capture-Belegen dokumentiert)
 - [ ] USB-Disconnect/Reset führt nicht zu Absturz oder unbegrenzter Reconnect-Schleife
+      (Timeout/No-Retry-Logik implementiert, aber noch kein echter Reset im Test aufgetreten)
 - [ ] Funktionierender OpenRGB-Controller, oder begründeter Nachweis für vorgelagerte Protokollbibliothek
-- [ ] Build, Tests, Bedienung auf Zielsystem reproduzierbar dokumentiert
-- [ ] Vorheriger Beleuchtungszustand bzw. sicherer Fallback wiederherstellbar
-- [ ] Keine Rohmitschnitte oder Geheimnisse veröffentlicht
+- [ ] Build, Tests, Bedienung auf Zielsystem reproduzierbar dokumentiert (für den bisherigen
+      Umfang ja, siehe README — für den vollen Funktionsumfang noch nicht anwendbar)
+- [ ] Vorheriger Beleuchtungszustand bzw. sicherer Fallback wiederherstellbar (USB-Replug
+      erwiesenermaßen unzuverlässig, nur physischer Hotkey verifiziert, kein Software-Fallback)
+- [x] Keine Rohmitschnitte oder Geheimnisse veröffentlicht (Repo bleibt ohnehin privat)
+
+**Teilfortschritt (2026-08-18, noch kein MVP-Abschluss):** Statische Gesamtfarbe frei
+wählbar setzen ist auf echter Hardware verifiziert (zwei unabhängige Farbwerte,
+`#1FB4FF` und `#00FF00`) — deckt aber nur einen Teil der obigen Kriterien ab. Per-Key-
+Adressierung, Zonentrennung, OpenRGB-Controller und Fallback-Wiederherstellung fehlen
+weiterhin. Siehe `STATE.md`/`BACKLOG.md` für Details.
 
 „Fast fertig“, kompilierender Code ohne Hardwarenachweis oder ausschließlich gemockte
 Tests reichen nicht.

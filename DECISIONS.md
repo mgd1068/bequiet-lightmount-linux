@@ -2,6 +2,24 @@
 
 Kurze Architecture Decision Records. Neueste zuerst.
 
+## 2026-08-18 — Sequenznummern nicht frei vergeben, sondern aus Gerätezustand fortführen
+
+**Kontext:** Hardwaretest zeigte, dass das Gerät Sequenznummern bei Static-Color-
+Kommandos validiert (siehe `PROTOCOL.md`, `docs/evidence/sequence-number-validation-test.md`).
+Frei erfundene Werte wurden abgelehnt, ein Wert nahe am zuletzt real beobachteten Stand
+wurde akzeptiert.
+
+**Entscheidung:** Eine künftige Implementierung (Dry-Run-CLI-Erweiterung, später
+OpenRGB-Controller) darf Sequenznummern nicht willkürlich/bei 0 beginnend vergeben.
+Stattdessen entweder (a) den aktuellen Zählerstand vom Gerät lernen (z. B. aus der
+Antwort eines beliebigen zuerst gesendeten, unkritischen Kommandos wie dem Keepalive
+Subcmd `0x03`) und ab dort fortlaufend inkrementieren, oder (b) empirisch ein
+akzeptiertes Toleranzfenster ermitteln, bevor darauf gebaut wird.
+
+**Konsequenz:** Kein eigener Sequenznummerngenerator, der bei einem festen/konfigurierbaren
+Startwert beginnt, ohne vorher den Gerätezustand zu berücksichtigen. Offene Frage
+(genaue Akzeptanzregel) bleibt in `BACKLOG.md`, bis weitere Tests sie klären.
+
 ## 2026-08-18 — Coding-Stil: C++, aber möglichst funktional/C-artig statt OOP
 
 **Kontext:** Nutzerwunsch (explizit): das Projekt soll für ihn leicht lesbar bleiben.

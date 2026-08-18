@@ -324,8 +324,45 @@ und volle Matrix noch offen).
 - **Rückfall:** physischer Hotkey auf der Tastatur (siehe `SECURITY.md` Regel 7), falls
   das Ergebnis unerwartet ist.
 
+## Update — Iteration 12 (2026-08-18, ralph-loop) — erster selbst konstruierter Report erfolgreich
+
+- Mit Nutzerfreigabe: Static-Color-Kommando (`#00FF00`) selbst aus bekannten Feldern
+  konstruiert (nicht byteidentisch aus einem Capture kopiert) und gesendet.
+- **Erster Versuch schlug fehl** (keine sichtbare Wirkung trotz `write completed`).
+  Systematische Fehlersuche mit dem Nutzer zusammen (dessen Idee "liegt es am offenen
+  Browser-Tab?" führte zur entscheidenden Spur):
+  1. Antwort ausgelesen (vorher nicht gemacht) → abweichendes Format entdeckt
+     (Byte 3 = `0x0a` statt `0x00`, volles Echo statt kurzer Bestätigung).
+  2. Sitzungs-ID-Hypothese getestet (0x01 vs 0x02, Tab offen/geschlossen) → widerlegt.
+  3. Commit-Kommando-Hypothese getestet (Subcmd `0x0a` hinterher) → widerlegt.
+  4. Kontrolltest mit bekannt funktionierendem Orange-Kommando über dieselbe Sende-
+     Methode → normale Bestätigung, schließt Methodik-Artefakt aus.
+  5. **Entscheidender Test:** dieselbe Payload mit der echten, live beobachteten
+     Sequenznummer `0x10ad` statt einer erfundenen → normale Bestätigung UND vom
+     Nutzer bestätigt sichtbares Grün.
+- **Ergebnis: Gerät validiert Sequenznummern** bei dieser Kommandofamilie. Vollständige
+  Diagnose in `docs/evidence/sequence-number-validation-test.md`, Architekturkonsequenz
+  in `DECISIONS.md` festgehalten (Sequenznummern künftig aus Gerätezustand fortführen,
+  nicht frei vergeben).
+- `SPEC.md`-Kriterium „statische Gesamtfarbe … sicher schalten" jetzt vollständig erfüllt
+  (frei wählbare Farbe, nicht nur Preset) — zwei unabhängige Farbwerte verifiziert
+  (`#1FB4FF` aus Capture-Analyse, `#00FF00` aus eigenem Test).
+
+## Nächster konkreter Schritt
+
+1. `SPEC.md`-Fortschritt konsolidieren: prüfen, welche MVP-Abnahmekriterien jetzt
+   erfüllt sind (statische Farbe: ja: Einzeltasten: weiterhin nein, keine Per-Key-
+   Kommandos bekannt) und die Checkliste entsprechend aktualisieren.
+2. Sequenznummer-Akzeptanzregel weiter eingrenzen wäre wertvoll, ist aber ein
+   eigenständiger, nicht trivialer Untersuchungsaufwand (mehrere gezielte Tests mit
+   verschiedenen Abständen zur echten Sequenznummer) — nicht ungefragt weitere
+   Hardwaretests anstoßen, stattdessen dem Nutzer als nächste Option vorschlagen.
+3. Alternativ: Ohne weitere Hardwaretests weiterarbeiten — z. B. `report_send`/
+   `report_dump` um eine "aus Feldern bauen" CLI-Option erweitern (bisher nur informell
+   per Python-Einweg-Skript gemacht), oder mit der OpenRGB-Controller-Grundstruktur
+   (Phase 3) beginnen, da das Kernprotokoll (Farbe setzen) jetzt belastbar verstanden ist.
+
 ## Blocker
 
-Keiner für Analyse-/Doku-Schritte. Der nächste Schritt (selbst konstruierter, nicht aus
-einem Capture kopierter Report an die Hardware) sollte vor Ausführung erneut kurz mit
-dem Nutzer abgestimmt werden.
+Keiner für Analyse-/Doku-/Code-Schritte. Weitere Hardwaretests weiterhin nur mit kurzer
+Nutzerfreigabe vorab, wie bisher etabliert.

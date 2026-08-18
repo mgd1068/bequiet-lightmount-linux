@@ -34,10 +34,14 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
       physischer Hotkey ist der bisher einzige bekannte verlässliche Rückfall — siehe `SECURITY.md`)
 - [x] Farbcodierung für frei wählbare (nicht Preset-)Farben identifizieren (2026-08-18,
       eigener Capture, exakter Treffer gegen `#1FB4FF`, siehe `PROTOCOL.md`)
-- [ ] Static-Color-Kommando (Länge 15, Subcmd `0x06`) real auf Hardware testen (bisher nur
-      aus eigenem Capture entschlüsselt, noch nicht selbst mit `report_send` gesendet)
+- [x] Static-Color-Kommando (Länge 15, Subcmd `0x06`) real auf Hardware getestet
+      (2026-08-18, `#00FF00` selbst konstruiert und erfolgreich angewendet — siehe
+      `docs/evidence/sequence-number-validation-test.md`)
+- [ ] Sequenznummer-Akzeptanzregel klären (Toleranzfenster? exakte Fortsetzung? nur
+      diese Kommandofamilie betroffen?) — kritisch für Phase 3 (`DECISIONS.md`)
 - [ ] Bedeutung von Payload-Byte 11 (`0x32`) im Static-Color-Kommando klären
 - [ ] Push-Frame-Mechanismus (Subcmd `0x02`, Tastendruck-Spiegelung) weiter untersuchen (Flags-Byte-Bedeutung)
+- [ ] Ablehnungs-Antwortformat (Byte 3 = `0x0a` bei Fehler) an weiteren Fällen verifizieren
 - [ ] Direct Mode
 - [ ] ≥2 einzelne Tasten unabhängig einfärben (blockiert: kein Per-Key-Kommando im bisherigen Capture identifiziert)
 - [ ] Vollständige Tastenmatrix/LED-Reihenfolge bestimmen
