@@ -46,8 +46,11 @@ oder ein klarer, konkreter Vorteil besteht — nicht als Default.
 
 ## Referenzcode
 
-Mountain Everest gilt als wahrscheinlichste Protokollverwandtschaft (be quiet! hat
-Mountain übernommen), beweist aber keine Protokollidentität:
+Mountain Everest war die im Master-Prompt genannte Ausgangshypothese für eine
+Protokollverwandtschaft — diese ist mittlerweile durch Strukturvergleich **widerlegt**
+(siehe `PROTOCOL.md`, Abschnitt „Strukturvergleich mit Mountain Everest“). Der Code bleibt
+als Vorlage für die OpenRGB-Integrationsform relevant (Klassenstruktur, `RGBController`-
+Anbindung, Farbverlauf-Parameteraufbau), nicht für das Byte-Protokoll selbst:
 
 - `Controllers/MountainKeyboardController/MountainKeyboardController.{cpp,h}`
 - `Controllers/MountainKeyboardController/MountainKeyboardControllerDetect.cpp`

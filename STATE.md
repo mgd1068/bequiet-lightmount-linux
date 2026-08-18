@@ -83,34 +83,49 @@ Phase 1 — Sicheres Protokolllabor.
 - `README.md` um Bau-/Testanleitung ergänzt. `build/` bleibt git-ignoriert.
 - Kein Gerätezugriff — reiner Code/Build/Test-Schritt.
 
+## Update — Iteration 5 (2026-08-18, ralph-loop)
+
+- Mountain-Everest-Referenzcode (`MountainKeyboardController.{h,cpp}`) per `curl` von
+  GitLab Raw geladen (kein Vollklon nötig, WebFetch-Zusammenfassung war zu ungenau für
+  einen Byte-genauen Vergleich — direktes `curl` liefert exakten Quelltext).
+- Strukturvergleich durchgeführt: die ursprüngliche Hypothese "Light Mount ist
+  protokollverwandt mit Mountain Everest" ist **widerlegt**. Mountain nutzt ein
+  Report-ID-Byte + feste Kommandoklassen (`0x14`/`0x13`) an fester Position, **keine**
+  Prüfsumme und **keine** Sequenznummer. Light Mount Interface 2 hat dagegen ein
+  Längenfeld, einen monoton steigenden Sequenzzähler und einen CRC16/MODBUS-Trailer —
+  keines davon existiert bei Mountain. Details: `PROTOCOL.md`, Abschnitt
+  „Strukturvergleich mit Mountain Everest“.
+- `ARCHITECTURE.md` aktualisiert: Mountain-Code bleibt als Vorlage für die spätere
+  OpenRGB-Integrationsform (Klassenstruktur, `RGBController`-Anbindung) relevant, aber
+  nicht mehr als Byte-Protokoll-Quelle.
+- Kein Gerätezugriff — reiner Recherche-/Dokumentationsschritt.
+
 ## Nächster konkreter Schritt
 
 1. Verbleibende unentschlüsselte Kommandos (29/15/18/7 Byte, siehe
-   `docs/evidence/usbmon3_decoded_commands.txt`) mit dem neuen Report-Parser
-   strukturiert als weitere Test-Fixtures/Kommentare festhalten, um Muster leichter zu
-   erkennen als per Hand (z. B. `payload`-Felder benennen, sobald ein Muster gesichert ist).
-2. Lokal installierten OpenRGB-Quellstand bzw. GitLab-Quelle des
-   `MountainKeyboardController` holen und strukturell mit der hier gefundenen
-   Header-/Payload-Struktur vergleichen (offene Frage aus Iteration 2/3, bisher noch
-   nicht bearbeitet).
-3. Dry-Run-CLI (liest/baut Reports, druckt Hex-Dumps, öffnet **kein** `hidraw`) als
+   `docs/evidence/usbmon3_decoded_commands.txt`) ohne Mountain-Krücke neu betrachten —
+   jetzt, da die Mountain-Analogie widerlegt ist, keine falschen Feldnamen mehr daran
+   anlehnen, sondern rein aus den Light-Mount-eigenen Daten (Wiederholungen, Werte
+   0x64/0x32 als mögliche 100%/50%-Prozentwerte) argumentieren.
+2. Dry-Run-CLI (liest/baut Reports, druckt Hex-Dumps, öffnet **kein** `hidraw`) als
    nächsten CMake-Target ergänzen — Grundlage für den späteren, sorgfältig geplanten
    ersten echten Schreibtest.
-4. Erst danach (weiterhin kein Hardwarezugriff): Testplan für einen ersten,
+3. Erst danach (weiterhin kein Hardwarezugriff): Testplan für einen ersten,
    risikoarmen realen Schreibtest ausarbeiten, inklusive Timeout/Reconnect-Verhalten.
 
 ## Hypothese / erwartetes Ergebnis / Risiko / Rückfall (für den nächsten Schritt)
 
-- **Hypothese:** Der lokal installierte OpenRGB-Build (`openrgb 0.9+git20251009+ds-1`,
-  bereits als Debian-Paket vorhanden) enthält den Mountain-Everest-Controller-Quellcode
-  in einem lokal auffindbaren Pfad (Quellpaket) oder muss stattdessen per GitLab-Clone
-  geholt werden.
-- **Erwartetes Ergebnis:** Klarheit über den einfachsten Weg an den Referenzcode zu
-  kommen, ohne unnötig einen vollen OpenRGB-Checkout anzulegen, bevor Phase 3 beginnt.
-- **Sicherheitsrisiko:** keins — reiner Lese-/Rechercheschritt.
-- **Rückfall:** falls kein lokales Quellpaket existiert — gezielt nur die bereits in
-  `docs/research-sources.md` verlinkten Einzeldateien (nicht das ganze Repo) per WebFetch
-  laden, Vollklon erst in Phase 3 entscheiden (siehe offene Frage in `DECISIONS.md`).
+- **Hypothese:** Eine Dry-Run-CLI, die einen der bekannten 20 Fixture-Reports (z. B. das
+  Rainbow-Kommando aus Frame 1453) einliest und als lesbaren Hex-/Feld-Dump ausgibt,
+  lässt sich ohne jeden Gerätezugriff bauen und testen.
+- **Erwartetes Ergebnis:** Ein CLI-Tool, das später (nach explizitem Testplan) um einen
+  optionalen, klar gekennzeichneten `--write`-Pfad zum tatsächlichen Gerät erweitert
+  werden kann, aber in dieser Iteration ausschließlich liest/parst/druckt.
+- **Sicherheitsrisiko:** keins — reiner Code-Schritt ohne Geräteschreibzugriff.
+- **Rückfall:** falls CLI-Argumentparsing unnötig komplex wird — auf ein einzelnes
+  Test-/Demo-Executable ohne Argumentparser reduzieren (kein Overengineering laut
+  `DECISIONS.md`), CLI-Optionen erst ergänzen, wenn ein echter Bedarf (z. B. Testplan
+  für den ersten Schreibtest) es verlangt.
 
 ## Blocker
 

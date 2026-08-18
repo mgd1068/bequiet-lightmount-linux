@@ -37,6 +37,46 @@ Hardwareverifikation. Die Rainbow-Interpretation ist plausibel und durch doppelt
 identische Übertragung gestützt, gilt aber erst nach eigenem `--dry-run`/Hardwaretest
 (Phase 1/2) als bestätigt im Sinne von `SPEC.md`.
 
+## Strukturvergleich mit Mountain Everest — Protokollverwandtschaft widerlegt
+
+Quelle: `MountainKeyboardController.{h,cpp}` aus dem OpenRGB-Hauptzweig, per `curl` auf
+die Raw-Dateien geladen (2026-08-18, siehe `docs/research-sources.md`).
+
+Mountain Everest (Referenzcode, tatsächlicher Aufbau — nicht nur die im Master-Prompt
+genannten Vermutungen):
+
+- 65-Byte-USB-Buffer, Byte 0 = **HID-Report-ID** (bei `hid_write` von hidapi automatisch
+  als erstes Byte erwartet; im Code fast immer implizit `0x00` via `memset`).
+- Byte 1 = Kommandoklasse: `0x14` (SEND) oder `0x13` (SAVE) — feste Werte an fester Position.
+- Byte 2 = Subkommando (`0x2C` Farbdaten, `0x2D` Edge-Farbdaten, `0x00` Moduswahl, `0xA0` Bestätigung).
+- Byte 3 = Modus-Nachricht (z. B. `0x00` static, `0x04` wave, `0x0A` custom) bzw. Paketindex.
+- Byte 4–6 = modusabhängige Parameter (oft `0x01`/pkt_no, speed, brightness).
+- Byte 7+ = Payload (Farben, Wave-Parameter).
+- **Keine Prüfsumme, keine Sequenznummer, kein Längenfeld** — der Rest des Buffers wird
+  einfach mit `0x00` (bzw. bei `SendColorStartPacketCmd` mit `0xFF`) vorbelegt und roh
+  gesendet.
+
+Light Mount Interface 2 (siehe oben, eigene Messung):
+
+- 64-Byte-Reports, **kein** Report-ID-Byte (Report Descriptor hat kein Report-ID-Tag,
+  siehe Abschnitt „Bestätigte Fakten“) — die Kommandoklasse `0x14`/`0x13` an fester
+  Byte-1-Position aus Mountain kommt in keinem der 20 beobachteten Frames vor.
+- Byte 0–1 = Längenfeld, Byte 2–3 = konstant `0x0002`, Byte 4–5 = monoton steigende
+  Sequenznummer, Byte 6 = Subkommando, Byte 7 = Flags, Byte 62–63 = CRC16/MODBUS.
+- Die Subkommando-Werte, die bisher beobachtet wurden (`0x02`, `0x06`, `0x0a`), haben
+  keine erkennbare Entsprechung zu Mountains `0x00/0x2C/0x2D/0xA0`.
+
+**Ergebnis:** Die im Master-Prompt genannte Hypothese einer strukturellen Verwandtschaft
+(gleiche Kommandofamilien, 65-Byte-Reports mit Report-ID) ist **widerlegt**. Das Light-
+Mount-Protokoll auf Interface 2 ist ein eigenständiges Format mit Längenfeld, Sequenz-
+zähler und CRC16/MODBUS-Absicherung — keines davon existiert im Mountain-Protokoll.
+Einzige echte Gemeinsamkeit: beide verwenden ein ca. 64-Byte-HID-Interrupt-Interface mit
+einem kurzen Header vor der eigentlichen Nutzlast, was eher an eine übliche USB-HID-
+Konvention als an geteilten Code erinnert. Für Phase 3 bleibt der Mountain-Controller
+dennoch als **Vorlage für die OpenRGB-Integrationsform** (Klassenstruktur, Aufbau der
+Farbverlauf-/Wave-Parameter, `RGBController`-Anbindung) relevant — nicht als
+Byte-Protokoll-Vorlage.
+
 ## Interpretierte Hypothesen (aus Deskriptoren bzw. Capture-Struktur abgeleitet, noch nicht durch eigenen Hardwaretest bestätigt)
 
 - Interface 1, Report-ID 0x0a (Buttons + Wheel + X/Y) ist vermutlich das **Medienrad** —
@@ -47,11 +87,11 @@ identische Übertragung gestützt, gilt aber erst nach eigenem `--dry-run`/Hardw
   Konfigurationskanal (evtl. Per-Key-Daten oder Profile), der über Control-Transfer
   (`SET_REPORT`/`GET_REPORT`) statt über Interrupt-Endpoints läuft. Noch keine Zuordnung
   zu konkreten Funktionen.
-- Protokoll ist strukturell mit Mountain Everest verwandt (65-Byte-Reports inkl. Report-ID,
-  Kommandofamilien `0x14 0x2c` / `0x14 0x2d` / `0x14 0xa0`, `0x13 ... 0x55`) — unbewiesen bis
-  Light-Mount-Capture strukturell verglichen wurde. Auffällig: Mountain-Referenz nennt
-  65-Byte-Reports **mit** Report-ID, während Interface 2 hier **ohne** Report-ID auskommt —
-  mögliche Abweichung vom Mountain-Protokoll, noch nicht abschließend bewertet.
+- ~~Protokoll ist strukturell mit Mountain Everest verwandt~~ — **widerlegt** (siehe
+  eigener Abschnitt unten): Byte-Layout, Kommandokennung und Prüfsumme unterscheiden
+  sich grundlegend. Als Referenzcode für die Phase-3-OpenRGB-Integration (Klassenform,
+  `RGBController`-Anbindung, Farbverlauf-Aufbau) bleibt der Mountain-Controller trotzdem
+  nützlich — nur eben nicht als Byte-Protokoll-Vorlage.
 - IO Center Web deckt möglicherweise keine Per-Key-Beleuchtung ab (nur der Windows-Client) —
   der usbmon3-Capture zeigt in den ~20s beobachteter Interaktion keine Kommandos, die nach
   Einzeltasten-Adressierung aussehen (keine 60+ Byte langen, sich klar in Tastenanzahl
