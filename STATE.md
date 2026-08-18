@@ -165,7 +165,24 @@ Phase 1 — Sicheres Protokolllabor.
   einen Schritt mit echtem (wenn auch laut `SECURITY.md` minimiertem) Hardwarerisiko.
 - **Rückfall:** keiner nötig, da dieser Schritt noch keine Hardware anfasst.
 
+## Update — Iteration 8 (2026-08-18, ralph-loop)
+
+- Testplan für den ersten echten `hidraw`-Schreibzugriff geschrieben:
+  `docs/first-write-test-plan.md`. Deckt alle zehn `SECURITY.md`-Regeln ab (exakte
+  Interfaceauswahl, bekanntes/nicht selbst konstruiertes Kommando, kein Speicherbefehl,
+  Timeout, Reset-als-erwarteter-Fehler statt Retry-Schleife, Rückfall auf sicheren
+  Zustand via USB-Replug, `--dry-run`-Standard für das noch zu bauende Sende-Tool).
+  **Noch nicht ausgeführt.**
+
 ## Blocker
 
-Keiner für den Plan-Entwurf. Der execution-Schritt danach (erster echter `hidraw`-Schreib-
-zugriff) ist bewusst als Punkt markiert, an dem sorgfältig vorgegangen werden muss.
+**Echter externer Blocker laut Master-Prompt-Stopbedingung 2:** Der nächste Schritt ist
+der erste tatsächliche Schreibzugriff auf die aktuell am System angeschlossene, echte
+Light-Mount-Hardware (siehe `docs/first-write-test-plan.md`). Das ist kein reiner
+Code-/Analyseschritt mehr, sondern eine Aktion mit realer, sofort sichtbarer Wirkung auf
+ein Gerät, das der Nutzer aktiv einsetzt — inklusive des bekannten, community-
+dokumentierten Risikos eines kurzen USB-Verbindungsabriss während der Nutzung
+(siehe `SECURITY.md`, „Bekannter Firmwarefehler“). Der Loop pausiert hier bewusst und
+bittet um explizite Freigabe des Testplans, statt eigenmächtig fortzufahren — auch wenn
+der geplante Test selbst als risikoarm eingestuft ist (bekanntes, flüchtiges,
+byteidentisch reproduziertes Kommando, kein Save-Befehl).
