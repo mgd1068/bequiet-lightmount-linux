@@ -22,18 +22,18 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
 - [ ] PCAP-Parser/Wireshark-Auswertung reproduzierbar machen
 - [ ] IO-Center-Web-Aktionen den HID-Paketen zuordnen
 - [ ] Prüfen ob Web-Capture Per-Key-Kommandos enthält; falls nicht: Capture-Plan für Windows-Client
-- [ ] Mountain- vs. Light-Mount-Pakete strukturell vergleichen
-- [ ] Offline-Tests mit gespeicherten Paketen (ohne Hardware)
+- [x] Mountain- vs. Light-Mount-Pakete strukturell vergleichen (2026-08-18, siehe Phase 0, widerlegt)
+- [x] Offline-Tests mit gespeicherten Paketen (ohne Hardware) (2026-08-18, `tests/test_protocol.cpp`, 20/20 Fixtures)
 
 ## Phase 2 (RGB-MVP)
 
-- [ ] Geräteerkennung/-öffnen
-- [ ] Statische Gesamtfarbe + Off
+- [x] Geräteerkennung/-öffnen (2026-08-18, `report_send`, exakt Interface 2 via sysfs-ermitteltem `hidraw`-Pfad)
+- [ ] Statische Gesamtfarbe + Off (bisher nur Zyklus-Effekt getestet, kein statisches Einzelfarb- oder Off-Kommando bekannt)
 - [ ] Direct Mode
-- [ ] ≥2 einzelne Tasten unabhängig einfärben
+- [ ] ≥2 einzelne Tasten unabhängig einfärben (blockiert: kein Per-Key-Kommando im bisherigen Capture identifiziert)
 - [ ] Vollständige Tastenmatrix/LED-Reihenfolge bestimmen
 - [ ] Obere/seitliche Leisten getrennt adressieren
-- [ ] Reconnect nach USB-Reset
+- [ ] Reconnect nach USB-Reset (noch nicht getestet — beim bisherigen Test kein Reset aufgetreten)
 
 ## Phase 3 (OpenRGB-Integration)
 

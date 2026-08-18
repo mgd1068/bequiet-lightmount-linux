@@ -29,13 +29,35 @@ Rohdaten und Zuordnung: `docs/evidence/usbmon3_decoded_commands.txt`.
 |---|---|
 | **Interface 2 ist der tatsächlich genutzte Konfigurationskanal** — alle 10 beobachteten Kommando/Antwort-Paare laufen über EP4 OUT / EP3 IN (Interrupt), keine Control-Transfer-Aktivität auf EP0 während der Interaktion | `usbmon3_capture.pcapng`, 20 Frames, 2026-08-18 |
 | Kommando-Header-Struktur: `[len u16 LE][0x0002][seq u16 LE][subcmd][flags]…[checksum u16, letzte 2 Byte]`; Sequenzzähler steigt über alle Kommandos hinweg monoton (0x103e…0x1047); Antworten sind immer 6 Byte lang und echoen Sequenz/Subcmd exakt | 10/10 Kommandos, 10/10 Antworten konsistent, `docs/evidence/usbmon3_decoded_commands.txt` |
-| Ein konkretes 41-Byte-Kommando (zweimal byteidentisch, 11,4s auseinander gesendet, `subcmd=0x06`) enthält ab Byte 17 sechs `[Position 0–100][R][G][B]`-Gruppen, die exakt einen Regenbogen-Farbkreis ergeben: 0%=Gelb, 17%=Grün, 33%=Cyan, 50%=Blau, 67%=Magenta, 83%=Rot | Frames 1453 & 3531, `docs/evidence/usbmon3_decoded_commands.txt` |
+| Ein konkretes 41-Byte-Kommando (zweimal byteidentisch, 11,4s auseinander gesendet, `subcmd=0x06`) enthält ab Byte 17 sechs `[Zyklus-Zeitpunkt 0–100%][R][G][B]`-Keyframes, die exakt einen Regenbogen-Farbkreis ergeben: 0%=Gelb, 17%=Grün, 33%=Cyan, 50%=Blau, 67%=Magenta, 83%=Rot — **auf echter Hardware bestätigt als zeitlicher Farbwechsel alle LEDs gleichzeitig (Rainbow-Cycle-Effekt), NICHT als räumlicher Verlauf über die Tasten** (siehe Hardwaretest-Abschnitt unten; ursprüngliche „Positions"-Lesart war falsch) | Frames 1453 & 3531, `docs/evidence/usbmon3_decoded_commands.txt`; Hardware-Korrektur 2026-08-18 |
 | **Prüfsumme identifiziert:** die letzten 2 Byte jedes 64-Byte-Reports (Kommando UND Antwort) sind **CRC16/MODBUS** (Polynom `0x8005`, Init `0xFFFF`, reflektiert ein/aus, kein XOR-Out) über die ersten 62 Byte, Little-Endian angehängt. Exakter Treffer bei 20/20 bekannten Frames (10 Kommandos + 10 Antworten) — bei einer Trefferwahrscheinlichkeit von 1/65536 pro Frame praktisch ausgeschlossen, dass das Zufall ist | `docs/evidence/checksum_verification.py`, 2026-08-18, offline gegen `usbmon3_capture.pcapng` verifiziert |
 
 **Einschränkung:** Dies ist eine Offline-Analyse eines fremden Captures, keine eigene
 Hardwareverifikation. Die Rainbow-Interpretation ist plausibel und durch doppelte,
 identische Übertragung gestützt, gilt aber erst nach eigenem `--dry-run`/Hardwaretest
 (Phase 1/2) als bestätigt im Sinne von `SPEC.md`.
+
+## Erster eigener Hardwaretest (2026-08-18) — bestätigt UND eine Hypothese korrigiert
+
+Durchgeführt nach `docs/first-write-test-plan.md`, mit expliziter Nutzerfreigabe. Werkzeug:
+`report_send /dev/hidraw10 <bekannte 64 Byte aus Frame 1453> --confirm`. Genau ein
+Schreibvorgang, kein Retry, `crc_valid=yes` vor dem Senden per `report_dump` geprüft.
+
+- **Bestätigt:** Das Kommando aus Frame 1453/3531 (Interface 2, EP4 OUT, Subcmd `0x06`,
+  CRC16/MODBUS korrekt) erzeugt auf echter Hardware eine sichtbare Beleuchtungsänderung.
+  Kein USB-Reset, kein Disconnect (`lsusb` und `dmesg` direkt danach geprüft, Gerät blieb
+  durchgehend erreichbar).
+- **Hypothese korrigiert:** Der Nutzer beobachtete live *keinen* räumlichen Verlauf über
+  die Tasten (nicht "links blau, nach rechts wechselnd"), sondern **alle Tasten
+  gleichzeitig, Farbe wechselt über die Zeit** durch den vollen Regenbogen. Die 6
+  `[Wert][R][G][B]`-Gruppen sind also **Keyframes eines zeitlichen Zyklus** (z. B.
+  Position im Animationsloop), nicht Positionen entlang der Tastenreihen. Der frühere
+  Begriff „Farbverlauf/Gradient" in den Iterationen 2–4 ist in diesem Sinn präzisiert;
+  betroffene Doku-Stellen oben entsprechend markiert.
+- Das erste Abnahmekriterium aus `SPEC.md` („Light Mount wird ausschließlich über exakte
+  Geräte-/Interfaceidentität geöffnet") ist damit für einen realen Schreibpfad erstmals
+  belegt. Die Kriterien zu einzeln ansteuerbaren Tasten sind davon **nicht** berührt —
+  dieses Kommando steuert alle LEDs gemeinsam, keine Einzeltasten-Adressierung.
 
 ## Strukturvergleich mit Mountain Everest — Protokollverwandtschaft widerlegt
 

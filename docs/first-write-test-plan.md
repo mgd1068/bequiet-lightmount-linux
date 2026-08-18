@@ -1,8 +1,10 @@
 # Testplan: erster realer Schreibzugriff auf die Light Mount
 
-Status: **Entwurf, noch nicht ausgeführt.** Dieses Dokument beschreibt den geplanten
-ersten `hidraw`-Schreibzugriff auf die angeschlossene Hardware. Es deckt alle zehn
-Regeln aus `SECURITY.md` ab. Ausführung erst nach expliziter Freigabe.
+Status: **Ausgeführt am 2026-08-18, mit expliziter Nutzerfreigabe.** Ergebnis: Kommando
+erfolgreich angewendet, kein USB-Reset, sichtbare Wirkung bestätigt (mit einer
+Korrektur der ursprünglichen Interpretation — siehe `PROTOCOL.md`, Abschnitt „Erster
+eigener Hardwaretest"). Dieses Dokument beschreibt den Plan, wie er vor der Ausführung
+formuliert und eingehalten wurde.
 
 ## Ziel
 
@@ -74,3 +76,20 @@ Dieser Plan erfordert eine explizite Nutzerfreigabe vor Ausführung, da es sich 
 ersten echten Schreibzugriff auf ein aktuell am Nutzersystem angeschlossenes,
 möglicherweise aktiv genutztes Eingabegerät handelt (siehe bekannter Firmwarefehler:
 möglicher kurzer USB-Reset/Verbindungsabriss während der Nutzung).
+
+## Ergebnis (2026-08-18)
+
+- Werkzeug `report_send` gebaut: ohne `--confirm` reiner Dry-Run (kein `open()`), mit
+  `--confirm` genau ein `write()` mit 500ms-Poll-Timeout, keine Retry-Schleife.
+- Ablaufschritte 1–5 wie geplant durchgeführt: `report_dump` bestätigte `crc_valid=yes`
+  vor dem Senden, `hidraw`-Pfad frisch aus sysfs ermittelt (`hidraw10`, Interface 2),
+  Nutzer vor dem Schreiben auf die Tastatur hingewiesen, ein einziger Schreibvorgang.
+- Ergebnis: `write completed`, kein USB-Reset (`lsusb`/`dmesg` direkt danach geprüft,
+  Gerät blieb durchgehend erreichbar). Sichtbare Wirkung vom Nutzer bestätigt.
+- **Abweichung von der Erwartung, kein Fehler:** Die Wirkung war ein zeitlicher
+  Farbzyklus (alle Tasten gleichzeitig, Farbe wechselt über die Zeit durch den
+  Regenbogen), nicht der ursprünglich angenommene räumliche Verlauf über die Tasten.
+  Kein Rückfall/USB-Replug nötig, da kein Fehlerzustand vorlag — nur eine falsche
+  Interpretation der Payload-Semantik, jetzt in `PROTOCOL.md` korrigiert.
+- Schritt 8 (keine Wiederholung mit eigenen/veränderten Bytes) eingehalten — es wurde
+  ausschließlich das exakt bekannte Kommando einmalig gesendet.

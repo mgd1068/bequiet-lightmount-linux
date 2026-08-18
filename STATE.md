@@ -2,7 +2,8 @@
 
 ## Aktuelle Phase
 
-Phase 1 — Sicheres Protokolllabor.
+Phase 2 — RGB-MVP (erster echter Hardwareschreibzugriff erfolgreich, Einzeltasten
+und volle Matrix noch offen).
 
 ## Letzter Stand
 
@@ -174,15 +175,61 @@ Phase 1 — Sicheres Protokolllabor.
   Zustand via USB-Replug, `--dry-run`-Standard für das noch zu bauende Sende-Tool).
   **Noch nicht ausgeführt.**
 
+## Update — Iteration 9 (2026-08-18, ralph-loop) — erster Hardwaretest, mit Nutzerfreigabe
+
+- Nutzer hat den Testplan freigegeben (“ja, mach den Testplan”).
+- `report_send` gebaut (`src/cli/report_send.cpp`, neues CMake-Target): ohne `--confirm`
+  reiner Dry-Run (kein `open()`), mit `--confirm` genau ein `write()` mit
+  500ms-Poll-Timeout (`poll()` auf `POLLOUT`/`POLLERR`/`POLLHUP`), keine Retry-Schleife
+  bei Timeout/Fehler — wie in `docs/first-write-test-plan.md` vorgesehen.
+- `hidraw`-Pfad frisch ermittelt (Interface 2 → `hidraw10`, Weltschreibrechte, kein
+  `sudo` nötig), `report_dump` bestätigte `crc_valid=yes` vor dem Senden.
+- Nutzer vor dem Schreiben gewarnt (möglicher kurzer USB-Abriss laut bekanntem
+  Firmwarefehler), dann genau ein Schreibvorgang mit dem bekannten Rainbow-Kommando
+  (Frame 1453/3531) ausgeführt.
+- **Ergebnis: Erfolg, kein USB-Reset** (`lsusb`/`dmesg` direkt danach geprüft). Nutzer
+  bestätigte sichtbare Wirkung — allerdings **anders als angenommen**: kein räumlicher
+  Verlauf über die Tasten, sondern ein zeitlicher Farbzyklus (alle LEDs gleichzeitig,
+  Farbe wechselt durch den Regenbogen). Die „Position”-Interpretation der 6 Keyframe-
+  Gruppen war falsch (räumlich statt zeitlich) — jetzt in `PROTOCOL.md` und
+  `docs/first-write-test-plan.md` korrigiert dokumentiert, kein Fehlerzustand am Gerät.
+- Damit ist das erste `SPEC.md`-Abnahmekriterium („Light Mount wird ausschließlich über
+  exakte Geräte-/Interfaceidentität geöffnet”) für einen echten Schreibpfad erstmals
+  belegt. Kriterien zu Einzeltasten/voller Matrix sind davon nicht erfüllt — dieses
+  Kommando steuert alle LEDs gemeinsam.
+
+## Nächster konkreter Schritt
+
+1. Da die „Position”-Hypothese jetzt als zeitlich (nicht räumlich) bestätigt ist: prüfen,
+   ob eines der noch unentschlüsselten Kommandos (z. B. Frame 2341/3109, 29 Byte) eher zu
+   einem STATISCHEN Einzelfarb- oder Zweifarb-Kommando passt als zu einem weiteren Zyklus
+   — mit der jetzt korrigierten Erwartungshaltung (zeitlich vs. räumlich) neu bewerten,
+   bevor ein weiterer Hardwaretest vorgeschlagen wird.
+2. Für den nächsten Hardwaretest (mindestens zwei einzelne Tasten unabhängig einfärben,
+   SPEC.md-Kriterium) fehlt noch ein bekanntes Kommando für Einzeltasten-Adressierung —
+   im bisherigen Capture nicht enthalten (siehe offene Frage in `PROTOCOL.md`: IO Center
+   Web deckt evtl. keine Per-Key-Beleuchtung ab). Ohne ein solches Kommando ist ein
+   weiterer Hardwaretest in diese Richtung nicht sinnvoll planbar — als offene Frage
+   markiert, nicht durch Raten zu lösen.
+3. Alternativ: mit dem jetzt verifizierten Schreibpfad (`report_send`) und bereits
+   bekannten Kommandos (z. B. Frame 2747, 18 Byte) einen weiteren, ähnlich risikoarmen
+   Hardwaretest vorschlagen, um mehr über unentschlüsselte Subcmd-Familien zu lernen —
+   erfordert erneut kurze Nutzerfreigabe vor Ausführung (gleiches Muster wie hier).
+
+## Hypothese / erwartetes Ergebnis / Risiko / Rückfall (für den nächsten Schritt)
+
+- **Hypothese:** Frame 2747 (18 Byte, Subcmd `0x06`, Payload beginnt `04 00 64 0a 01 00
+  ff 00 ff 37`) ist ebenfalls ein Vollflächen-/Zyklus-Effekt (kein Einzeltasten-Kommando),
+  da bisher keines der Capture-Kommandos Anzeichen von Tastenzahl-Wiederholung zeigt.
+- **Erwartetes Ergebnis:** Falls getestet, vermutlich eine weitere sichtbare, aber
+  gleichmäßige (nicht Tasten-individuelle) Lichtänderung.
+- **Sicherheitsrisiko:** identisch zum bereits durchgeführten Test (bekanntes,
+  byteidentisches Kommando, kein Save-Befehl) — bei erneuter Nutzerfreigabe gering.
+- **Rückfall:** wie in `docs/first-write-test-plan.md` — USB-Replug, falls unerwarteter
+  Fehlerzustand (bisher nie eingetreten).
+
 ## Blocker
 
-**Echter externer Blocker laut Master-Prompt-Stopbedingung 2:** Der nächste Schritt ist
-der erste tatsächliche Schreibzugriff auf die aktuell am System angeschlossene, echte
-Light-Mount-Hardware (siehe `docs/first-write-test-plan.md`). Das ist kein reiner
-Code-/Analyseschritt mehr, sondern eine Aktion mit realer, sofort sichtbarer Wirkung auf
-ein Gerät, das der Nutzer aktiv einsetzt — inklusive des bekannten, community-
-dokumentierten Risikos eines kurzen USB-Verbindungsabriss während der Nutzung
-(siehe `SECURITY.md`, „Bekannter Firmwarefehler“). Der Loop pausiert hier bewusst und
-bittet um explizite Freigabe des Testplans, statt eigenmächtig fortzufahren — auch wenn
-der geplante Test selbst als risikoarm eingestuft ist (bekanntes, flüchtiges,
-byteidentisch reproduziertes Kommando, kein Save-Befehl).
+Keiner. Nächster Hardwaretest würde erneut kurze Nutzerfreigabe brauchen (gleiches
+niedrig-riskantes Muster wie hier), ist aber kein externer Blocker im Sinne der
+Stopbedingung — der Loop kann mit Analyse-/Code-Schritten ohne Rückfrage weiterlaufen.
