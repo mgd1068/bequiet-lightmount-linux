@@ -382,16 +382,27 @@ und volle Matrix noch offen).
   Python-Skript gebaute, hardwareverifizierte Report.
 - Alle 4 Unit-Tests weiterhin grün. Kein Gerätezugriff in dieser Iteration.
 
+## Update — Iteration 14 (2026-08-18) — Per-Key-Frage geklärt (negativ)
+
+- Nutzer hat IO Center Web direkt geprüft: nur vorgeformte Effekte/„Figuren" mit
+  Animation (Matrix, Tornado, ...), keine Einzeltasten-Konfiguration. Offene Frage aus
+  `PROTOCOL.md` damit bestätigt (nicht mehr nur Vermutung aus Capture-Lücke).
+- Namensparallele zu Mountain Everest (Matrix, Tornado) als unterstützende Beobachtung
+  für gemeinsame Produktherkunft festgehalten, ohne die bereits widerlegte
+  Byte-Protokoll-Verwandtschaft neu zu behaupten.
+
 ## Nächster konkreter Schritt
 
-Nutzer möchte als Nächstes klären, ob/wie einzelne Tasten (Per-Key) ansteuerbar sind —
-noch offen, da bisher kein Per-Key-Kommando in irgendeinem Capture beobachtet wurde.
-Nächster Schritt: in IO Center Web (Browser) gezielt prüfen, ob überhaupt eine
-Per-Key-Farbwahl-UI existiert. Falls ja: gezielter Capture wie in Iteration 11 (einzelne
-Taste einfärben, mitschneiden, mit `report_dump`/neuen `report_build`-Tests analysieren).
-Falls nein: offene Frage aus `PROTOCOL.md` bestätigen (IO Center Web deckt keine
-Per-Key-Beleuchtung ab) und Windows-Client-Capture-Plan aus dem Master-Prompt erwägen
-(deutlich größerer Schritt, VM mit USB-Passthrough — nicht ungefragt beginnen).
+Per-Key-Adressierung ist über IO Center Web nicht erreichbar. Optionen, noch nicht
+entschieden:
+1. Windows-Client-Capture-Plan (VM + USB-Passthrough) ausarbeiten — großer Schritt,
+   siehe Master-Prompt Phase 1, nicht ohne Rücksprache beginnen.
+2. Ohne Per-Key weiterarbeiten: weitere bekannte Effekte (Matrix, Tornado, ...) gezielt
+   capturen wie in Iteration 11 — vertieft das Verständnis von Subcmd `0x06` und klärt
+   nebenbei evtl. die offene Frage zu getrennten Zonen (obere/seitliche Leisten),
+   ohne den großen VM-Aufwand.
+3. Mit dem jetzt belastbar verstandenen Kernprotokoll (Farbe setzen, Sequenznummer-
+   Regel bekannt) Richtung Phase 3 (OpenRGB-Controller-Grundstruktur) weitergehen.
 
 ## Blocker
 

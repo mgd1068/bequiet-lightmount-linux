@@ -24,7 +24,12 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
       `report_dump`/`report_send` kombinierbar)
 - [ ] PCAP-Parser/Wireshark-Auswertung reproduzierbar machen
 - [ ] IO-Center-Web-Aktionen den HID-Paketen zuordnen
-- [ ] Prüfen ob Web-Capture Per-Key-Kommandos enthält; falls nicht: Capture-Plan für Windows-Client
+- [x] Prüfen ob Web-Capture Per-Key-Kommandos enthält (2026-08-18: bestätigt NEIN — IO
+      Center Web bietet nur vorgeformte Effekte, keine Einzeltasten-UI, Nutzer hat UI
+      direkt geprüft; siehe `PROTOCOL.md`)
+- [ ] Windows-Client-Capture-Plan (VM + USB-Passthrough) für Per-Key-Adressierung
+      ausarbeiten — großer Schritt, nicht ohne Rücksprache beginnen (Master-Prompt
+      Phase 1)
 - [x] Mountain- vs. Light-Mount-Pakete strukturell vergleichen (2026-08-18, siehe Phase 0, widerlegt)
 - [x] Offline-Tests mit gespeicherten Paketen (ohne Hardware) (2026-08-18, `tests/test_protocol.cpp`, 20/20 Fixtures)
 

@@ -147,11 +147,17 @@ Byte-Protokoll-Vorlage.
   sich grundlegend. Als Referenzcode für die Phase-3-OpenRGB-Integration (Klassenform,
   `RGBController`-Anbindung, Farbverlauf-Aufbau) bleibt der Mountain-Controller trotzdem
   nützlich — nur eben nicht als Byte-Protokoll-Vorlage.
-- IO Center Web deckt möglicherweise keine Per-Key-Beleuchtung ab (nur der Windows-Client) —
-  der usbmon3-Capture zeigt in den ~20s beobachteter Interaktion keine Kommandos, die nach
-  Einzeltasten-Adressierung aussehen (keine 60+ Byte langen, sich klar in Tastenanzahl
-  wiederholenden Muster) — schwacher, indirekter Hinweis, keine sichere Widerlegung, da
-  der Capture nur einen kleinen Ausschnitt der UI abdeckt.
+- ~~IO Center Web deckt möglicherweise keine Per-Key-Beleuchtung ab~~ — **bestätigt**
+  (2026-08-18, Nutzer hat die UI direkt geprüft): IO Center Web bietet ausschließlich
+  vorgeformte Effekte/„Figuren" mit Animation (u. a. **Matrix**, **Tornado**) an, keine
+  Einzeltasten-Konfiguration. Bemerkenswert: „Matrix" und „Tornado" sind exakt dieselben
+  Effektnamen wie im Mountain-Everest-Referenzcode (`MOUNTAIN_KEYBOARD_MATRIX_MSG`,
+  `MOUNTAIN_KEYBOARD_TORNADO_MSG`) — stützt die gemeinsame Produktherkunft (be quiet! hat
+  Mountain übernommen) auf Konzept-/Namensebene, obwohl das Byte-Protokoll nachweislich
+  unterschiedlich ist (siehe Abschnitt „Strukturvergleich mit Mountain Everest"). Für
+  Einzeltasten-Adressierung wäre laut Master-Prompt nur der Windows-Client eine mögliche
+  Quelle (VM mit USB-Passthrough, deutlich größerer Aufwand) — nicht ohne Rücksprache
+  begonnen, siehe `BACKLOG.md`.
 
 ## Eigener Capture: RGB-Kodierung bestätigt (2026-08-18)
 
