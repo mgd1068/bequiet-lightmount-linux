@@ -5,10 +5,11 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
 
 ## Phase 0
 
-- [ ] System/Kernel/OpenRGB-Version/USB-Topologie erfassen
-- [ ] sysfs-HID-Report-Deskriptoren der vier Interfaces sichern
+- [x] System/Kernel/OpenRGB-Version/USB-Topologie erfassen (2026-08-18)
+- [x] sysfs-HID-Report-Deskriptoren der vier Interfaces sichern (2026-08-18, `docs/evidence/`)
 - [ ] OpenRGB Issue #4950 auf neue Aktivität prüfen, Capture-Anhang aus Originalquelle laden
 - [ ] Baseline dokumentieren: aktuelles Profil, sichtbare Beleuchtung, Verhalten nach USB-Reconnect
+- [ ] Interface-3-Report-Struktur (Vendor Page 0x59, 6 Report-IDs) genauer aufschlüsseln
 
 ## Phase 1
 

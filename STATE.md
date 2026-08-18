@@ -6,39 +6,54 @@ Phase 0 — Bestand und Reproduzierbarkeit.
 
 ## Letzter Stand
 
-2026-08-18: Repository angelegt (privat), Pflichtdokumentation (`README.md`, `LICENSE`,
-`SPEC.md`, `ARCHITECTURE.md`, `PROTOCOL.md`, `SECURITY.md`, `STATE.md`, `BACKLOG.md`,
-`DECISIONS.md`, `docs/research-sources.md`) initial befüllt aus dem Master-Prompt
-(`LIGHTMOUNT_AGENT_LOOP_PROMPT.md`, nicht Teil dieses Repos). Noch keine Hardware
-angefasst, noch kein Code, noch kein Capture heruntergeladen/analysiert.
+2026-08-18, Iteration 1 (ralph-loop, max. 30, Stop-Promise `LIGHTMOUNT_LOOP_STOP`):
+
+- Repository angelegt (privat, `github.com/mgd1068/bequiet-lightmount-linux`),
+  Pflichtdokumentation initial befüllt.
+- System-/USB-Bestand read-only erfasst: Kubuntu 26.04, Kernel 7.0.0-29-generic,
+  OpenRGB `0.9+git20251009+ds-1` bereits als Debian-Paket installiert. Light Mount
+  angeschlossen: Bus 001 Device 060, USB 1.1 Full Speed, 4 HID-Interfaces, alle an
+  Kernel-`usbhid` gebunden.
+- `lsusb -v` und sysfs-`report_descriptor` aller vier Interfaces gesichert
+  (`docs/evidence/`, committet — reine Geräte-Deskriptoren, keine Traffic-Capture,
+  keine Tastendrücke). Ergebnisse siehe `PROTOCOL.md`: Interface 2 als wahrscheinlichster
+  Vendor-Konfigurationskanal bestätigt (Endpoints **und** Report-Deskriptor stimmen mit
+  Ausgangshypothese überein), Interface 3 als zweiter, umfangreicherer Vendor-Kanal via
+  Feature-Reports neu entdeckt (stand vorher nicht im Ausgangsstand), Interface 1 enthält
+  vermutlich das Medienrad als generische Maus-Collection, Interface 0 ist reiner
+  Boot-Keyboard-Traffic.
+- Kein `hidraw`-Gerät geöffnet oder gelesen — ausschließlich `lsusb` und sysfs-Attribute.
 
 ## Nächster konkreter Schritt
 
-1. System/Umgebung read-only erfassen: Kernel, installierte OpenRGB-Version (falls
-   vorhanden), USB-Topologie (`lsusb -t`), ob die Light Mount aktuell angeschlossen ist.
-2. `lsusb -v` für `373f:0002` (nur lesen, keine `hidraw`-Zugriffe) und sysfs-Deskriptoren
-   für die vier HID-Interfaces sichern.
-3. OpenRGB Issue #4950 auf neue Aktivität/Code prüfen, vorhandenen Capture-Anhang aus der
-   Originalquelle laden, offline (nicht committet) ablegen unter `captures-private/`.
-4. Aktuellen OpenRGB-Quellstand holen (lokaler Clone/Submodule-Entscheidung noch offen,
-   siehe `DECISIONS.md`), Mountain-Everest-Controller lesen.
-5. Erste überprüfbare Protokollhypothese formulieren, sicheres Offline-Testgerüst (Dry-Run
-   CLI/Testbibliothek) beginnen.
+1. OpenRGB Issue #4950 auf neue Aktivität/Code prüfen (WebFetch), vorhandenen
+   Capture-Anhang aus der Originalquelle laden, offline unter `captures-private/`
+   ablegen (git-ignoriert, nicht committen).
+2. Lokal installierten OpenRGB-Quellstand bzw. GitLab-Quelle des
+   Mountain-Everest-Controllers lesen und strukturell mit den hier gesicherten
+   Light-Mount-Deskriptoren vergleichen (Report-ID vorhanden/fehlend, Byte-Layout).
+3. Anhand des Web-Captures prüfen, ob Interface-2- oder Interface-3-artige 64-Byte-Reports
+   vorkommen und welche Aktionen (Farbe, Helligkeit, Profil) abgedeckt sind.
+4. Erste überprüfbare Protokollhypothese für ein konkretes Kommando (z. B. "LED aus")
+   formulieren und das sichere Offline-Testgerüst (Dry-Run-CLI, Sprache: C++ zur
+   OpenRGB-Kompatibilität, siehe `DECISIONS.md`) beginnen — weiterhin ohne Schreibzugriff
+   auf `hidraw`.
 
 ## Hypothese / erwartetes Ergebnis / Risiko / Rückfall (für den nächsten Schritt)
 
-- **Hypothese:** Interface 2 (laut Ausgangsdeskriptor `0x83`/`0x04`) ist der von
-  IO Center Web genutzte Konfigurationskanal.
-- **Erwartetes Ergebnis:** sysfs-Deskriptoren bestätigen Interface-Anzahl, Endpoints und
-  Usage Page, ohne dass ein Gerätezugriff nötig ist.
-- **Sicherheitsrisiko:** keins bei reinem sysfs-/`lsusb`-Lesen; **kein** `hidraw`-Zugriff
-  in diesem Schritt.
-- **Rückfall:** falls Gerät nicht angeschlossen ist — Schritt anhand des im Prompt
-  dokumentierten Ausgangsdeskriptors vorbereiten, echten Test verschieben und als
-  externen Blocker (fehlender Hardwarezugriff) in diesem Dokument vermerken.
+- **Hypothese:** Der vorhandene usbmon/Wireshark-Capture aus Issue #4950 enthält 64-Byte-
+  Reports, die sich Interface 2 oder Interface 3 zuordnen lassen (Paketlänge, Feature- vs.
+  Interrupt-Transfer erkennbar in usbmon-URB-Metadaten).
+- **Erwartetes Ergebnis:** Klarheit, welches der beiden Vendor-Interfaces IO Center Web
+  tatsächlich für Farbbefehle nutzt, und ob Per-Key-Kommandos im Capture überhaupt
+  vorkommen.
+- **Sicherheitsrisiko:** keins — reine Offline-Analyse einer bereits vorhandenen,
+  fremden Aufzeichnung, kein Gerätezugriff.
+- **Rückfall:** falls der Capture-Anhang nicht mehr abrufbar oder keine Farbaktion
+  enthalten ist — als Blocker dokumentieren und mit Interface-2-Struktur-Vergleich zum
+  Mountain-Controller allein weiterarbeiten, bevor ein eigener (Windows-VM-)Capture-Plan
+  nötig wird.
 
 ## Blocker
 
-Keiner. Warte auf Entscheidung des Nutzers, ob/wie der 30-Iterationen-Loop jetzt
-gestartet werden soll (manuell in dieser Session vs. `/ralph-loop`-Plugin, siehe
-Master-Prompt, Abschnitt "Aufrufhinweise").
+Keiner.
