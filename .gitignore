@@ -2,3 +2,4 @@ captures-private/
 *.pcap
 *.pcapng
 build/
+.claude/
