@@ -2,6 +2,26 @@
 
 Kurze Architecture Decision Records. Neueste zuerst.
 
+## 2026-08-18 — Coding-Stil: C++, aber möglichst funktional/C-artig statt OOP
+
+**Kontext:** Nutzerwunsch (explizit): das Projekt soll für ihn leicht lesbar bleiben.
+Sprache ist C++ zur OpenRGB-Kompatibilität (siehe Eintrag unten), aber OOP soll nicht
+der Standardstil sein.
+
+**Entscheidung:**
+- Standardmäßig freie Funktionen, plain structs (POD, keine Kapselung um ihrer selbst
+  willen), klare Datenflüsse statt Klassenhierarchien.
+- Vererbung/Polymorphie/Klassen nur dort, wo sie einen klaren, konkreten Vorteil bringen
+  — insbesondere wo OpenRGBs eigene API es verlangt: Controller müssen von `RGBController`
+  erben, Detectoren folgen OpenRGBs Registrierungsmuster. Dieser API-Rand ist unvermeidbares
+  OOP, alles darunter (Protokoll-Encoding, HID-I/O, Report-Aufbau, CLI/Testgerüst aus
+  Phase 1) wird C-artig gehalten.
+- Keine zusätzlichen Abstraktionsschichten, Interfaces oder Factory-Patterns ohne
+  konkreten, aktuell bestehenden Bedarf.
+
+**Konsequenz:** Bei jeder Iteration, die Code schreibt (ab Phase 1), gilt dieser Stil als
+Review-Kriterium — vor dem Commit prüfen, ob unnötige Klassen/Vererbung eingeschlichen sind.
+
 ## 2026-08-18 — Projektstart, GPL-2.0-or-later, OpenRGB als Zielplattform
 
 **Kontext:** Neues Projekt zur Linux-Steuerung der be quiet! Light Mount. Auftrag

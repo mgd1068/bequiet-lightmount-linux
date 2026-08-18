@@ -37,6 +37,13 @@ Siehe `STATE.md` für den aktuellen Stand. Kurzfassung:
 - **Phase 5** — Linux-Automatisierung (SDK-Client, D-Bus/Socket, Notification-Bridge)
 - **Phase 6** — Optionale Oberfläche und Paketierung (Debian-Paket, systemd-User-Service)
 
+## Coding-Stil
+
+C++ (für OpenRGB-Kompatibilität, siehe `DECISIONS.md`), aber standardmäßig funktional/
+C-artig: freie Funktionen und plain structs statt Klassenhierarchien. Klassen/Vererbung
+nur, wo OpenRGBs eigene API es verlangt (`RGBController`-Ableitung, Detector-Registrierung)
+oder ein klarer, konkreter Vorteil besteht — nicht als Default.
+
 ## Referenzcode
 
 Mountain Everest gilt als wahrscheinlichste Protokollverwandtschaft (be quiet! hat
