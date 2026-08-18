@@ -15,7 +15,8 @@ gilt als belegt, ohne dass die Quelle (Deskriptor, Capture, realer Test) genannt
 | Interface 2 Report Descriptor: Usage Page **Vendor Defined (0xFF00)**, Usage 0x01, Collection Application, **kein Report-ID-Byte**, Input/Output je 64 Byte (Usage 0x02/0x03), zusätzlich ein 64-Byte **Feature Report** (Usage 0xFF00, via Control Transfer) | `docs/evidence/report_descriptor_if2.hex`, sysfs `report_descriptor`, 2026-08-18 |
 | Interface 0: Standard USB-HID-**Boot-Keyboard**-Deskriptor (Usage Page Generic Desktop/Keyboard, Modifier-Byte, 3 LED-Output-Bits, 6-Byte-Key-Array) — normaler Tastatur-Traffic, nicht der Konfigurationskanal | `docs/evidence/report_descriptor_if0.hex`, sysfs, 2026-08-18 |
 | Interface 1: Composite-Deskriptor mit mehreren Report-IDs: ID 1 = Keyboard (Modifier + 160-Bit-NKRO-Bitmap), ID 3/4 = Consumer-Control-Seite (Medientasten, u.a. bis Usage 0x023c), ID 0x0a = eigene Collection mit Buttons + Wheel/X/Y (Generic Desktop, Usage 0x38/0x30/0x31) | `docs/evidence/report_descriptor_if1.hex`, sysfs, 2026-08-18 |
-| Interface 3: Vendor Usage Page `0x59`, sechs Report-IDs (1–6), überwiegend **Feature Reports** (Control Transfer, kein passender Output-Endpoint — Interface hat laut `lsusb -v` nur einen IN-Interrupt-EP `0x85`/4B); Report ID 3 enthält 128× wiederkehrende Usage-Werte `0x51 0x52 0x53 0x54` gefolgt von einem 32-Byte-Feature-Block | `docs/evidence/report_descriptor_if3.hex`, sysfs, 2026-08-18 |
+| Interface 3: Vendor Usage Page `0x59`, sechs Report-IDs (1–6), überwiegend **Feature Reports** (Control Transfer, kein passender Output-Endpoint — Interface hat laut `lsusb -v` nur einen IN-Interrupt-EP `0x85`/4B) | `docs/evidence/report_descriptor_if3.hex`, sysfs, 2026-08-18 |
+| **Korrektur (2026-08-18):** die wiederkehrenden Usage-Werte `0x51 0x52 0x53 0x54` gehören zu **Report ID 4** (nicht 3, frühere Notiz war falsch) und wiederholen sich **8×** (32 Usage-Tags gesamt, nicht 128), gefolgt von einem **32-Byte**-Feature-Segment (Report Count 32, Report Size 8). Report ID 4 enthält davor zusätzlich ein 2-Byte- (Usage `0x03`/`0x55`, Logical Max 8) und ein 16-Byte-Segment (Usage `0x21`, 8×16-Bit) — insgesamt 51 Byte Feature-Daten (inkl. Report-ID-Byte) | erneute manuelle Dekodierung von `report_descriptor_if3.hex`, 2026-08-18 |
 | Jedes Interface hat ein eigenes `hidraw`-Device: if0→hidraw8, if1→hidraw9, if2→hidraw10, if3→hidraw11 (Nummern hostabhängig, nicht stabil) | sysfs `.../hidraw/`, 2026-08-18, **nicht geöffnet**, nur Pfad gelesen |
 
 ## Bestätigt durch Traffic-Capture (usbmon3, OpenRGB Issue #4950)
@@ -36,6 +37,25 @@ Rohdaten und Zuordnung: `docs/evidence/usbmon3_decoded_commands.txt`.
 Hardwareverifikation. Die Rainbow-Interpretation ist plausibel und durch doppelte,
 identische Übertragung gestützt, gilt aber erst nach eigenem `--dry-run`/Hardwaretest
 (Phase 1/2) als bestätigt im Sinne von `SPEC.md`.
+
+## Interface 3 als Per-Key-Kandidat (2026-08-18, rein statisch, kein Test)
+
+Da Interface 3 in **keinem** bisherigen Capture (weder fremd noch eigen) jemals Traffic
+zeigte — IO Center Web nutzt es nie — bleibt nur die erneute Deskriptor-Analyse (siehe
+Korrektur oben). Report ID 4 (51 Byte Feature-Daten: 2+16+32 Byte in drei Segmenten) ist
+ein plausibler Kandidat für einen Per-Key-Kanal: 32 Byte reichen aber bei weitem nicht
+für 168 LEDs × 3 Byte RGB (504 Byte) — ein echtes Per-Key-Update müsste also (falls
+dieser Kanal überhaupt dafür zuständig ist) über mehrere aufeinanderfolgende
+`SET_FEATURE`-Aufrufe verteilt werden, ähnlich Mountains `SendColorPacketCmd`-Chunking.
+**Reine Hypothese, nicht verifiziert.**
+
+**Bewusst nicht getestet:** Anders als bei allen bisherigen Hardwaretests gibt es hier
+**kein einziges bekanntes reales Kommando** als Ausgangspunkt — ein Schreibversuch wäre
+das erste komplett unbekannte Kommando dieses Projekts (`SECURITY.md` Regel 10 verlangt
+hier besondere Vorsicht). Nächster sinnvoller, risikoarmer Schritt wäre ein reiner
+**lesender** `GET_FEATURE`-Aufruf (kein Schreiben, keine Seiteneffekte) auf die sechs
+Report-IDs, um den aktuellen Gerätezustand zu beobachten, bevor überhaupt über einen
+Schreibversuch nachgedacht wird.
 
 ## Erster eigener Hardwaretest (2026-08-18) — bestätigt UND eine Hypothese korrigiert
 
