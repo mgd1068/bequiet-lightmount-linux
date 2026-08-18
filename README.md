@@ -30,6 +30,19 @@ fasst keine Hardware an:
 ./build/report_dump "290002003e100600030064320207ff000000ffff001100ff002100ffff320000ff43ff00ff53ff0000640000000000000000000000000000000000000000f3d0"
 ```
 
+`report_build` baut einen Report aus einzelnen Feldern (inkl. CRC) und gibt ihn als
+Hex-String auf stdout aus — kombinierbar per Pipe mit `report_dump`/`report_send`.
+`--length` muss explizit angegeben werden (keine bestätigte Ableitungsformel aus dem
+Payload, siehe `PROTOCOL.md`):
+
+```
+./build/report_build --subcmd 06 --seq 10ad --session 01 --length 0f --payload 000064320000ff00
+```
+
+`report_send <hidraw-Pfad> <Hex>` schreibt einen Report tatsächlich ans Gerät — nur mit
+explizitem `--confirm`-Flag, sonst reiner Dry-Run (kein `open()`). Siehe
+`docs/first-write-test-plan.md` für das Vorgehen bei echten Hardwaretests.
+
 ## Zielumfang
 
 1. Jede Tasten-LED einzeln adressieren

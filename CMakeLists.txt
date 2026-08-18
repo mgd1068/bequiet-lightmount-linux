@@ -22,6 +22,9 @@ target_link_libraries(report_dump PRIVATE protocol)
 add_executable(report_send src/cli/report_send.cpp)
 target_link_libraries(report_send PRIVATE protocol)
 
+add_executable(report_build src/cli/report_build.cpp)
+target_link_libraries(report_build PRIVATE protocol)
+
 enable_testing()
 add_executable(test_protocol tests/test_protocol.cpp)
 target_link_libraries(test_protocol PRIVATE protocol)

@@ -38,6 +38,7 @@ void print_report(const std::array<uint8_t, kReportSize>& raw) {
     bool crc_ok = report_crc_valid(raw);
 
     std::printf("length   = %u (0x%04x)\n", report.length, report.length);
+    std::printf("session  = 0x%04x\n", report.session);
     std::printf("seq      = %u (0x%04x)\n", report.seq, report.seq);
     std::printf("subcmd   = 0x%02x\n", report.subcmd);
     std::printf("flags    = 0x%02x\n", report.flags);

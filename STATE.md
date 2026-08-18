@@ -362,6 +362,37 @@ und volle Matrix noch offen).
    per Python-Einweg-Skript gemacht), oder mit der OpenRGB-Controller-Grundstruktur
    (Phase 3) beginnen, da das Kernprotokoll (Farbe setzen) jetzt belastbar verstanden ist.
 
+## Update — Iteration 13 (2026-08-18, ralph-loop) — CLI-Tooling ausgebaut
+
+- Auf Nutzerwunsch: `report_build` ergänzt (`src/cli/report_build.cpp`, neues
+  CMake-Target) — baut einen Report aus einzelnen Feldern (`--subcmd --seq --session
+  --flags --length --payload`) über `build_report()`, druckt Hex auf stdout, druckt
+  Zusammenfassung auf stderr (sauber pipe-fähig mit `report_dump`/`report_send`).
+  `--length` bewusst ohne Default/Ableitungsformel — muss explizit angegeben werden
+  (keine bestätigte Formel, siehe `PROTOCOL.md`).
+- Dabei sauberer gelöst als ursprünglich geplant: `session` (Byte 2-3) ist jetzt ein
+  echtes Feld in `Interface2Report` (`report.h`/`report.cpp`), Default `0x0002` (passend
+  zu den bekannten Fixtures) — statt es nachträglich im CLI-Tool zu patchen. Kein
+  Verhaltensunterschied für bestehende Fixtures (alle 20 haben `session=0x0002`,
+  Parse→Build-Rundlauf-Test weiterhin grün).
+- `report_dump`/`report_send` um Session-Anzeige ergänzt.
+- Funktional gegen den real erfolgreichen Grün-Report aus Iteration 12 verifiziert:
+  `report_build --subcmd 06 --seq 10ad --session 01 --length 0f --payload
+  000064320000ff00` erzeugt exakt denselben Hex (inkl. CRC) wie der zuvor per
+  Python-Skript gebaute, hardwareverifizierte Report.
+- Alle 4 Unit-Tests weiterhin grün. Kein Gerätezugriff in dieser Iteration.
+
+## Nächster konkreter Schritt
+
+Nutzer möchte als Nächstes klären, ob/wie einzelne Tasten (Per-Key) ansteuerbar sind —
+noch offen, da bisher kein Per-Key-Kommando in irgendeinem Capture beobachtet wurde.
+Nächster Schritt: in IO Center Web (Browser) gezielt prüfen, ob überhaupt eine
+Per-Key-Farbwahl-UI existiert. Falls ja: gezielter Capture wie in Iteration 11 (einzelne
+Taste einfärben, mitschneiden, mit `report_dump`/neuen `report_build`-Tests analysieren).
+Falls nein: offene Frage aus `PROTOCOL.md` bestätigen (IO Center Web deckt keine
+Per-Key-Beleuchtung ab) und Windows-Client-Capture-Plan aus dem Master-Prompt erwägen
+(deutlich größerer Schritt, VM mit USB-Passthrough — nicht ungefragt beginnen).
+
 ## Blocker
 
 Keiner für Analyse-/Doku-/Code-Schritte. Weitere Hardwaretests weiterhin nur mit kurzer

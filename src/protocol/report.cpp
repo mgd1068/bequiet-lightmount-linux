@@ -5,6 +5,7 @@
 Interface2Report parse_report(const std::array<uint8_t, kReportSize>& raw) {
     Interface2Report report;
     report.length = static_cast<uint16_t>(raw[0] | (raw[1] << 8));
+    report.session = static_cast<uint16_t>(raw[2] | (raw[3] << 8));
     report.seq = static_cast<uint16_t>(raw[4] | (raw[5] << 8));
     report.subcmd = raw[6];
     report.flags = raw[7];
@@ -18,10 +19,8 @@ std::array<uint8_t, kReportSize> build_report(const Interface2Report& report) {
     std::array<uint8_t, kReportSize> raw{};
     raw[0] = static_cast<uint8_t>(report.length & 0xFF);
     raw[1] = static_cast<uint8_t>(report.length >> 8);
-    raw[2] = 0x02;  // session/connection id, LE: reproduces the known usbmon3 fixtures
-                    // (their session used 0x0002) - NOT a universal protocol constant,
-                    // see report.h and PROTOCOL.md.
-    raw[3] = 0x00;
+    raw[2] = static_cast<uint8_t>(report.session & 0xFF);
+    raw[3] = static_cast<uint8_t>(report.session >> 8);
     raw[4] = static_cast<uint8_t>(report.seq & 0xFF);
     raw[5] = static_cast<uint8_t>(report.seq >> 8);
     raw[6] = report.subcmd;

@@ -40,8 +40,8 @@ std::optional<std::array<uint8_t, kReportSize>> parse_hex(const std::string& hex
 
 void print_summary(const std::array<uint8_t, kReportSize>& raw) {
     Interface2Report report = parse_report(raw);
-    std::printf("length=%u seq=0x%04x subcmd=0x%02x flags=0x%02x crc_valid=%s\n",
-                report.length, report.seq, report.subcmd, report.flags,
+    std::printf("length=%u session=0x%04x seq=0x%04x subcmd=0x%02x flags=0x%02x crc_valid=%s\n",
+                report.length, report.session, report.seq, report.subcmd, report.flags,
                 report_crc_valid(raw) ? "yes" : "NO");
 }
 
