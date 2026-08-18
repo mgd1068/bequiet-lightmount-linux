@@ -226,6 +226,11 @@ Center Web nicht freigeschaltet. Das konkrete Wire-Kommando dafür ist weiterhin
 nie sendet) — die Analyse liefert das Ziel-Schema (welche 168 LEDs), nicht das Protokoll
 dafür.
 
+**LED-Index-Tabelle mit Pixel-Koordinaten zusammengeführt:** `docs/evidence/light_mount_led_layout_iso.json`
+(eigene Zusammenführung, kein Vendor-Original, siehe `docs/evidence/led-layout-merge.md`)
+— 166 Einträge, 111 davon mit UI-Pixel-Geometrie. Grundlage für ein künftiges
+OpenRGB-Layout (Phase 3).
+
 ## Bekannter Firmwarefehler
 
 Ungezielter Lesezugriff auf ein herstellerspezifisches `hidraw`-Interface kann die

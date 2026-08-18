@@ -459,6 +459,28 @@ Größere Wahlmöglichkeiten, noch nicht entschieden:
 3. Mit dem jetzt sehr detaillierten Verständnis (Effekte, LED-Zählung, Sequenznummer-
    Regel) Richtung Phase 3 (OpenRGB-Controller-Grundgerüst) weitergehen.
 
+## Update — Iteration 17 (2026-08-18) — LED-Tabelle mit Koordinaten verknüpft
+
+- LED-Index-Tabelle (`light_mount_leds_mapping.json`, ISO-Variante) mit den
+  Pixel-Koordinaten aus `light_mount_main_iso.json` per Name zusammengeführt.
+  Datei per Inhalt als ISO-Variante identifiziert (enthält `UK`/`DE`/`FR`-Layouts und
+  die ISO-spezifischen Tasten `Key_NonUsTilde`/`Key_NonUsBackslash`, nicht die
+  US-only-ANSI-Variante).
+- Ergebnis: 166 Einträge, 111 mit Geometrie (Einzeltasten), 55 ohne (die
+  Top/Left/Right-Leisten-LEDs — deren Geometrie steckt vermutlich in separaten,
+  noch nicht ausgewerteten `boundingRect`-Dateien aus demselben Vendor-Material).
+  Datei: `docs/evidence/light_mount_led_layout_iso.json`, dokumentiert in
+  `docs/evidence/led-layout-merge.md`. Eigene Zusammenführung, kein Vendor-Original
+  (passend zur ADR in `DECISIONS.md`).
+- Reine Offline-Arbeit, kein Gerätezugriff.
+
+## Nächster konkreter Schritt
+
+Noch offen, welche der in Iteration 16 genannten Optionen als Nächstes drankommt:
+Per-Key-Wire-Kommando suchen (Interface 3), Leisten-LED-Geometrie ergänzen, oder
+Richtung Phase 3 (OpenRGB-Controller-Grundgerüst) weitergehen — dem Nutzer erneut
+vorlegen, bevor eigenmächtig eine größere Richtung gewählt wird.
+
 ## Blocker
 
 Keiner für Analyse-/Doku-/Code-Schritte. Weitere Hardwaretests weiterhin nur mit kurzer

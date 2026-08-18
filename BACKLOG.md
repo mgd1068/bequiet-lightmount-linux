@@ -39,8 +39,11 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
 - [ ] Wire-Kommando für Per-Key-Adressierung finden (Manifest kennt nur die 168
       LED-Namen/Indizes, nicht das Byte-Protokoll dafür — vermutlich Interface 3,
       bisher unerforscht, siehe eigener Backlog-Punkt oben)
-- [ ] `light_mount_main_iso.json`/`_ansi.json` (Pixel-Koordinaten pro Taste) mit den
-      LED-Indizes verknüpfen — Grundlage für ein künftiges OpenRGB-Layout (Phase 3)
+- [x] `light_mount_main_iso.json` (Pixel-Koordinaten pro Taste) mit den LED-Indizes
+      verknüpft (2026-08-18, `docs/evidence/light_mount_led_layout_iso.json`, 166
+      Einträge, 111 mit Geometrie)
+- [ ] Geometrie für die 55 Leisten-LEDs (Top/Left/Right, aktuell `null`) aus den noch
+      unausgewerteten `boundingRect`-Dateien ergänzen
 - [x] Mountain- vs. Light-Mount-Pakete strukturell vergleichen (2026-08-18, siehe Phase 0, widerlegt)
 - [x] Offline-Tests mit gespeicherten Paketen (ohne Hardware) (2026-08-18, `tests/test_protocol.cpp`, 20/20 Fixtures)
 
