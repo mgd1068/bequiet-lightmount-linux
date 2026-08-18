@@ -2,7 +2,7 @@
 
 ## Aktuelle Phase
 
-Phase 0 — Bestand und Reproduzierbarkeit.
+Phase 1 — Sicheres Protokolllabor.
 
 ## Letzter Stand
 
@@ -61,32 +61,56 @@ Phase 0 — Bestand und Reproduzierbarkeit.
 - Kein Gerätezugriff, keine Hardware angefasst — reine Offline-Verifikation bekannter
   Bytes.
 
+## Update — Iteration 4 (2026-08-18, ralph-loop)
+
+- C++-Offline-Testgerüst aufgesetzt: `src/protocol/crc16.{h,cpp}` (freie Funktion,
+  CRC16/MODBUS), `src/protocol/report.{h,cpp}` (plain struct `Interface2Report` +
+  freie Funktionen `parse_report`/`build_report`/`report_crc_valid`, kein OOP,
+  passend zu `DECISIONS.md`). Testframework: einfaches `assert()`-basiertes
+  `tests/test_protocol.cpp` (kein externes Framework, wie im Rückfallplan der letzten
+  Iteration vorgesehen — Umfang rechtfertigt bisher keines). Fixtures
+  (`tests/fixtures_usbmon3.h`) sind die 20 aus `checksum_verification.py` bekannten
+  Frames.
+- Build: CMake (`CMakeLists.txt`, C++17, `-Wall -Wextra`), `cmake -S . -B build &&
+  cmake --build build && ctest --test-dir build` — alle 4 Tests grün (CRC gegen alle
+  20 Fixtures, `report_crc_valid` gegen alle 20, Parse→Build-Rundlauf byteidentisch
+  für alle 20, bekannte Header-Felder + Rainbow-Stop-0-Bytes von Frame 1453 geprüft).
+- Ein echter Implementierungsfehler beim ersten Durchlauf gefunden und behoben:
+  `build_report` schrieb `raw[2]=0x00` statt `0x02` (das konstante Feld ist Byte2=`0x02`,
+  Byte3=`0x00`, nicht umgekehrt — Verwechslung beim Übertragen aus der
+  Little-Endian-Notation `0x0002`). Der Parse→Build-Rundlauf-Test hat das sofort als
+  `assert`-Fehlschlag aufgedeckt, bevor es unbemerkt geblieben wäre.
+- `README.md` um Bau-/Testanleitung ergänzt. `build/` bleibt git-ignoriert.
+- Kein Gerätezugriff — reiner Code/Build/Test-Schritt.
+
 ## Nächster konkreter Schritt
 
-1. Sicheres Offline-Testgerüst in C++ beginnen (funktionaler Stil laut `DECISIONS.md`):
-   freie Funktionen für CRC16/MODBUS-Berechnung, Report-Aufbau (Header+Payload+CRC) und
-   Report-Parsing; als erste Tests die 20 hier bekannten Frames aus
-   `docs/evidence/checksum_verification.py` als Fixtures nachbilden und die CRC-Funktion
-   dagegen verifizieren (Portierung der bereits verifizierten Python-Logik).
-2. Build-Grundgerüst anlegen (CMake, minimal — kein OpenRGB-Abhängigkeit in Phase 1,
-   das kommt erst in Phase 3), Testframework-Entscheidung treffen (klein/header-only,
-   passend zum funktionalen Stil, keine schwere Abhängigkeit ohne Not).
-3. Danach: verbleibende unentschlüsselte Kommandos (29/15/18/7 Byte) mit dem neuen
-   Report-Parser strukturiert ausgeben, um Muster leichter zu erkennen als per Hand.
-4. Erst danach (weiterhin Phase 1, kein Hardwarezugriff): Testplan für einen ersten,
-   risikoarmen realen Schreibtest ausarbeiten, inklusive Timeout/Reconnect-Verhalten —
-   noch nicht ausführen.
+1. Verbleibende unentschlüsselte Kommandos (29/15/18/7 Byte, siehe
+   `docs/evidence/usbmon3_decoded_commands.txt`) mit dem neuen Report-Parser
+   strukturiert als weitere Test-Fixtures/Kommentare festhalten, um Muster leichter zu
+   erkennen als per Hand (z. B. `payload`-Felder benennen, sobald ein Muster gesichert ist).
+2. Lokal installierten OpenRGB-Quellstand bzw. GitLab-Quelle des
+   `MountainKeyboardController` holen und strukturell mit der hier gefundenen
+   Header-/Payload-Struktur vergleichen (offene Frage aus Iteration 2/3, bisher noch
+   nicht bearbeitet).
+3. Dry-Run-CLI (liest/baut Reports, druckt Hex-Dumps, öffnet **kein** `hidraw`) als
+   nächsten CMake-Target ergänzen — Grundlage für den späteren, sorgfältig geplanten
+   ersten echten Schreibtest.
+4. Erst danach (weiterhin kein Hardwarezugriff): Testplan für einen ersten,
+   risikoarmen realen Schreibtest ausarbeiten, inklusive Timeout/Reconnect-Verhalten.
 
 ## Hypothese / erwartetes Ergebnis / Risiko / Rückfall (für den nächsten Schritt)
 
-- **Hypothese:** Eine C++-Portierung der bereits in Python verifizierten CRC16/MODBUS-
-  Funktion reproduziert exakt dieselben 20/20 Treffer gegen die bekannten Fixtures.
-- **Erwartetes Ergebnis:** Kompilierender, laufender Offline-Test ohne Gerätezugriff,
-  der als Fundament für den späteren Report-Builder dient.
-- **Sicherheitsrisiko:** keins — reiner Code/Build/Test-Schritt, keine Hardware beteiligt.
-- **Rückfall:** falls CMake/Testframework-Wahl Reibung erzeugt — minimal mit einer
-  einzelnen `main.cpp` und `assert()`-basierten Tests starten, Testframework erst
-  ergänzen, wenn der Umfang es rechtfertigt (kein Overengineering laut `DECISIONS.md`).
+- **Hypothese:** Der lokal installierte OpenRGB-Build (`openrgb 0.9+git20251009+ds-1`,
+  bereits als Debian-Paket vorhanden) enthält den Mountain-Everest-Controller-Quellcode
+  in einem lokal auffindbaren Pfad (Quellpaket) oder muss stattdessen per GitLab-Clone
+  geholt werden.
+- **Erwartetes Ergebnis:** Klarheit über den einfachsten Weg an den Referenzcode zu
+  kommen, ohne unnötig einen vollen OpenRGB-Checkout anzulegen, bevor Phase 3 beginnt.
+- **Sicherheitsrisiko:** keins — reiner Lese-/Rechercheschritt.
+- **Rückfall:** falls kein lokales Quellpaket existiert — gezielt nur die bereits in
+  `docs/research-sources.md` verlinkten Einzeldateien (nicht das ganze Repo) per WebFetch
+  laden, Vollklon erst in Phase 3 entscheiden (siehe offene Frage in `DECISIONS.md`).
 
 ## Blocker
 

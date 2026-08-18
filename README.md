@@ -6,8 +6,19 @@ Windows-/Web-Hersteller-Software (IO Center) unter Linux nachzubilden —
 bevorzugt als Controller in [OpenRGB](https://openrgb.org/), nicht als
 eigene RGB-Plattform.
 
-Status: **Phase 0 — Bestand und Reproduzierbarkeit.** Siehe [`STATE.md`](STATE.md)
+Status: **Phase 1 — Sicheres Protokolllabor.** Siehe [`STATE.md`](STATE.md)
 für den aktuellen Loop-Zustand und den nächsten konkreten Schritt.
+
+## Bauen und Testen
+
+```
+cmake -S . -B build
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
+Reine Offline-Tests (CRC16/MODBUS, Report-Parsing/-Aufbau) gegen bekannte,
+aus dem öffentlichen usbmon3-Capture stammende Fixtures — kein Gerätezugriff.
 
 ## Zielumfang
 
