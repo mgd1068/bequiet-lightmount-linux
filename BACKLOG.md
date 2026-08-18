@@ -79,8 +79,9 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
       `openrgb-integration/Controllers/LightMountController/`) — bewusst minimal:
       nur statische Vollflächenfarbe (einzige mit selbst gewähltem Wert verifizierte
       Funktion), Detection über Interface/UsagePage/Usage, ein Zone/ein LED
-- [ ] Lokaler Build gegen echten OpenRGB-Quellstand verifizieren (angestoßen, Ergebnis
-      noch ausstehend)
+- [x] Lokaler Build gegen echten OpenRGB-Quellstand verifiziert (2026-08-18, fehlerfrei
+      kompiliert, `./openrgb --list-devices` erkennt "be quiet! Light Mount" korrekt
+      mit richtigem `hidraw10`, Seriennummer, Static-Modus, Keyboard-Zone/LED)
 - [ ] Hardwaretest des neuen Controller-Codes (insbesondere: startet der
       Sequenznummer-Zähler bei 1 zuverlässig, oder wird er wie unsere früheren
       `0x2000`-Versuche abgelehnt? — noch nicht getestet, siehe `openrgb-integration/README.md`)

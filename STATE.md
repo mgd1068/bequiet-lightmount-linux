@@ -532,6 +532,26 @@ Erweiterung nachgezogen werden, sobald neue Erkenntnisse vorliegen.
    Controller-Code (nicht mehr über `report_send`) versuchen — insbesondere die
    unverifizierte Sequenznummer-Strategie (Start bei 1) auf die Probe stellen.
 
+## Update — Iteration 20 (2026-08-18) — Build erfolgreich, Gerät erkannt
+
+- Baseline-OpenRGB-Build fertig, unsere Controller-Dateien reinkopiert, neu gebaut:
+  **fehlerfrei kompiliert**, kein Fehler in `LightMountController.cpp`/
+  `RGBController_LightMount.cpp`/`LightMountControllerDetect.cpp`.
+- `./openrgb --list-devices` erkennt **"be quiet! Light Mount"** korrekt als eigenes
+  Gerät: `Location: HID: /dev/hidraw10` (Interface 2, exakt wie vorgesehen),
+  `Serial: QUK123456789` (stimmt mit `lsusb -v` aus Iteration 1 überein), `Modes:
+  [Static]`, `Zones: Keyboard`, `LEDs: Keyboard` — alles wie im Controller-Code
+  definiert. Erster echter End-to-End-Nachweis der Detection.
+- Noch kein Farbtest über OpenRGB selbst ausgeführt (würde erstmals die unverifizierte
+  Sequenznummer-Strategie — Start bei 1 — auf echter Hardware prüfen).
+
+## Nächster konkreter Schritt
+
+Mit Nutzerfreigabe: `./openrgb --device 0 --mode static --color <hex>` ausführen und
+beobachten, ob die Farbe angenommen wird (Sequenznummer-Start-bei-1-Hypothese) oder ob
+das Gerät ablehnt (analog zum `0x2000`-Fehlschlag aus Iteration 12). Danach Ergebnis in
+`PROTOCOL.md`/`openrgb-integration/README.md` festhalten.
+
 ## Blocker
 
 Keiner für Analyse-/Doku-/Code-Schritte. Weitere Hardwaretests weiterhin nur mit kurzer
