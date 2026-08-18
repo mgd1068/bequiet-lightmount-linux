@@ -112,37 +112,60 @@ Phase 1 — Sicheres Protokolllabor.
 - `README.md` um CLI-Nutzung ergänzt.
 - Kein Gerätezugriff — reiner Code-Schritt.
 
+## Update — Iteration 7 (2026-08-18, ralph-loop)
+
+- Alle verbleibenden unentschlüsselten Kommandos mit `report_dump` neu durchgesehen
+  (Frames 2447, 2605, 2747, 1731, 1739, 2997, 2341 — Rohausgabe geprüft statt aus dem
+  Gedächtnis transkribiert).
+- **Eigenen Fehler gefunden und korrigiert:** Die frühere Notiz "Frame 2447/2605
+  unterscheiden sich nur in Byte 8" war falsch — tatsächlich unterscheiden sich ZWEI
+  Payload-Bytes gemeinsam (Byte 8: `01→00`, Byte 9: `03→00`), alle anderen Bytes
+  identisch. Korrigiert in `docs/evidence/usbmon3_decoded_commands.txt`.
+- Neue Beobachtung zum Längenfeld dokumentiert: `length=6` (Frame 2997, subcmd 0x0a,
+  leerer Payload) vs. `length=7` (Frame 1731, subcmd 0x02, ebenfalls leerer Payload)
+  zeigt, dass die Länge NICHT allein aus der Payload-Füllung ableitbar ist, sondern auch
+  vom Subkommando abhängt. Bewusst als offene Frage belassen, keine Formel im Code
+  nachgebildet, um keine unbelegte Annahme in `build_report`/`parse_report`
+  einzubauen — passt zur Grundregel aus `PROTOCOL.md` (Fakten von Hypothesen trennen).
+- Keine neuen, hinreichend sicheren Feature-Zuordnungen gefunden (Frame 2747 "01 00 ff
+  00 ff 37" bleibt uneindeutig, Frame 2341/3109 bleibt uneindeutig) — bewusst nicht
+  geraten. Weitere Fortschritte hier brauchen entweder eigene Einzelaktions-Captures
+  oder echte Hardwaretests, beides noch nicht Teil dieser Iteration.
+- Kein Gerätezugriff — reine Offline-Analyse bereits bekannter Bytes.
+
 ## Nächster konkreter Schritt
 
-1. Verbleibende unentschlüsselte Kommandos (29/15/18/7 Byte, siehe
-   `docs/evidence/usbmon3_decoded_commands.txt`) mit `report_dump` durchgehen und ohne
-   Mountain-Analogie (siehe Iteration 5, widerlegt) rein aus den Light-Mount-eigenen
-   Daten neu interpretieren — insbesondere die beiden sehr ähnlichen 15-Byte-Kommandos
-   (Frame 2447 vs. 2605, nur Byte 8 unterscheidet sich: `01` vs `00`) und die kurzen
-   7-Byte-Toggle-Kommandos (Frame 1731/1739).
-2. Sobald ein weiteres Kommando mit vertretbarer Sicherheit einem konkreten Feature
-   zugeordnet werden kann: Testplan-Entwurf für einen ersten, risikoarmen realen
-   Schreibtest beginnen (SECURITY.md-Regeln 1–10 explizit durchgehen, insbesondere
-   Timeout/Reconnect-Verhalten und Rückfall auf bekannten sicheren Zustand) — **noch
-   nicht ausführen**, nur Plan.
-3. Erst nach explizitem Testplan (nicht in dieser oder der nächsten Iteration ohne
-   weiteres): erster tatsächlicher `hidraw`-Schreibzugriff, ausschließlich mit einem der
-   hier bereits bekannten, byteidentischen Kommandos (keine selbst konstruierten Bytes),
-   um das Risiko unbekannter Nebenwirkungen zu minimieren.
+1. Sicherheitsbewusste Entscheidung: die statische Offline-Analyse des fremden
+   Mehrfach-Klick-Captures hat ihren Erkenntnisgewinn für diese Iteration weitgehend
+   ausgeschöpft (ein klar entschlüsseltes Kommando: Rainbow-Gradient; mehrere strukturell
+   verstandene, aber semantisch unklare Kommandos). Nächster sinnvoller Schritt laut
+   `SPEC.md`/Phase 1 ist der **Testplan-Entwurf** für einen ersten, risikoarmen realen
+   Schreibtest — NICHT die Ausführung selbst.
+2. Testplan muss laut `SECURITY.md` mindestens enthalten: gewähltes Kommando (das
+   bereits bekannte, byteidentisch reproduzierte Rainbow-Kommando aus Frame 1453/3531 —
+   kein selbst konstruiertes), erwartete sichtbare Wirkung, Timeout-Wert, Reconnect-
+   Verhalten bei USB-Reset, Rückfall auf bekannten sicheren Zustand (Beleuchtung aus),
+   explizite `--dry-run`-Standardeinstellung, genaue Interface-/Endpoint-Auswahl
+   (Interface 2, EP 0x04 OUT / EP 0x83 IN — keine anderen `hidraw`-Geräte berühren).
+3. Testplan als eigenes Dokument oder Abschnitt festhalten (`docs/` oder `STATE.md`),
+   dem Nutzer NICHT eigenmächtig zur Ausführung vorlegen, ohne dass die Freigabe für den
+   ersten echten Schreibzugriff auf die angeschlossene Hardware explizit erteilt wurde —
+   das ist der im Master-Prompt vorgesehene Übergang von reiner Analyse zu echtem
+   Gerätekontakt und rechtfertigt Innehalten, auch wenn der Loop technisch autonom
+   weiterlaufen könnte.
 
 ## Hypothese / erwartetes Ergebnis / Risiko / Rückfall (für den nächsten Schritt)
 
-- **Hypothese:** Die beiden 15-Byte-Kommandos (Frame 2447/2605) unterscheiden sich nur
-  in einem einzigen Payload-Byte (`01` vs `00`) und sind damit ein einfacher binärer
-  Toggle innerhalb desselben Features (z. B. ein Ein/Aus-Schalter oder eine Auswahl aus
-  zwei Optionen), nicht zwei unabhängige Kommandos.
-- **Erwartetes Ergebnis:** `report_dump` bestätigt den Byte-für-Byte-Unterschied exakt;
-  falls sich ein plausibles Feature (z. B. anhand der UI-Screenshots im OpenRGB-Ticket)
-  zuordnen lässt, wird das in `PROTOCOL.md` als neue Hypothese ergänzt.
-- **Sicherheitsrisiko:** keins — reine Offline-Analyse bekannter, bereits gesendeter Bytes.
-- **Rückfall:** falls keine plausible Zuordnung möglich ist — als weiterhin offen markiert
-  lassen, nicht raten und als Fakt hinstellen (siehe `PROTOCOL.md`-Grundregel).
+- **Hypothese:** Ein schriftlicher Testplan (kein Code, keine Ausführung) lässt sich
+  erstellen, der alle zehn SECURITY.md-Regeln nachvollziehbar abdeckt, bevor überhaupt
+  ein `hidraw`-Handle geöffnet wird.
+- **Erwartetes Ergebnis:** Ein dokumentierter, überprüfbarer Plan, der als Grundlage für
+  eine spätere, bewusste Freigabe des ersten echten Schreibtests dient.
+- **Sicherheitsrisiko:** keins beim Schreiben des Plans selbst; der Plan beschreibt aber
+  einen Schritt mit echtem (wenn auch laut `SECURITY.md` minimiertem) Hardwarerisiko.
+- **Rückfall:** keiner nötig, da dieser Schritt noch keine Hardware anfasst.
 
 ## Blocker
 
-Keiner.
+Keiner für den Plan-Entwurf. Der execution-Schritt danach (erster echter `hidraw`-Schreib-
+zugriff) ist bewusst als Punkt markiert, an dem sorgfältig vorgegangen werden muss.

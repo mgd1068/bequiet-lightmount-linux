@@ -101,15 +101,33 @@ noch nicht einzeln zugeordnet.
   Werte 0x64/0x32 (100/50, evtl. Geschwindigkeit/Helligkeit) und einzelne
   Byte-Paare, die NICHT dem [pos][R][G][B]-Schema von oben folgen. Eventuell
   ein anderer Effekttyp (z. B. Breathing mit 2 Farben) — nicht sicher.
-- frame 2447/2605 (15 Byte): sehr ähnlich zueinander (nur Byte 8 unterscheidet
-  sich: 0x01 vs 0x00), enthalten ebenfalls 0x64/0x32 — evtl. Helligkeits-
-  oder Geschwindigkeitsänderung an einem bestehenden Effekt.
+- frame 2447/2605 (15 Byte): **Korrektur (2026-08-18, per `report_dump` neu
+  geprüft):** es unterscheiden sich ZWEI Payload-Bytes, nicht nur eines —
+  Byte 8 (0x01→0x00) UND Byte 9 (0x03→0x00), alle übrigen Payload-Bytes
+  identisch (`64 32 00 e6 30 00...`). Sieht nach einem zusammengehörigen
+  Feld (z. B. "Kategorie 1 / Auswahl 3" → "Kategorie 0 / Auswahl 0", beide
+  Bytes kippen gemeinsam auf 0) statt einem reinen 1-Bit-Toggle aus. Werte
+  `e6`(230)/`30`(48) an fester Position in beiden Frames ohne erkennbare
+  Prozent-Bedeutung — nicht interpretiert.
 - frame 2747 (18 Byte): enthält "01 00 ff 00 ff" — evtl. eine einzelne
   Zweifarb-Konfiguration.
 - frame 1731/1739 (7 Byte, Byte6=0x02): kurze Kommandos, vermutlich ein
   Modus-/Tab-Wechsel oder Ein/Aus-Toggle (Byte7 wechselt 0x00→0x01).
 - frame 2997 (6 Byte, Byte6=0x0a, Byte5=0x12 statt 0x10): einziges Kommando
   ganz ohne Payload — evtl. eine Abfrage (GET) oder ein "Apply/Commit"-Signal.
+
+== Beobachtung zum Längenfeld (Byte 0-1), noch keine gesicherte Formel ==
+
+frame 2997 (subcmd 0x0a, flags 0x00, Payload komplett leer) hat length=6 — das
+ist der kleinste beobachtete Wert und plausibel die "leere" Baseline (6 Byte
+Header ohne Payload-Inhalt). frame 1731 (subcmd 0x02, flags 0x00, Payload
+ebenfalls komplett leer) hat dagegen length=7, also einen mehr als die leere
+Baseline — obwohl auch hier kein Payload-Byte ungleich Null ist. Eine einfache
+Formel "length = 6 + Anzahl nicht-Null-Payload-Bytes" erklärt das NICHT (2997
+und 1731 hätten dann beide 6). Die Länge scheint also nicht rein aus dem
+Payload-Inhalt ableitbar zu sein, sondern hängt (auch) vom Subkommando/der
+Kommandoklasse ab — bleibt in `report.h`/`PROTOCOL.md` bewusst als offene
+Hypothese markiert, nicht als Formel im Code nachgebildet.
 
 Keine dieser Hypothesen ist bestätigt. Nächster Schritt laut STATE.md: gezielte
 Einzelaktions-Captures (eine Änderung pro Aufnahme) statt fremdem Mehrfach-Klick-
