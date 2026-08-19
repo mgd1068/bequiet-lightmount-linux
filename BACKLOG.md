@@ -67,6 +67,8 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
 - [ ] Bedeutung von Payload-Byte 11 (`0x32`) im Static-Color-Kommando klären
 - [ ] Push-Frame-Mechanismus (Subcmd `0x02`, Tastendruck-Spiegelung) weiter untersuchen (Flags-Byte-Bedeutung)
 - [ ] Ablehnungs-Antwortformat (Byte 3 = `0x0a` bei Fehler) an weiteren Fällen verifizieren
+- [x] Interface 3: Interrupt-IN-Lesetest + minimaler No-Op-`SET_FEATURE`-Test (2026-08-19,
+      beide risikofrei, keine neuen Erkenntnisse zur Bedeutung — siehe `PROTOCOL.md`)
 - [ ] Direct Mode
 - [ ] ≥2 einzelne Tasten unabhängig einfärben (blockiert: kein Per-Key-Kommando im bisherigen Capture identifiziert)
 - [ ] Vollständige Tastenmatrix/LED-Reihenfolge bestimmen

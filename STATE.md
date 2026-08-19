@@ -640,8 +640,31 @@ Ruhephase (kein Browser-Tab offen, längeres Warten) erfordern, um zu prüfen, o
 ein "kalter" Startwert wie `1` doch angenommen wird. Mit dem Nutzer abstimmen, ob das
 heute verfolgt werden soll.
 
+## Update — Iteration 24 (2026-08-19) — Interface 3 an der Grenze des sicher Testbaren
+
+- Zwei weitere risikofreie Tests auf Interface 3: reiner Lesetest auf den Interrupt-IN-
+  Endpunkt (nichts wartend) und ein minimaler No-Op-`SET_FEATURE`-Test auf Report-ID 4
+  (exakt die bereits gelesenen Nullen zurückgeschrieben — kein geratener Inhalt).
+- **Ergebnis:** Schreiben wird vom Gerät akzeptiert (kein Fehler, kein Reset), aber ohne
+  erkennbaren Effekt (weiterhin Nullen beim Rücklesen). Bestätigt nur, dass
+  Schreibzugriffe grundsätzlich funktionieren — nichts über die Bedeutung von echtem
+  Inhalt.
+- Bewusst **kein** Test mit geratenem/konstruiertem Inhalt unternommen — ohne jeden
+  bekannten realen Referenzwert wäre das reines Raten. Interface-3-Spur damit an der
+  Grenze des mit dieser Session sicher Testbaren angekommen.
+
+## Nächster konkreter Schritt
+
+Zwei offene Hauptbaustellen bleiben liegen, beide brauchen entweder mehr Zeit
+(Zähler-Timeout-Hypothese) oder neue Daten (Per-Key: echter Capture oder gezielter
+Windows-Client-Traffic nötig, den wir nicht haben). Guter Punkt, um mit dem Nutzer die
+weitere Priorität für heute zu klären — z. B. Identifikations-Handshake vertiefen
+(reine Offline-/Analysearbeit an bereits vorhandenen Daten) oder eine andere Richtung.
+
 ## Blocker
 
-Zähler-Kaltstart-Problem für den OpenRGB-Controller — echte offene technische Frage,
-kein reiner Analyse-/Doku-Blocker. Mechanismus jetzt aber verstanden (Kontinuität
-bestätigt), nur das erste Anschließen an einen unbekannten Startwert ist ungelöst.
+Zähler-Kaltstart-Problem für den OpenRGB-Controller und Per-Key-Wire-Kommando — beides
+echte offene technische Fragen, kein reiner Analyse-/Doku-Blocker. Mechanismus für den
+Zähler ist verstanden (Kontinuität bestätigt), nur das erste Anschließen an einen
+unbekannten Startwert ist ungelöst. Per-Key bleibt ohne echten Referenz-Traffic auf
+Interface 3 nicht weiter vertiefbar.

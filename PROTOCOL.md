@@ -73,6 +73,19 @@ kein USB-Reset, Gerät danach unverändert erreichbar.
 
 Kein weiterer Test (insbesondere kein Schreiben) auf Interface 3 in dieser Iteration.
 
+**Ergänzung (2026-08-19):** Zwei weitere risikofreie Tests durchgeführt:
+- Reiner Lesetest auf den Interrupt-IN-Endpunkt (EP `0x85`, ohne `GET_FEATURE`): keine
+  unaufgeforderten Daten wartend.
+- Minimaler No-Op-`SET_FEATURE`-Test auf Report-ID 4: exakt die bereits per
+  `GET_FEATURE` gelesenen Nullen zurückgeschrieben (kein geratener Inhalt). **Ergebnis:**
+  vom Gerät akzeptiert (kein USB-Fehler, kein Reset), nachfolgendes `GET_FEATURE` zeigt
+  weiterhin Nullen — kein erkennbarer Nebeneffekt. Bestätigt, dass Schreibzugriffe auf
+  Interface 3 grundsätzlich funktionieren, sagt aber nichts über die Bedeutung eines
+  echten (nicht-Null-)Inhalts aus.
+- Kein Test mit echtem/geratenem Inhalt unternommen — ohne jeden bekannten realen
+  Referenzwert wäre das reines Raten (`SECURITY.md` Regel 10). Interface-3-Spur an
+  diesem Punkt ausgereizt, bis neue Daten (z. B. ein echter Per-Key-Capture) vorliegen.
+
 ## Erster eigener Hardwaretest (2026-08-18) — bestätigt UND eine Hypothese korrigiert
 
 Durchgeführt nach `docs/first-write-test-plan.md`, mit expliziter Nutzerfreigabe. Werkzeug:
