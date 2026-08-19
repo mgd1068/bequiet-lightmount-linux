@@ -333,6 +333,14 @@ Vollständige Analyse in `docs/evidence/connection-handshake-analysis.md`. Kerne
 startender Client den aktuell gültigen Zählerstand ohne Live-Capture lernt — siehe
 `BACKLOG.md`.
 
+**Vertiefung (2026-08-19):** Byte 5 ("marker") ist vermutlich eine **Attribut-/
+Fähigkeits-ID**, keine beliebige Kennung — eine im Handshake übertragene 17-Byte-Liste
+(Subcmd `0x04`, Paare `[ID][Version=1]`) zählt genau die Marker-Werte auf, die auch
+sonst in echten Kommandos verwendet werden (u. a. `0x10` für Static-Color, `0x01` für
+Keepalive). Vollständige Tabelle und weitere, noch nicht gedeutete Antwortstrukturen
+(u. a. ein möglicher Zonen-/Gruppen-Block) in
+`docs/evidence/connection-handshake-analysis.md`.
+
 ## Bekannter Firmwarefehler
 
 Ungezielter Lesezugriff auf ein herstellerspezifisches `hidraw`-Interface kann die

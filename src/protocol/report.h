@@ -24,10 +24,12 @@
 //               with two consecutive real hardware writes). How a fresh client learns
 //               the current value without a live capture is UNSOLVED, see BACKLOG.md.
 //   byte[5]     marker - NOT the counter's high byte (previously misdocumented as such
-//               up to 2026-08-18). Varies per command/attribute during the connection
-//               handshake; constant 0x10 for every static-color command observed so
-//               far (both third-party and our own captures) and 0x01 for the periodic
-//               keepalive (subcmd 0x03). Exact meaning otherwise unconfirmed.
+//               up to 2026-08-18). Likely an attribute/capability ID: the connection
+//               handshake includes a 17-byte capability list (pairs of [id][version=1])
+//               whose IDs match the marker values seen in real commands - constant
+//               0x10 for every static-color command observed so far (both third-party
+//               and our own captures) and 0x01 for the periodic keepalive (subcmd
+//               0x03). See PROTOCOL.md / docs/evidence/connection-handshake-analysis.md.
 //   byte[6]     subcmd
 //   byte[7]     flags
 //   bytes[8:62] payload, zero-padded

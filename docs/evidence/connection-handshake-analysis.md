@@ -46,6 +46,36 @@ weiter**, wie oben gezeigt.
 Nicht vollständig entschlüsselt — festgehalten für spätere Vertiefung, nicht weiter
 geraten.
 
+## Vertiefung (2026-08-19): vollständige Byte-für-Byte-Tabelle, neuer Fund zu Byte 5
+
+Alle 20 Kommando/Antwort-Paare des Verbindungsaufbaus systematisch mit
+Länge/Session/Zähler/Marker/Subcmd/Flags + Payload dekodiert (Skript nicht Teil dieses
+Repos, siehe `DECISIONS.md` zum Umgang mit Analyse-Einwegskripten).
+
+**Neuer Fund:** Die 17-Byte-„Fähigkeitenliste" aus der Antwort auf Subcmd `0x04`
+(`01 01 02 01 03 01 04 01 06 01 07 01 10 01 11 01 12`, gelesen als Paare `[ID] [Version=1]`
+mit IDs `01,02,03,04,06,07,10,11,12`) **korreliert direkt mit den Marker-Werten (Byte 5)**,
+die in den unmittelbar folgenden Setup-Kommandos verwendet werden (`07,07,06,10,10,11,11,
+07,01,01`) — alle liegen innerhalb dieser Liste. Das stützt eine präzisere Deutung: Byte 5
+ist eine **Attribut-/Fähigkeits-ID**, und diese Antwort zählt auf, welche Attribut-IDs
+das Gerät unterstützt (mit Versionsnummer `1` je Attribut). Passt zur bereits bekannten
+Beobachtung, dass Byte 5 für Static-Color-Kommandos konstant `0x10` ist (= eine der
+gelisteten Attribut-IDs) und für Keepalive konstant `0x01` (= eine andere gelistete ID).
+
+**Antwort-Byte 7 ("Flags") trägt in Antworten offenbar echte Information, kein reines
+Statusbit:** Werte wie `0e, 17, 02, 09, 2a, 1f, e8, 05` etc. traten bei durchweg
+erfolgreichen Austauschen auf (keine Fehler, Verbindung lief normal weiter) — nur `0x0a`
+ist als konkreter „abgelehnt"-Code anderweitig verifiziert (siehe Sequenznummer-Tests).
+Die übrigen Werte sind vermutlich kleine Ergebniswerte der jeweiligen Abfrage, nicht
+generische Fehler-Flags. Nicht einzeln gedeutet.
+
+**Ein größerer Antwort-Block (Subcmd `0x01`, Marker `0x11`, 20 Byte Payload) zeigt eine
+Struktur aus fünf 4-Byte-Gruppen:** `00 02 00 02` gefolgt von vier Paaren `[07 03] [05 04]
+[06 05] [08 06]`, jeweils mit `00 02` aufgefüllt. Sieht nach einer Aufzählung interner
+Zonen/Gruppen mit je zwei kleinen Zahlen aus (z. B. Start/Anzahl) — **spekulativ, nicht
+verifiziert**, keine erkennbare direkte Entsprechung zu den bekannten 168 LEDs oder den
+45/113/10-Aufteilungen aus dem Windows-Manifest. Nicht weiter interpretiert.
+
 ## Entscheidender Test: Zähler-Kontinuität bestätigt (echter Hardwaretest)
 
 Mit dem jetzt korrekten Verständnis (Byte 4 = fortlaufender Zähler, Byte 5 = `0x10`
