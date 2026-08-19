@@ -44,10 +44,11 @@ namespace
 
 LightMountController::LightMountController(hid_device* dev_handle, const char* path, std::string dev_name)
 {
-    dev         = dev_handle;
-    location    = path;
-    name        = dev_name;
-    next_seq    = 1;
+    dev             = dev_handle;
+    location        = path;
+    name            = dev_name;
+    next_counter    = 0;
+    counter_primed  = false;
 }
 
 LightMountController::~LightMountController()
@@ -78,8 +79,24 @@ std::string LightMountController::GetSerialString()
     return(StringUtils::wstring_to_string(serial_string));
 }
 
+void LightMountController::SetCounter(uint8_t counter)
+{
+    next_counter    = counter;
+    counter_primed  = true;
+}
+
+bool LightMountController::IsCounterPrimed() const
+{
+    return(counter_primed);
+}
+
 bool LightMountController::SendStaticColor(uint8_t r, uint8_t g, uint8_t b)
 {
+    if(!counter_primed)
+    {
+        return(false);
+    }
+
     uint8_t report[LIGHT_MOUNT_REPORT_SIZE] = { 0 };
 
     /*-----------------------------------------------------------------*\
@@ -91,11 +108,11 @@ bool LightMountController::SendStaticColor(uint8_t r, uint8_t g, uint8_t b)
     report[1] = 0x00;
     report[2] = static_cast<uint8_t>(LIGHT_MOUNT_SESSION & 0xFF);
     report[3] = static_cast<uint8_t>(LIGHT_MOUNT_SESSION >> 8);
-    report[4] = static_cast<uint8_t>(next_seq & 0xFF);
-    report[5] = static_cast<uint8_t>(next_seq >> 8);
+    report[4] = next_counter;
+    report[5] = LIGHT_MOUNT_MARKER_STATIC_COLOR;
     report[6] = LIGHT_MOUNT_SUBCMD_STATIC_COLOR;
     report[7] = 0x00;
-    next_seq++;
+    next_counter++;
 
     /*-----------------------------------------------------------------*\
     | Payload: 00 00 <brightness=100> <unknown=0x32> 00 <R> <G> <B>     |

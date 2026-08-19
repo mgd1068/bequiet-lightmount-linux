@@ -85,15 +85,24 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
 - [x] Hardwaretest des neuen Controller-Codes (2026-08-18): Sequenznummer-Start-bei-1
       **widerlegt** — genauso abgelehnt wie `0x2000`. Static-Modus funktioniert noch
       nicht zuverlässig, siehe `PROTOCOL.md`/`openrgb-integration/README.md`.
-- [ ] **Kritisch, weiterhin ungelöst:** Herausfinden, wie ein frisch startender Client
-      die vom Gerät erwartete Sequenznummer lernen kann — ohne Lösung ist der
-      OpenRGB-Controller nicht praktisch nutzbar. Interface-3-Report-ID-1-Telemetrie
-      als Quelle geprüft und verworfen (2026-08-18, sieht nach Uptime-Zählern statt
-      Sequenznummer aus, siehe `PROTOCOL.md`). Nächste Ideen, keine davon verfolgt:
-      andere Report-IDs (2,4,5,6 lieferten nur Nullen, evtl. nach einer echten
-      IO-Center-Web-Session neu prüfen), oder grundsätzlich andere Bootstrap-Strategie
-      (z. B. erst einen bekannten harmlosen Kommando-Typ mit beliebiger Sequenz senden
-      und aus dessen Annahme/Ablehnung lernen — spekulativ, nicht bewertet).
+- [x] Sequenznummer-Feld korrekt verstanden (2026-08-19): Byte 4 = fortlaufender
+      1-Byte-Zähler, Byte 5 = separates Marker-Feld (nicht Zähler-Hochbyte). Kontinuität
+      bestätigt mit zwei echten, aufeinanderfolgenden Hardwaretests. `report.h`/`.cpp`,
+      CLI-Tools und OpenRGB-Controller entsprechend korrigiert.
+- [ ] **Kritisch, weiterhin ungelöst:** Kaltstart-Problem — wie lernt ein frisch
+      startender Client den aktuell gültigen Zählerstand ohne Live-Capture? Zähler
+      scheint nach einiger Zeit/Inaktivität zurückgesetzt zu werden (heute bei `02`
+      begonnen, obwohl gestern bei `~0xad`/`~0x11` endend, ohne erkennbare
+      Neuenumerierung) — Trigger unklar (Timeout? Standby?). Vielversprechende, noch
+      nicht getestete Hypothese: unmittelbar nach einem solchen Reset akzeptiert das
+      Gerät evtl. (fast) jeden Startwert als neue Basis, d. h. das eigentliche Problem
+      wäre "unsere eigenen Testversuche konkurrierten mit einer noch aktiven
+      Browser-Session", nicht "der Zähler ist grundsätzlich unbekannbar" — siehe
+      `docs/evidence/connection-handshake-analysis.md`. Interface-3-Report-ID-1-
+      Telemetrie als Quelle bereits geprüft und verworfen (2026-08-18).
+- [ ] Identifikations-Handshake (Byte2-3=`0x0000`, 6 Kommandos beim Verbindungsaufbau)
+      weiter entschlüsseln — Geräte-Seriennummer-String und Fähigkeitenliste teilweise
+      erkannt, nicht vollständig gedeutet, siehe `docs/evidence/connection-handshake-analysis.md`
 - [x] `Shutdown()`-Aufruf im `RGBController_LightMount`-Destruktor nachgerüstet
       (2026-08-18, verhinderte OpenRGB-Warnung beim Beenden)
 - [ ] Per-Key-Adressierung ergänzen, sobald Wire-Kommando bekannt ist

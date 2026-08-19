@@ -303,6 +303,23 @@ dafür.
 — 166 Einträge, 111 davon mit UI-Pixel-Geometrie. Grundlage für ein künftiges
 OpenRGB-Layout (Phase 3).
 
+## Verbindungsaufbau-Capture: Zähler-Feld neu verstanden, Kontinuität bestätigt (2026-08-19)
+
+Vollständige Analyse in `docs/evidence/connection-handshake-analysis.md`. Kernergebnisse:
+
+| Fakt | Beleg |
+|---|---|
+| **Korrektur:** Was bisher als "16-Bit-Sequenznummer" (Byte 4-5) dokumentiert war, ist tatsächlich zwei getrennte Felder — Byte 4 ist ein eigenständiger, **fortlaufender 1-Byte-Zähler** (steigt exakt +1 pro Kommando, über alle "Session"-Wechsel hinweg), Byte 5 ist ein separates, kontextabhängiges Feld (konstant `0x10` für Static-Color, `0x01` für Keepalive) | gezielter Verbindungsaufbau-Capture, 20 Kommandos chronologisch dekodiert |
+| **Bestätigt (echter Hardwaretest):** Wird der Zähler exakt an den zuletzt beobachteten echten Gerätestand angeschlossen, werden **mehrere aufeinanderfolgende, selbst konstruierte** Kommandos zuverlässig akzeptiert (zwei Farben nacheinander gesetzt und vom Nutzer live bestätigt: Lila `#8000FF`, dann Gelb `#FFFF00`) | 2026-08-19, `docs/evidence/connection-handshake-analysis.md` |
+| Byte 2-3 ("Session") nimmt mindestens drei Werte innerhalb **einer** Verbindung an (`0x0000` Handshake, `0x0002` Einstellungs-Batch, `0x0001` Laufzeit/Keepalive) — der Zähler läuft davon unbeeinflusst durch | dito |
+| Neuer, teilweise entschlüsselter Identifikations-Handshake gefunden (Geräte-Seriennummer-String, Fähigkeitenliste unterstützter Subcmd-IDs) | dito |
+
+**Konsequenz für Code:** `src/protocol/report.h`/`.cpp` und der OpenRGB-Controller
+(`openrgb-integration/`) wurden entsprechend korrigiert (`Interface2Report.seq` →
+`counter`/`marker` als getrennte Felder). **Weiterhin ungelöst:** wie ein frisch
+startender Client den aktuell gültigen Zählerstand ohne Live-Capture lernt — siehe
+`BACKLOG.md`.
+
 ## Bekannter Firmwarefehler
 
 Ungezielter Lesezugriff auf ein herstellerspezifisches `hidraw`-Interface kann die

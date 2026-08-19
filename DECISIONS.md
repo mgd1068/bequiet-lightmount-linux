@@ -2,6 +2,26 @@
 
 Kurze Architecture Decision Records. Neueste zuerst.
 
+## 2026-08-19 — Controller verlangt explizites Zähler-Priming statt Rätselei
+
+**Kontext:** Verbindungsaufbau-Capture zeigt, dass Byte 4 ein eigenständiger,
+gerätegeführter Zähler ist (nicht Teil einer 16-Bit-Sequenznummer, siehe `PROTOCOL.md`).
+Weder ein fester niedriger (`1`) noch ein hoher (`0x2000`) Startwert wird vom Gerät
+akzeptiert — nur ein an den echten Gerätestand angeschlossener Wert funktioniert
+(bestätigt mit zwei aufeinanderfolgenden echten Schreibtests).
+
+**Entscheidung:** `LightMountController` rät den Startwert nicht mehr. Stattdessen:
+`SetCounter(uint8_t)` muss explizit aufgerufen werden, bevor `SendStaticColor()`
+überhaupt einen Schreibversuch unternimmt (`IsCounterPrimed()` davor `false`,
+`SendStaticColor()` gibt in diesem Zustand sofort `false` zurück, ohne zu schreiben).
+
+**Konsequenz:** Der Controller ist bis zur Lösung des Kaltstart-Problems nicht ohne
+externe Hilfe (aktuell: manueller Live-Capture-Wert) nutzbar — das ist ehrlicher als ein
+Controller, der bei jedem Start unbemerkt einen abgelehnten Schreibversuch unternimmt.
+Der erste Controller-Entwurf (Iteration 19) hatte trotz der Vorgabe unten (Eintrag vom
+gleichen Tag, „nicht willkürlich/bei 0 beginnend") versehentlich doch bei 1 begonnen —
+jetzt korrigiert durch explizites Priming statt eines Default-Werts.
+
 ## 2026-08-18 — OpenRGB-Anbindung: kein Submodule, Contribution-Dateien im Hauptrepo
 
 **Kontext:** Phase 3 (OpenRGB-Controller) beginnt. Offene Frage aus Iteration 2

@@ -39,7 +39,8 @@ void print_report(const std::array<uint8_t, kReportSize>& raw) {
 
     std::printf("length   = %u (0x%04x)\n", report.length, report.length);
     std::printf("session  = 0x%04x\n", report.session);
-    std::printf("seq      = %u (0x%04x)\n", report.seq, report.seq);
+    std::printf("counter  = %u (0x%02x)\n", report.counter, report.counter);
+    std::printf("marker   = 0x%02x\n", report.marker);
     std::printf("subcmd   = 0x%02x\n", report.subcmd);
     std::printf("flags    = 0x%02x\n", report.flags);
     std::printf("crc_valid= %s\n", crc_ok ? "yes" : "NO - report is not a genuine/unmodified capture");

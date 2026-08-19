@@ -52,7 +52,9 @@ void test_known_header_fields() {
 
     Interface2Report report = parse_report(frame_1453->raw);
     assert(report.length == 0x29);
-    assert(report.seq == 0x103e);
+    assert(report.session == 0x0002);
+    assert(report.counter == 0x3e);
+    assert(report.marker == 0x10);
     assert(report.subcmd == 0x06);
     assert(report.flags == 0x00);
     // Rainbow stop 0 (position 0%, RGB ff/ff/00 = yellow) at raw offset 17-20,

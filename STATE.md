@@ -600,9 +600,48 @@ Pausieren — 22 von 30 Loop-Iterationen genutzt, sehr ergiebiger Tag mit mehrer
 Durchbrüchen (RGB-Kodierung, Matrix-Effekt, 168-LED-Manifest, funktionierender
 OpenRGB-Detection-Nachweis) und einer ehrlich dokumentierten offenen Kernfrage.
 
+## Update — Iteration 23 (2026-08-19) — Durchbruch: Zähler-Feld korrekt verstanden
+
+- Neuer Tag, neue Session. Nutzer schlug vor, gezielt den **Verbindungsaufbau** zu
+  capturen (IO Center Web komplett geschlossen, Mitschnitt gestartet, dann frisch
+  verbunden) — das hatten wir noch nie gemacht, wir waren bisher immer mitten in einer
+  laufenden Session eingestiegen.
+- **Zentrale Korrektur:** Das bisher als "16-Bit-Sequenznummer" (Byte 4-5) verstandene
+  Feld ist tatsächlich zwei getrennte Bytes. Byte 4 ist ein eigenständiger,
+  **fortlaufender 1-Byte-Zähler** (steigt exakt +1 pro Kommando, unabhängig vom
+  "Session"-Feld Byte 2-3, das mehrfach innerhalb derselben Verbindung wechselt). Byte 5
+  ist ein separates, kontextabhängiges Feld — konstant `0x10` für Static-Color, `0x01`
+  für Keepalive, sonst variabel (Attribut-Kennung während des Handshakes).
+- **Bestätigt mit echtem Hardwaretest:** Zähler direkt an den im Capture beobachteten
+  letzten Stand angeschlossen (`0x5c`→`0x5d`) und ein selbst konstruiertes Kommando
+  gesendet (Lila `#8000FF`) — **normale Bestätigung, vom Nutzer live bestätigt.**
+  Zweites, direkt fortgesetztes Kommando (`0x5e`, Gelb `#FFFF00`) — **ebenfalls
+  erfolgreich.** Damit ist bewiesen: Sobald der Zähler einmal korrekt anschließt,
+  funktioniert einfaches Weiterzählen zuverlässig für mehrere Kommandos in Folge.
+- Code entsprechend korrigiert: `Interface2Report.seq` (u16) → `counter`/`marker` als
+  getrennte Felder in `src/protocol/report.h`/`.cpp`, CLI-Tools (`report_dump`,
+  `report_send`, `report_build` — `--seq` → `--counter` + neues `--marker`) und der
+  OpenRGB-Controller. `LightMountController` verlangt jetzt explizites
+  `SetCounter()`-Priming, bevor `SendStaticColor()` überhaupt schreibt — kein Raten mehr.
+  Alle Tests grün, Build gegen echten OpenRGB-Checkout weiterhin fehlerfrei, Gerät
+  weiterhin korrekt erkannt.
+- Neuer teilweise entschlüsselter Identifikations-Handshake gefunden (Geräte-Serial-
+  String, Fähigkeitenliste) — nicht vollständig gedeutet, siehe
+  `docs/evidence/connection-handshake-analysis.md`.
+
+## Nächster konkreter Schritt
+
+Kaltstart-Problem bleibt der Hauptblocker: wie lernt ein frisch startender Client (ohne
+Live-Capture) den aktuell gültigen Zählerstand? Vielversprechende, noch nicht getestete
+Hypothese: der Zähler scheint nach einer Weile zurückgesetzt zu werden (heute bei `02`
+begonnen, obwohl gestern deutlich höher endend) — möglicherweise akzeptiert das Gerät
+unmittelbar nach einem solchen Reset (fast) jeden Startwert. Test würde eine gesicherte
+Ruhephase (kein Browser-Tab offen, längeres Warten) erfordern, um zu prüfen, ob danach
+ein "kalter" Startwert wie `1` doch angenommen wird. Mit dem Nutzer abstimmen, ob das
+heute verfolgt werden soll.
+
 ## Blocker
 
-Sequenznummer-Bootstrapping für den OpenRGB-Controller — kein bekannter Weg, ohne
-weitere (aktuell nicht verfügbare) Datenquelle wie einen frischen echten
-IO-Center-Web-Capture. Kein reiner Analyse-/Doku-Blocker mehr, sondern eine echte
-offene technische Frage.
+Zähler-Kaltstart-Problem für den OpenRGB-Controller — echte offene technische Frage,
+kein reiner Analyse-/Doku-Blocker. Mechanismus jetzt aber verstanden (Kontinuität
+bestätigt), nur das erste Anschließen an einen unbekannten Startwert ist ungelöst.
