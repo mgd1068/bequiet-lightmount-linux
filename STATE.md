@@ -661,10 +661,36 @@ Windows-Client-Traffic nötig, den wir nicht haben). Guter Punkt, um mit dem Nut
 weitere Priorität für heute zu klären — z. B. Identifikations-Handshake vertiefen
 (reine Offline-/Analysearbeit an bereits vorhandenen Daten) oder eine andere Richtung.
 
+## Update — Iteration 26 (2026-08-19, kurze Folgesession, ~1h) — Zähler bleibt über Stunden gültig
+
+- Kurzer Check-in: Nutzer wollte die Tastatur nach den gestrigen/vormittäglichen
+  Testfarben wieder in einen "aufgeräumten" Zustand bringen. Echte Per-Key-Steuerung
+  in dieser kurzen Session bewusst nicht verfolgt (kein Referenz-Traffic verfügbar,
+  Windows-VM-Aufwand zu groß für die verfügbare Zeit) — mit dem Nutzer offen so
+  besprochen, keine falschen Erwartungen geweckt.
+- Zählerstand `0x5e` (aus dem Vormittags-Test) fortgesetzt zu `0x5f`, ca. eine Stunde
+  später, ohne zwischenzeitliche Browser-Aktivität: **weiterhin akzeptiert.** Magenta
+  (`#FF00FF`) erfolgreich gesetzt, vom Nutzer live bestätigt.
+- **Neuer Erkenntnisgewinn:** spricht gegen einen kurzfristigen (Minuten-/Stunden-)
+  Timeout für den Zähler-Reset. Der zwischen den Tagen beobachtete Reset liegt auf
+  einer längeren Zeitskala oder ist an ein anderes Ereignis (z. B. Standby) geknüpft.
+  Praktische Konsequenz: ein einmal ermittelter Zählerstand lässt sich vermutlich über
+  eine ganze Arbeitssitzung hinweg weiterverwenden — das Kaltstart-Problem betrifft vor
+  allem den Sitzungsbeginn, nicht laufenden Betrieb. Details:
+  `docs/evidence/connection-handshake-analysis.md`.
+
+## Nächster konkreter Schritt
+
+Unverändert aus Iteration 24/25: Zähler-Kaltstart-Lösung (jetzt mit dem neuen
+Datenpunkt: Reset-Trigger ist NICHT kurzfristige Inaktivität) und Per-Key-Wire-Kommando
+bleiben die beiden offenen Hauptbaustellen. Windows-VM-Ansatz für Per-Key ist als
+größeres, eigenständiges Vorhaben zu planen, nicht nebenbei.
+
 ## Blocker
 
 Zähler-Kaltstart-Problem für den OpenRGB-Controller und Per-Key-Wire-Kommando — beides
 echte offene technische Fragen, kein reiner Analyse-/Doku-Blocker. Mechanismus für den
-Zähler ist verstanden (Kontinuität bestätigt), nur das erste Anschließen an einen
-unbekannten Startwert ist ungelöst. Per-Key bleibt ohne echten Referenz-Traffic auf
-Interface 3 nicht weiter vertiefbar.
+Zähler ist verstanden (Kontinuität bestätigt, jetzt auch über ~1h hinweg bestätigt),
+nur das erste Anschließen an einen unbekannten Startwert nach einer Pause unbekannter
+Länge ist ungelöst. Per-Key bleibt ohne echten Referenz-Traffic auf Interface 3 nicht
+weiter vertiefbar.

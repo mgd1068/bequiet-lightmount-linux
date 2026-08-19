@@ -113,3 +113,21 @@ Problem wäre nicht "der Zähler ist unbekannbar", sondern "unser eigener Schrei
 konkurriert mit einer noch aktiven Session eines anderen Clients (Browser)". Nicht
 verifiziert — würde einen Test mit gesichert langer Inaktivität (kein Browser-Tab
 offen, längere Wartezeit) erfordern.
+
+## Negativer Datenpunkt: kein kurzfristiger Timeout (2026-08-19, später am Tag)
+
+Rund eine Stunde nach dem letzten erfolgreichen Test (Zählerstand `0x5e`, siehe oben)
+und ohne zwischenzeitliche Aktivität (kein Browser-Tab offen) wurde der fortlaufende
+Wert `0x5f` erneut getestet: **anstandslos akzeptiert**, Magenta (`#FF00FF`) erfolgreich
+gesetzt und vom Nutzer live bestätigt.
+
+**Schlussfolgerung:** Ein Reset auf einer Zeitskala von Minuten bis niedrigen Stunden
+ist damit unwahrscheinlich. Der zwischen den Sessions vom 18. und 19. beobachtete
+Reset (Zähler fiel von `~0xad`/`~0x11`-Bereich auf `02`) liegt entweder auf einer
+deutlich längeren Zeitskala (viele Stunden, über Nacht) oder ist an ein anderes
+Ereignis geknüpft (z. B. Rechner-Standby/Suspend zwischen den Sessions) statt an
+reine kurzfristige Inaktivität. Für einen praktisch nutzbaren Controller bedeutet das:
+**innerhalb einer Arbeitssitzung kann ein einmal ermittelter Zählerstand vermutlich
+über Stunden hinweg zuverlässig weiterverwendet werden** — das Kaltstart-Problem
+betrifft in erster Linie den Sitzungsbeginn (z. B. nach Neustart des Rechners), nicht
+laufenden Betrieb.
