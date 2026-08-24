@@ -199,9 +199,13 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
       Plugin-Listen-Request. Gefunden via `coredumpctl`/`gdb`-Backtrace, gefixt (0
       Plugins statt Crash bei fehlendem `plugin_manager`), verifiziert (Server bleibt
       stabil, Bulk-Update von 135 Lampen in <1ms). Commit `243f1f6`.
-- [ ] Upstream-tauglicher Patch/MR für beide Fixes vorbereiten und einreichen —
-      nächster Schritt. Ähnliche offene Issues zur Beobachtung: #5505 (ASUS TUF A18),
-      #2811 (ASUS ROG Strix Multi-Device).
+- [x] **Fixes propagierbar gemacht (2026-08-24):** Patch-Dateien im GitHub-Repo
+      (`openrgb-patches/`), Branch `fix/lightmount-lamparray-detection` auf GitLab-
+      Fork `gitlab.com/mgd681/OpenRGB` gepusht. **Noch offen:** die eigentliche
+      Merge-Request gegen `CalcProgrammer1/OpenRGB` öffnen (bewusst noch nicht
+      automatisch gemacht — öffentliche Aktion, braucht explizites Go). Ähnliche
+      offene Issues zur Beobachtung: #5505 (ASUS TUF A18), #2811 (ASUS ROG Strix
+      Multi-Device).
 
 ## Phase 4
 
