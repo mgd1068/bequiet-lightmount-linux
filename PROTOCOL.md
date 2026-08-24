@@ -384,35 +384,73 @@ der Unterseiten-Lichter bestätigt) — sind also RGB-fähig und softwaregesteue
 **nicht individuell** adressierbar, solange kein Per-LED-Wire-Kommando für Interface 2
 bekannt ist (weiterhin ungelöst, siehe `BACKLOG.md`).
 
-## ColorWave-Effekt entschlüsselt (2026-08-24)
+## Alle 6 Effekte entschlüsselt und live bestätigt (2026-08-24, in zwei Etappen)
 
-Der bisher unentschlüsselte 41-Byte-Befehl (Frames 1453/3531 aus dem alten
-usbmon3-Capture, Subcmd `0x06`) wurde durch byteidentische Wiedergabe mit dem heute
-gefundenen `counter=0x00`-Kaltstart live reproduziert und **live bestätigt**.
+**Etappe 1:** Der bisher unentschlüsselte 41-Byte-Befehl (Frames 1453/3531 aus dem
+alten usbmon3-Capture, Subcmd `0x06`) wurde durch byteidentische Wiedergabe mit dem
+heute gefundenen `counter=0x00`-Kaltstart live reproduziert. Struktur erkannt:
+`[Effekt-Typ][Parameter][Helligkeit][0x32][?][Anzahl-Keyframes]` gefolgt von N×
+`[R,G,B,Zeit/Positions-%]`-Quadrupeln. Ergebnis: Typ `0x03` löste einen **zeitlichen**
+Farbwechsel aus (alle Tasten synchron, kein räumlicher Verlauf) — zunächst vorschnell
+als "ColorWave" dokumentiert.
 
-Struktur: `[Effekt-Typ=0x03][00][Helligkeit][0x32][?][Anzahl-Keyframes=0x07]` gefolgt
-von 7×`[R,G,B,Zeit-%]`-Quadrupeln (0/17/33/50/67/83/100%), ein Byte Padding am Ende.
-Live-Ergebnis: **zeitlicher** Farbwechsel (Rot→Gelb→Grün→Cyan→Blau→Magenta→Rot),
-**alle Tasten synchron gleichzeitig**, **kein räumlicher Verlauf** über die Tastatur —
-vom Nutzer explizit bestätigt/korrigiert. Vermutlich der in `SPEC.md`/Windows-Manifest
-genannte "ColorWave"-Effekt (Name impliziert räumliche Welle, tatsächliches Verhalten
-ist aber ein synchroner Zeit-Zyklus über alle LEDs).
+**Etappe 2 (Korrektur):** Live-Capture des echten `iocenter.bequiet.com`-Web-Clients
+(WebHID, USB-Passthrough kurz über die VM versucht, dann auf direkten Host-Zugriff
+gewechselt — siehe Prozessnotiz unten) beim Durchklicken aller Effekte im Original-UI
+hat die Zuordnung **korrigiert und vervollständigt**. Rohauszug:
+`docs/evidence/own_capture_tornado_breathing_colorwave_reactive_raw.txt`.
 
-Gleiches Strukturmuster (`[Typ][00][Helligkeit][0x32][?][Anzahl][Quadrupel...]`) auch
-im schon länger bekannten, aber nie vollständig gedeuteten 29-Byte-"Matrix"-Befehl
+**Vollständige, live vom Nutzer bestätigte Tabelle:**
+
+| Effekt-Typ (Byte0/Byte1) | Name | Live-Beobachtung |
+|---|---|---|
+| `00` (einfache 8-Byte-Form) | **Static** | Vollflächen-Farbe (aus Iteration 1 bekannt) |
+| `01`/`03` | **ColorWave** | Räumlicher Farbverlauf ohne Rotation; UI erlaubt zusätzlich Farben/Anzahl/Richtung/**Tempo**/Helligkeit einzustellen |
+| `02`/`04` | **Tornado** | Räumlich **rotierender** Farbverlauf ("ein sich drehender Kreis der Farben") |
+| `03`/`00` | **Breathing** | Zeitlicher Farbwechsel, **alle Tasten synchron**, kein räumlicher Verlauf — das war die ursprünglich fälschlich "ColorWave" genannte Etappe-1-Beobachtung |
+| `04` | **Reactive** | Tastendruck färbt die gedrückte Taste in einer zweiten Farbe, klingt danach langsam ab. Erklärt rückwirkend Frame 2747 ("Orange-Preset" aus Iteration 1, der allererste Hardwaretest des Projekts) — war schon immer Reactive, nur falsch benannt |
+| `05` | **Matrix** | Grüner "Code-Regen", 4 Helligkeits-Keyframes, räumliche Animation (siehe unten) |
+
+**Helligkeit erneut und unabhängig bestätigt:** Payload-Byte 2 (Report-Byte 10) ist
+die Helligkeit, ursprünglich in Iteration 1 mit `0x64`=100% bestätigt (UI stand auf
+100%). In den heutigen Web-Client-Captures stand der Regler auf einem anderen Wert —
+die Static-Color-Zwischenschritte vor Tornado zeigen `0x28`=40% statt `0x64`, alles
+andere strukturell identisch. Zweiter, unabhängig beobachteter Wert an exakt der
+erwarteten Position bestätigt die Helligkeits-Zuordnung zusätzlich zur reinen
+Farb-/Keyframe-Struktur.
+
+ColorWave/Tornado/Breathing teilen sich dieselbe 7-Keyframe-Regenbogen-Palette
+(Rot→Gelb→Grün→Cyan→Blau→Magenta→Rot) — nur Byte0/Byte1 unterscheiden, ob das Gerät
+sie als räumlichen Verlauf, räumliche Rotation oder zeitliche Synchronisation
+interpretiert. Bei ColorWave wurden zusätzlich zwei kürzere Zwischenschritte
+(Typ `01`/`03`, Länge 15 bzw. 18) aufgezeichnet, vermutlich UI-Übergangszustände vor
+dem finalen Befehl, nicht weiter gedeutet.
+
+Das gleiche Strukturmuster wurde auch im schon länger bekannten 29-Byte-"Matrix"-Befehl
 (Frame 2341/3109) wiedererkannt: Typ `0x05`, 4 Keyframes, RGB-Werte bilden eine
-aufsteigende Grün-Helligkeitsrampe (dunkel→hell) bei Stufen 0/33/67/100%. **Ebenfalls
-live bestätigt** (2026-08-24, byteidentische Wiedergabe mit dem neuen Kaltstart-Zähler):
-klassischer grüner "Code-Regen"-Effekt, vom Nutzer bestätigt. Dabei **leuchten auch die
-zwei Unterseiten-Lichter mit** — bestätigt, dass sie nicht nur auf Static-Color,
-sondern generell auf alle Interface-2-Effektbefehle reagieren (global, wie erwartet).
+aufsteigende Grün-Helligkeitsrampe (dunkel→hell) bei Stufen 0/33/67/100%. **Live
+bestätigt** (byteidentische Wiedergabe mit dem neuen Kaltstart-Zähler): klassischer
+grüner "Code-Regen"-Effekt. Dabei **leuchten auch die zwei Unterseiten-Lichter mit** —
+bestätigt, dass sie nicht nur auf Static-Color, sondern generell auf alle
+Interface-2-Effektbefehle reagieren (global, wie erwartet).
+
+**Prozessnotiz:** Für die Live-Erfassung wurde zunächst wieder die Windows-VM
+(`lightmount-win11`) mit USB-Passthrough versucht (USB-Controller war zwischenzeitlich
+deaktiviert, `--usbxhci on`/`--usb on` reaktiviert, Passthrough-Filter neu gesetzt) —
+auf Nutzerhinweis dann verworfen zugunsten des einfacheren Wegs: WebHID läuft genauso
+gut direkt im Linux-Host-Browser, ganz ohne VM (kein erneutes Risiko des alten
+"Busy"-Blockers aus Iteration 28). VM danach sauber heruntergefahren. Für die
+Klick-Navigation im Web-Client hat der Nutzer selbst die Maus bedient (Grund: eigene
+`xdotool`-Klicks funktionieren in dieser Wayland/XWayland-Umgebung nachweislich nicht,
+siehe frühere Sessionnotiz) — bewährtes Muster: Aufzeichnung lief mit, Nutzer wählte
+Effekt aus, Ergebnis gemeinsam ausgewertet.
 
 **Zwei weitere Live-Beobachtungen (Nutzer, 2026-08-24):**
 - Die Seiten-Lichter sind selbst **segmentiert** wie die obere Lichtleiste (nicht nur
   zwei einzelne Punkte) — passt zur alten Vendor-Tabelle (`Led_KeyboardLeft/Right1-5`,
   5+5=10 LEDs).
 - Beim Matrix-Effekt **wandert das Licht sichtbar über 4-5 Segmente** — d. h. der
-  Effekt ist keine reine Zeit-Synchronisation wie ColorWave (alle LEDs gleichzeitig
+  Effekt ist keine reine Zeit-Synchronisation wie Breathing (alle LEDs gleichzeitig
   gleiche Farbe), sondern eine **räumliche, im Gerät selbst laufende Animation**.
   **Konsequenz:** Die kurzen Interface-2-Effektbefehle (29-41 Byte, wenige Keyframes)
   parametrisieren nur Farbe/Helligkeitsverlauf eines **fest in der Firmware

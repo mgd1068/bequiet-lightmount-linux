@@ -113,8 +113,15 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
       Lampen außerhalb der bekannten 135. Vermutlich echte Firmware-Grenze, nicht nur
       Wissenslücke. Nicht weiter raten (Projektprinzip) — nur bei neuer Evidenz (z. B.
       Firmware-Update, Hersteller-Support-Auskunft) wieder aufgreifen.
-- [x] ColorWave-Effekt entschlüsselt (2026-08-24) — live bestätigt (Zeit-Zyklus über
-      7 Keyframes, alle LEDs synchron, kein räumlicher Verlauf). Siehe `PROTOCOL.md`.
+- [x] **Alle 6 Effekte entschlüsselt und live bestätigt (2026-08-24, zwei Etappen).**
+      Byte0/Byte1: Static=`00`, ColorWave=`01`/`03`, Tornado=`02`/`04`,
+      Breathing=`03`/`00`, Reactive=`04`, Matrix=`05`. Etappe 1 (Zeit-Zyklus über 7
+      Keyframes, alle LEDs synchron) war fälschlich als "ColorWave" dokumentiert —
+      per echtem Web-Client-Live-Capture (WebHID, ohne VM) korrigiert: das ist
+      Breathing. Tornado (räumlich rotierend) und Reactive (Tastendruck-getriggert,
+      erklärt rückwirkend Frame 2747 aus Iteration 1) neu entschlüsselt. Siehe
+      `PROTOCOL.md`, Rohauszug
+      `docs/evidence/own_capture_tornado_breathing_colorwave_reactive_raw.txt`.
 - [x] **Architektur-Erkenntnis (2026-08-24):** Interface 2 (global) und Interface 3
       (LampArray) bilden einen sauberen Zwei-Schichten-Anzeigeumschalter über
       LampArrays Autonomous-Flag, keine chaotische gegenseitige Überschreibung — siehe
@@ -170,10 +177,13 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
       Controller für Per-Key erweitert oder ganz auf LampArray umgestiegen wird. Falls
       LampArray: Detection-Konflikt (`skip_generic_detectors`) muss sauber gelöst werden,
       nicht nur per temporärer Config umgangen.
-- [ ] Vollständige Lamp-ID→Taste-Zuordnung aus Report-3-`input_binding`-Feldern ableiten
-      (135 Lampen, `tools/lamp_array_probe.py --json`)
-- [ ] Effekte (Matrix, Tornado, ColorWave, Breathing, Reactive) ergänzen, sobald
-      Byte-Parameter bekannt sind
+- [x] Vollständige Lamp-ID→Taste-Zuordnung — erledigt (2026-08-24), nicht wie ursprünglich
+      geplant über `input_binding` (nur 3 von 135 Lampen gesetzt), sondern per
+      Koordinaten-Transformation + zeilenweiser Live-Verifikation. Siehe
+      `docs/evidence/lamp_id_key_mapping.json`.
+- [ ] Effekte (Matrix, Tornado, ColorWave, Breathing, Reactive) in den OpenRGB-
+      Controller integrieren — Byte-Parameter jetzt für alle 6 bekannt (2026-08-24,
+      siehe `PROTOCOL.md`), Implementierung im `LightMountController` noch offen
 - [ ] udev-Regeln mit minimalen Rechten
 - [x] **Repo veröffentlicht (2026-08-24):** GitHub-Repo auf public gestellt
       (https://github.com/mgd1068/bequiet-lightmount-linux), nachdem zwei echte

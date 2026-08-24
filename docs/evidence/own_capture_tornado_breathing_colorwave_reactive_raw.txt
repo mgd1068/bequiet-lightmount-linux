@@ -1,0 +1,35 @@
+Sanitisierter Auszug aus eigenen Captures (2026-08-24) - nur die Interface-2-
+Lichteffekt-Kommandos (Endpoint 4 OUT / 3 IN), keine Tastendrücke, kein Traffic
+anderer Busgeräte. Rohdateien liegen lokal unter captures-private/ (git-ignoriert).
+
+Aufgezeichnet während der Nutzer live im offiziellen Web-Client
+(iocenter.bequiet.com, WebHID) nacheinander Tornado, Breathing, ColorWave und
+Reactive ausgewählt hat. Alter Capture-Mechanismus kappt Payloads bei 32 Byte
+(usbmon-Debugfs-Textinterface, siehe SECURITY.md/PROTOCOL.md).
+
+== Tornado (vom Nutzer live bestätigt: "ein sich drehender Kreis der Farben") ==
+S Io:1:085:4 -115:1 64 = 29000200 18100600 02046432 0207ff00 0000ffff 001100ff 002100ff ff320000
+C Ii:1:085:3 0:1 64 = 06000200 18100600 00000000 00000000 00000000 00000000 00000000 00000000
+
+== Breathing (vom Nutzer live bestätigt: "temporal alle Regenbogenfarben", synchron) ==
+S Io:1:085:4 -115:1 64 = 29000200 16100600 03006432 0207ff00 0000ffff 001100ff 002100ff ff320000
+C Ii:1:085:3 0:1 64 = 06000200 16100600 00000000 00000000 00000000 00000000 00000000 00000000
+
+== ColorWave (vom Nutzer live bestätigt: "Farbverlauf wie Tornado, aber ohne Rotation";
+   UI erlaubt zusätzlich Farben/Anzahl/Richtung/Tempo/Helligkeit einzustellen) ==
+Zwischenschritte (vermutlich UI-Übergangszustand, nicht der finale Effekt):
+S Io:1:085:4 -115:1 64 = 0f000200 5a100600 01036432 00e63000 00000000 00000000 00000000 00000000
+S Io:1:085:4 -115:1 64 = 12000200 6a100600 01036432 01e63000 ffffff00 00000000 00000000 00000000
+Finaler Befehl:
+S Io:1:085:4 -115:1 64 = 29000200 6b100600 01036432 0207ff00 0000ffff 001100ff 002100ff ff320000
+C Ii:1:085:3 0:1 64 = 06000200 6b100600 00000000 00000000 00000000 00000000 00000000 00000000
+
+== Reactive (vom Nutzer live bestätigt: Tastendruck faerbt Taste in "zweiter Farbe",
+   klingt dann langsam wieder ab) ==
+S Io:1:085:4 -115:1 64 = 12000200 e4100600 0400643c 010000ff e6320000 00000000 00000000 00000000
+
+== Referenz: Static (bereits aus Iteration 1 bekannt) ==
+Byte0=00, Länge 15, Beispiel-Payload "00 00 64 32 00 R G B"
+
+== Referenz: Matrix (bereits aus Iteration ~2 bekannt) ==
+Byte0=05, Länge 29, 4 Keyframes [R,G,B,%] - Gruen-Helligkeitsrampe
