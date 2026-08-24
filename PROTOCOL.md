@@ -347,6 +347,43 @@ Ungezielter Lesezugriff auf ein herstellerspezifisches `hidraw`-Interface kann d
 USB-Verbindung zurücksetzen (community-reproduziert, u.a. durch generisches HID-Polling
 von Heroic/Lutris/Steam). Siehe `SECURITY.md`.
 
+## Kaltstart-Problem des Zählers gelöst (2026-08-24)
+
+Bisher ungelöst: wie ein frisch startender Client den aktuell gültigen Zählerstand
+(Byte 4, siehe oben) ohne Live-Capture lernt. Getestet mit einer kontrollierten,
+seriellen Sweep-Sequenz (ein Schreibvorgang, Antwort lesen, bei Ablehnung nächsten Wert
+versuchen, bei Erfolg sofort stoppen — keine parallele/endlose Schleife, siehe
+`SECURITY.md` Regel 8/9) unter der Bedingung: **frische Verbindung, keine andere
+Software (IO Center, Browser) hatte vorher mit Interface 2 gesprochen** (Voraussetzung
+der bereits früher aufgestellten, bis dahin ungetesteten Hypothese).
+
+**Ergebnis: Zählerwert `0x00` wurde beim allerersten Versuch akzeptiert** (kurze
+6-Byte-Bestätigung, `byte3=0x00`, kein Ablehnungs-Echo). Bestätigt damit die Hypothese
+aus Iteration ~19: nach einem echten Reset/Kaltstart (keine aktive Fremd-Verbindung)
+akzeptiert das Gerät `0x00` als neuen Ausgangspunkt. Nachfolgendes Kommando mit
+`counter=0x01` (korrekte Fortsetzung) ebenfalls akzeptiert und sichtbar wirksam
+(Farbwechsel Rot→Magenta, vom Nutzer live bestätigt).
+
+**Konsequenz für Phase 3/OpenRGB-Integration:** Ein frisch verbindender Client kann
+`counter=0x00` als ersten Versuch nutzen, sofern keine andere Software aktuell verbunden
+ist (nicht zuverlässig prüfbar) — bei Ablehnung (Byte 3 = `0x0a`-Antwortform) mit
+inkrementierenden Werten weitersuchen, bis Akzeptanz, dann fortlaufend `+1` je Kommando.
+Nicht getestet: ob `0x00` auch bei einer noch aktiven Fremd-Verbindung fälschlich
+akzeptiert würde (Kollisionsrisiko) — dieser Test lief bewusst nur im nachweislich
+verbindungsfreien Zustand.
+
+## Unterseiten-/Seiten-Lichter: über Interface 2 erreichbar, nicht individuell (2026-08-24)
+
+Die vom Nutzer beobachteten zwei kleinen Lichter an der Unterseite außen (vermutlich
+Teil der im Windows-Manifest dokumentierten `Led_KeyboardLeft/Right1-5`, 10 LEDs ohne
+UI-Geometrie) sind **nicht** Teil der 135 HID-LampArray-Lampen auf Interface 3 (dort
+sind alle 135 Adressen anderen Elementen zugeordnet, siehe
+`docs/evidence/lamp_id_key_mapping.json`). Live getestet: Sie reagieren auf das globale
+Static-Color-Kommando auf Interface 2 (Rot, dann Magenta, beides vom Nutzer inklusive
+der Unterseiten-Lichter bestätigt) — sind also RGB-fähig und softwaregesteuert, aber
+**nicht individuell** adressierbar, solange kein Per-LED-Wire-Kommando für Interface 2
+bekannt ist (weiterhin ungelöst, siehe `BACKLOG.md`).
+
 ## Offene Fragen
 
 - Welche der vier HID-Interfaces entspricht welcher Usage Page / welchem Zweck?

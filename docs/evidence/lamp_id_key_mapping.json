@@ -1,0 +1,562 @@
+{
+  "_comment": "HID LampArray lamp_id -> physical key/element mapping for the be quiet! Light Mount (373f:0002), Interface 3. Derived 2026-08-23/24: 3 anchor keys found via input_binding + live single-lamp test, then a 9-anchor coordinate transform (vendor pixel table -> LampArray micrometer space) predicted the rest, verified live row-by-row against real hardware. confidence='live' means visually confirmed this session; 'live+vendor' additionally cross-checked against docs/evidence/light_mount_led_layout_iso.json.",
+  "device": "be quiet! Light Mount (373f:0002), Interface 3 (HID LampArray)",
+  "lamp_count": 135,
+  "verified_date": "2026-08-24",
+  "lamps": {
+    "0": {
+      "key": "Escape",
+      "confidence": "live+vendor"
+    },
+    "1": {
+      "key": "F1",
+      "confidence": "live"
+    },
+    "2": {
+      "key": "F2",
+      "confidence": "live"
+    },
+    "3": {
+      "key": "F3",
+      "confidence": "live"
+    },
+    "4": {
+      "key": "F4",
+      "confidence": "live"
+    },
+    "5": {
+      "key": "F5",
+      "confidence": "live"
+    },
+    "6": {
+      "key": "F6",
+      "confidence": "live"
+    },
+    "7": {
+      "key": "F7",
+      "confidence": "live"
+    },
+    "8": {
+      "key": "F8",
+      "confidence": "live"
+    },
+    "9": {
+      "key": "F9",
+      "confidence": "live"
+    },
+    "10": {
+      "key": "F10",
+      "confidence": "live"
+    },
+    "11": {
+      "key": "F11",
+      "confidence": "live"
+    },
+    "12": {
+      "key": "F12",
+      "confidence": "live"
+    },
+    "13": {
+      "key": "PrintScreen",
+      "confidence": "live"
+    },
+    "14": {
+      "key": "ScrollLock",
+      "confidence": "live"
+    },
+    "15": {
+      "key": "PauseBreak",
+      "confidence": "live"
+    },
+    "16": {
+      "key": "M1",
+      "confidence": "live+vendor",
+      "note": "Corrected 2026-08-24: initially only inferred from ID-sequence pattern with M4/M5, not actually live-tested. Now live-confirmed directly."
+    },
+    "17": {
+      "key": "M2",
+      "confidence": "live+vendor",
+      "note": "Corrected 2026-08-24: initially only inferred, now live-confirmed directly."
+    },
+    "18": {
+      "key": "M3",
+      "confidence": "live+vendor",
+      "note": "Corrected 2026-08-24: initially only inferred, now live-confirmed directly."
+    },
+    "19": {
+      "key": "M4",
+      "confidence": "live+vendor"
+    },
+    "20": {
+      "key": "M5",
+      "confidence": "live+vendor"
+    },
+    "21": {
+      "key": "GraveAccentAndTilde",
+      "confidence": "live"
+    },
+    "22": {
+      "key": "1",
+      "confidence": "live"
+    },
+    "23": {
+      "key": "2",
+      "confidence": "live"
+    },
+    "24": {
+      "key": "3",
+      "confidence": "live"
+    },
+    "25": {
+      "key": "4",
+      "confidence": "live"
+    },
+    "26": {
+      "key": "5",
+      "confidence": "live"
+    },
+    "27": {
+      "key": "6",
+      "confidence": "live"
+    },
+    "28": {
+      "key": "7",
+      "confidence": "live"
+    },
+    "29": {
+      "key": "8",
+      "confidence": "live"
+    },
+    "30": {
+      "key": "9",
+      "confidence": "live"
+    },
+    "31": {
+      "key": "0",
+      "confidence": "live"
+    },
+    "32": {
+      "key": "MinusAndUnderscore",
+      "confidence": "live"
+    },
+    "33": {
+      "key": "EqualsAndPlus",
+      "confidence": "live"
+    },
+    "34": {
+      "key": "Backspace",
+      "confidence": "live"
+    },
+    "35": {
+      "key": "Insert",
+      "confidence": "live"
+    },
+    "36": {
+      "key": "Home",
+      "confidence": "live"
+    },
+    "37": {
+      "key": "PageUp",
+      "confidence": "live"
+    },
+    "38": {
+      "key": "NumLock",
+      "confidence": "live"
+    },
+    "39": {
+      "key": "NumpadSlash",
+      "confidence": "live"
+    },
+    "40": {
+      "key": "NumpadAsterisk",
+      "confidence": "live"
+    },
+    "41": {
+      "key": "NumpadMinus",
+      "confidence": "live"
+    },
+    "42": {
+      "key": "Tab",
+      "confidence": "live"
+    },
+    "43": {
+      "key": "Q",
+      "confidence": "live"
+    },
+    "44": {
+      "key": "W",
+      "confidence": "live"
+    },
+    "45": {
+      "key": "E",
+      "confidence": "live"
+    },
+    "46": {
+      "key": "R",
+      "confidence": "live"
+    },
+    "47": {
+      "key": "T",
+      "confidence": "live"
+    },
+    "48": {
+      "key": "Y",
+      "confidence": "live"
+    },
+    "49": {
+      "key": "U",
+      "confidence": "live"
+    },
+    "50": {
+      "key": "I",
+      "confidence": "live"
+    },
+    "51": {
+      "key": "O",
+      "confidence": "live"
+    },
+    "52": {
+      "key": "P",
+      "confidence": "live"
+    },
+    "53": {
+      "key": "BracketLeft",
+      "confidence": "live"
+    },
+    "54": {
+      "key": "BracketRight",
+      "confidence": "live"
+    },
+    "55": {
+      "key": null,
+      "confidence": "live-negative-confirmed",
+      "note": "Tested twice: first alongside row context (magenta, inconclusive - too much else lit), then fully isolated (every other one of the 135 lamps explicitly blacked out first, only 55 green) - still no visible light anywhere. Physically between BracketRight(54) and Delete(56) in ID order, i.e. near the ISO Enter key's upper notch. Confirmed: no functioning LED at this address, not a real Enter segment - Enter itself is lamp 75."
+    },
+    "56": {
+      "key": "Delete",
+      "confidence": "live"
+    },
+    "57": {
+      "key": "End",
+      "confidence": "live"
+    },
+    "58": {
+      "key": "PageDown",
+      "confidence": "live"
+    },
+    "59": {
+      "key": "Numpad7",
+      "confidence": "live"
+    },
+    "60": {
+      "key": "Numpad8",
+      "confidence": "live"
+    },
+    "61": {
+      "key": "Numpad9",
+      "confidence": "live"
+    },
+    "62": {
+      "key": "NumpadPlus",
+      "confidence": "live"
+    },
+    "63": {
+      "key": "CapsLock",
+      "confidence": "live"
+    },
+    "64": {
+      "key": "A",
+      "confidence": "live"
+    },
+    "65": {
+      "key": "S",
+      "confidence": "live"
+    },
+    "66": {
+      "key": "D",
+      "confidence": "live"
+    },
+    "67": {
+      "key": "F",
+      "confidence": "live"
+    },
+    "68": {
+      "key": "G",
+      "confidence": "live"
+    },
+    "69": {
+      "key": "H",
+      "confidence": "live"
+    },
+    "70": {
+      "key": "J",
+      "confidence": "live"
+    },
+    "71": {
+      "key": "K",
+      "confidence": "live"
+    },
+    "72": {
+      "key": "L",
+      "confidence": "live"
+    },
+    "73": {
+      "key": "SemicolonAndColon",
+      "confidence": "live"
+    },
+    "74": {
+      "key": "ApostropheAndDoubleQuote",
+      "confidence": "live"
+    },
+    "75": {
+      "key": "Enter",
+      "confidence": "live",
+      "note": "Vendor table models Enter as a single L-shaped Path; naive bbox-center prediction mismatched to lamp 100 (that's actually RightAlt). Live test found the real Enter lamp here instead."
+    },
+    "76": {
+      "key": "Numpad4",
+      "confidence": "live"
+    },
+    "77": {
+      "key": "Numpad5",
+      "confidence": "live"
+    },
+    "78": {
+      "key": "Numpad6",
+      "confidence": "live"
+    },
+    "79": {
+      "key": "LeftShift",
+      "confidence": "live"
+    },
+    "80": {
+      "key": "Z",
+      "confidence": "live"
+    },
+    "81": {
+      "key": "X",
+      "confidence": "live"
+    },
+    "82": {
+      "key": "C",
+      "confidence": "live"
+    },
+    "83": {
+      "key": "V",
+      "confidence": "live"
+    },
+    "84": {
+      "key": "B",
+      "confidence": "live"
+    },
+    "85": {
+      "key": "N",
+      "confidence": "live"
+    },
+    "86": {
+      "key": "M",
+      "confidence": "live"
+    },
+    "87": {
+      "key": "CommaAndLessThan",
+      "confidence": "live"
+    },
+    "88": {
+      "key": "PeriodAndBiggerThan",
+      "confidence": "live"
+    },
+    "89": {
+      "key": "SlashAndQuestionMark",
+      "confidence": "live"
+    },
+    "90": {
+      "key": "RightShift",
+      "confidence": "live"
+    },
+    "91": {
+      "key": "UpArrow",
+      "confidence": "live"
+    },
+    "92": {
+      "key": "Numpad1",
+      "confidence": "live"
+    },
+    "93": {
+      "key": "Numpad2",
+      "confidence": "live"
+    },
+    "94": {
+      "key": "Numpad3",
+      "confidence": "live"
+    },
+    "95": {
+      "key": "NumpadEnter",
+      "confidence": "live"
+    },
+    "96": {
+      "key": "LeftCtrl",
+      "confidence": "live"
+    },
+    "97": {
+      "key": "LeftGui",
+      "confidence": "live"
+    },
+    "98": {
+      "key": "LeftAlt",
+      "confidence": "live"
+    },
+    "99": {
+      "key": "Space",
+      "confidence": "live"
+    },
+    "100": {
+      "key": "RightAlt",
+      "confidence": "live",
+      "note": "Vendor coordinate fit originally collided this position with Key_Enter (bad Path-geometry center estimate); live test confirmed it's actually RightAlt. Real Enter is lamp 75."
+    },
+    "101": {
+      "key": "RightGui",
+      "confidence": "live"
+    },
+    "102": {
+      "key": "Fn",
+      "confidence": "live"
+    },
+    "103": {
+      "key": "RightCtrl",
+      "confidence": "live"
+    },
+    "104": {
+      "key": "LeftArrow",
+      "confidence": "live"
+    },
+    "105": {
+      "key": "DownArrow",
+      "confidence": "live"
+    },
+    "106": {
+      "key": "RightArrow",
+      "confidence": "live"
+    },
+    "107": {
+      "key": "Numpad0",
+      "confidence": "live"
+    },
+    "108": {
+      "key": "NumpadPeriodAndDelete",
+      "confidence": "live"
+    },
+    "109": {
+      "key": "VolumeDial",
+      "confidence": "live",
+      "note": "First combined test (with lamp 0/19/20/110/132 lit simultaneously) gave a misleading read due to optical bleed between closely-packed neighbors. Isolated single-lamp retest (only 109 lit, rest reset via restore-autonomous) confirmed cleanly."
+    },
+    "110": {
+      "key": "LightBarSegment0",
+      "confidence": "live",
+      "note": "Leftmost end of the top light bar. All 23 segments (110-132) live-tested with distinct colors across the full width, 2026-08-24: no dead segments, but visually the colors blend into a gradient rather than staying sharply separated (physical diffuser bar) - electrically per-segment addressing works, optically it reads as smooth."
+    },
+    "111": {
+      "key": "LightBarSegment1",
+      "confidence": "live"
+    },
+    "112": {
+      "key": "LightBarSegment2",
+      "confidence": "live"
+    },
+    "113": {
+      "key": "LightBarSegment3",
+      "confidence": "live"
+    },
+    "114": {
+      "key": "LightBarSegment4",
+      "confidence": "live"
+    },
+    "115": {
+      "key": "LightBarSegment5",
+      "confidence": "live"
+    },
+    "116": {
+      "key": "LightBarSegment6",
+      "confidence": "live"
+    },
+    "117": {
+      "key": "LightBarSegment7",
+      "confidence": "live"
+    },
+    "118": {
+      "key": "LightBarSegment8",
+      "confidence": "live"
+    },
+    "119": {
+      "key": "LightBarSegment9",
+      "confidence": "live"
+    },
+    "120": {
+      "key": "LightBarSegment10",
+      "confidence": "live"
+    },
+    "121": {
+      "key": "LightBarSegment11",
+      "confidence": "live"
+    },
+    "122": {
+      "key": "LightBarSegment12",
+      "confidence": "live"
+    },
+    "123": {
+      "key": "LightBarSegment13",
+      "confidence": "live"
+    },
+    "124": {
+      "key": "LightBarSegment14",
+      "confidence": "live"
+    },
+    "125": {
+      "key": "LightBarSegment15",
+      "confidence": "live"
+    },
+    "126": {
+      "key": "LightBarSegment16",
+      "confidence": "live"
+    },
+    "127": {
+      "key": "LightBarSegment17",
+      "confidence": "live"
+    },
+    "128": {
+      "key": "LightBarSegment18",
+      "confidence": "live"
+    },
+    "129": {
+      "key": "LightBarSegment19",
+      "confidence": "live"
+    },
+    "130": {
+      "key": "LightBarSegment20",
+      "confidence": "live"
+    },
+    "131": {
+      "key": "LightBarSegment21",
+      "confidence": "live"
+    },
+    "132": {
+      "key": "LightBarSegment22",
+      "confidence": "live",
+      "note": "Rightmost end of the top light bar."
+    },
+    "133": {
+      "key": "NonUsBackslash",
+      "confidence": "live+vendor",
+      "note": "ISO key next to left Shift (<>| on German layout)."
+    },
+    "134": {
+      "key": "NonUsTilde",
+      "confidence": "live+vendor",
+      "note": "ISO key next to Enter (#' on German layout)."
+    }
+  },
+  "unresolved": {
+    "underside_side_lights": "User-observed 'two small lights on the outer underside' have no candidate among these 135 lamps - all 135 are now accounted for. Likely only reachable via the vendor protocol on Interface 2 (never solved for per-element addressing), or non-RGB/fixed."
+  }
+}

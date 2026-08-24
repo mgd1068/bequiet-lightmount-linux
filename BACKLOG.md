@@ -70,7 +70,46 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
 - [x] Interface 3: Interrupt-IN-Lesetest + minimaler No-Op-`SET_FEATURE`-Test (2026-08-19,
       beide risikofrei, keine neuen Erkenntnisse zur Bedeutung — siehe `PROTOCOL.md`)
 - [ ] Direct Mode
-- [ ] ≥2 einzelne Tasten unabhängig einfärben (blockiert: kein Per-Key-Kommando im bisherigen Capture identifiziert)
+- [x] Erste einzelne Taste unabhängig einfärben (2026-08-23, HID-LampArray-Weg über
+      Interface 3, nicht der Vendor-Weg über Interface 2 — siehe Phase-3-Eintrag unten.
+      `tools/lamp_array_control.py set-one 0 255 0 255` live getestet: Lamp-ID `0` =
+      ESC-Taste, magenta, vom Nutzer visuell bestätigt. Autonomous Mode danach
+      wiederhergestellt.)
+- [x] ≥2 Tasten gleichzeitig unabhängig einfärben (2026-08-24, ein Multi-Update-Report
+      mit 3 Lampen: ID 0=ESC rot, ID 133=ISO-`<>|`-Taste grün, ID 134=ISO-`#'`-Taste
+      blau — alle drei vom Nutzer live und korrekt bestätigt, per Cross-Check gegen die
+      `input_binding`-Werte aus dem Probe. `tools/lamp_array_control.py set-many` neu
+      dafür gebaut, `lamp_id:r:g:b`-Syntax, bis zu 8 Lampen pro Report.)
+- [x] Sonderelemente identifiziert (2026-08-24, live + Koordinaten-Abgleich mit
+      Vendor-Tabelle): M1-M5 = Lamp 16-20 (Gerät hat 5 Makrotasten, nicht 3 wie erst
+      angenommen), Lautstärke-Rad = Lamp 109, Lichtleiste oben = Lamp 110-132 (23
+      Segmente, 110=links, 132=rechts). Siehe `STATE.md` für die vollständige Tabelle.
+- [x] Lamp-ID→Taste-Mapping für die komplette Hauptmatrix (2026-08-24, alle 6 Zeilen
+      live zeilenweise verifiziert, inkl. Numpad — Gerät hat einen vollständigen
+      Nummernblock, war vorher nicht bekannt). Vollständige Tabelle:
+      `docs/evidence/lamp_id_key_mapping.json`. Lamp `55` bleibt nachweislich ohne
+      sichtbare LED (isoliert zweifach getestet), Lamp `100` korrigiert von "Enter"
+      (Vorhersagefehler) zu "RightAlt", echtes Enter ist Lamp `75`.
+- [x] 21 mittlere Lichtleisten-Segmente (Lamp `111`-`131`) einzeln live getestet
+      (2026-08-24, alle 23 Segmente 110-132 gleichzeitig unterschiedlich eingefärbt) —
+      keine toten Segmente, volle Breite bunt, aber optisch verschwimmen die Farben zu
+      einem Verlauf (Diffusor) statt scharf getrennt zu bleiben. Elektrisch pro Segment
+      adressierbar bestätigt.
+- [x] M1/M2/M3 (Lamp `16`-`18`) tatsächlich live getestet (2026-08-24) — vorher nur aus
+      dem M4/M5-Muster abgeleitet, jetzt direkt bestätigt.
+- [x] Die zwei kleinen Lichter an der Unterseite außen (2026-08-24): kein Lamp-ID-
+      Kandidat unter den 135 LampArray-Lampen (Interface 3) — aber live bestätigt, dass
+      sie auf das globale Static-Color-Kommando auf Interface 2 reagieren (Rot, dann
+      Magenta, beides vom Nutzer inkl. dieser Lichter bestätigt). RGB-fähig, aber
+      aktuell nur global mitgesteuert, nicht individuell adressierbar.
+- [x] **Kaltstart-Problem des Sequenzzählers gelöst (2026-08-24):** bei nachweislich
+      verbindungsfreiem Zustand wird `counter=0x00` als erster Versuch akzeptiert.
+      Siehe `PROTOCOL.md`. Löst den seit Iteration 19 offenen Blocker für Phase 3.
+- [ ] Per-LED-Wire-Kommando für Interface 2 (Einzelansteuerung der Unterseiten-/
+      Seiten-Lichter sowie generell Per-Key über den Vendor-Kanal) — weiterhin
+      unbekannt. Für die Hauptmatrix/Sonderelemente nicht mehr nötig (LampArray auf
+      Interface 3 deckt das ab), nur noch relevant für die 10 Seiten-Strip-LEDs und
+      ggf. Effekte (Matrix/Tornado/etc.).
 - [ ] Vollständige Tastenmatrix/LED-Reihenfolge bestimmen
 - [ ] Obere/seitliche Leisten getrennt adressieren
 - [ ] Reconnect nach USB-Reset (noch nicht getestet — beim bisherigen Test kein Reset aufgetreten)
@@ -107,7 +146,19 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
       erkannt, nicht vollständig gedeutet, siehe `docs/evidence/connection-handshake-analysis.md`
 - [x] `Shutdown()`-Aufruf im `RGBController_LightMount`-Destruktor nachgerüstet
       (2026-08-18, verhinderte OpenRGB-Warnung beim Beenden)
-- [ ] Per-Key-Adressierung ergänzen, sobald Wire-Kommando bekannt ist
+- [x] HID-LampArray-Weg (Interface 3) als eigentlicher Per-Key-Kanal identifiziert und
+      live bestätigt (2026-08-23) — macht das gesuchte "Wire-Kommando" auf Interface 2
+      obsolet, siehe `docs/evidence/`. OpenRGB bringt mit `HIDLampArrayController`
+      bereits einen generischen Controller mit; Detection-Konflikt mit dem eigenen
+      `373f:0002`-Vendor-Detector gefunden (skip_generic_detectors blockiert ihn) und
+      per temporärer Detector-Config umgangen.
+- [ ] Per-Key-Adressierung: `LightMountController` (Vendor/Interface 2) vs. generischer
+      `HIDLampArrayController` (Interface 3) — Architekturentscheidung nötig, ob Vendor-
+      Controller für Per-Key erweitert oder ganz auf LampArray umgestiegen wird. Falls
+      LampArray: Detection-Konflikt (`skip_generic_detectors`) muss sauber gelöst werden,
+      nicht nur per temporärer Config umgangen.
+- [ ] Vollständige Lamp-ID→Taste-Zuordnung aus Report-3-`input_binding`-Feldern ableiten
+      (135 Lampen, `tools/lamp_array_probe.py --json`)
 - [ ] Effekte (Matrix, Tornado, ColorWave, Breathing, Reactive) ergänzen, sobald
       Byte-Parameter bekannt sind
 - [ ] udev-Regeln mit minimalen Rechten
