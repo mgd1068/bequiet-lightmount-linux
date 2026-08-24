@@ -1,0 +1,29 @@
+# Event-triggered overlay rules. Each rule names a zone, a color, a
+# priority (higher wins when multiple overlays target the same zone), and
+# how an event source activates/deactivates it. This file has no
+# Home-Assistant- or ntfy-specific logic baked in beyond wiring an event's
+# "match" text to a rule name - the event source implementations
+# (lightmount_automation/events/*.py) are what actually listen for things.
+
+rules:
+  server_a_down:
+    zone: light_bar
+    color: [255, 0, 0]
+    priority: 10
+    # Cleared automatically when a matching "resolved" event arrives, or
+    # after ttl_seconds with no refresh - whichever comes first.
+    ttl_seconds: 900
+
+# ntfy event source (MVP): reuses the existing self-hosted ntfy instance
+# rather than standing up new alerting infrastructure. Point this at a
+# dedicated topic (recommended) or the existing cpe-client-network-alerts
+# topic if you want to reuse it - either way, no code change needed.
+ntfy:
+  base_url: "http://192.168.103.59:8090"
+  topic: "lightmount-events"
+  # Each incoming ntfy message is matched against these rules by a simple
+  # substring/tag match against its title/message/tags.
+  matches:
+    - rule: server_a_down
+      contains: "server_a_down"
+      resolved_contains: "server_a_up"

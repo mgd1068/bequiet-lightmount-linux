@@ -183,11 +183,25 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
       zusätzlich als öffentliches GitLab-Snippet geteilt
       (https://gitlab.com/-/snippets/6041483). Kommentar mit den Kernfunden (LampArray-
       Weg, `skip_generic_detectors`-Bug) auf GitLab-Issue #4950 gepostet.
-- [ ] Upstream-tauglicher Patch/MR vorbereiten — nächster Schritt nach dem
-      Issue-Kommentar: auf Maintainer-Reaktion warten, dann ggf. echten MR für den
-      `skip_generic_detectors`-Fix (per-Interface statt VID/PID-weit) einreichen.
-      Ähnliche offene Issues zur Beobachtung: #5505 (ASUS TUF A18), #2811 (ASUS ROG
-      Strix Multi-Device).
+- [x] **`skip_generic_detectors`-Bug echt gefixt und lokal verifiziert (2026-08-24):**
+      `openrgb-src-private/DetectionManager.cpp`, `RunHIDDetector` +
+      `RunHIDWrappedDetector` — `skip_generic_detectors=true` wird jetzt erst nach
+      erfolgreichem `compare()` gesetzt, nicht mehr schon bei grobem
+      `matching_id()`-Treffer. Verifiziert: unser Vendor-Detector (Interface 2) UND
+      der generische LampArray-Detector (Interface 3) laufen jetzt gleichzeitig ohne
+      Workaround-Config. Als eigener Commit `1443577` im `openrgb-src-private`-Checkout
+      (eigenes Git, `origin` = echtes OpenRGB-Repo) — noch nicht gepusht/als MR
+      eingereicht, das ist der nächste Schritt.
+- [x] **Zweiter, unabhängig gefundener Bug: `NetworkServer::SendReply_PluginList`
+      Nullpointer-Crash (2026-08-24).** `plugin_manager` ist im headless
+      `--server`-Betrieb (ohne `--gui`) immer `nullptr` — jeder SDK-Client-Connect
+      (u. a. `openrgb-python`) crashte den kompletten Server (SIGSEGV) beim
+      Plugin-Listen-Request. Gefunden via `coredumpctl`/`gdb`-Backtrace, gefixt (0
+      Plugins statt Crash bei fehlendem `plugin_manager`), verifiziert (Server bleibt
+      stabil, Bulk-Update von 135 Lampen in <1ms). Commit `243f1f6`.
+- [ ] Upstream-tauglicher Patch/MR für beide Fixes vorbereiten und einreichen —
+      nächster Schritt. Ähnliche offene Issues zur Beobachtung: #5505 (ASUS TUF A18),
+      #2811 (ASUS ROG Strix Multi-Device).
 
 ## Phase 4
 

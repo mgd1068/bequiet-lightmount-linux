@@ -73,6 +73,91 @@ nicht mehr auf dem kritischen Pfad — VM `lightmount-win11` bleibt trotzdem reg
 und einsatzbereit, falls der Vendor-Weg später noch gebraucht wird (z. B. für Effekte
 wie Matrix/Tornado, die LampArray nicht abdeckt).
 
+## Update — 2026-08-24 Fortsetzung 3: OpenRGB-Integration live, `automation/`-Daemon gebaut
+
+**Ziel:** Tastatur manuell über GUI und automatisiert (Zeitprofile + Event-Overlays +
+manuelles Gaming-Profil) steuerbar machen, als eigenständiges externes Tool, mit
+Schnittstelle für Home Assistant statt fest eingebauter HA-Logik. Plan unter
+`~/.claude/plans/hazy-hatching-gosling.md`.
+
+**Zwei echte OpenRGB-Bugs gefunden und lokal gefixt** (Details siehe `BACKLOG.md`):
+1. `skip_generic_detectors`-Bug in `DetectionManager.cpp` — jetzt korrekt erst nach
+   `compare()` gesetzt statt schon bei grobem VID/PID-Treffer. Vendor-Detector
+   (Interface 2) und generischer LampArray-Detector (Interface 3) laufen jetzt
+   gleichzeitig, ohne Workaround-Config.
+2. Nullpointer-Crash in `NetworkServer::SendReply_PluginList` — `plugin_manager` ist im
+   headless `--server`-Betrieb immer `nullptr`, jeder SDK-Client-Connect crashte den
+   Server. Gefunden via `coredumpctl`/`gdb` (sechs Crashes in Folge, exakt gleicher
+   Absturzpunkt), gefixt.
+
+**Architektur (ein OpenRGB-Prozess hält die Hardware, alles andere ist SDK-Client):**
+- `openrgb-lightmount-server.service` (neues systemd-User-Unit): dedizierter,
+  headless OpenRGB-SDK-Server (Port 6742), eigene Config
+  `~/.config/openrgb-lightmount/OpenRGB.json` mit explizit deaktivierten
+  Fremd-Detectoren (`SteelSeries Apex 3`, `Corsair Ironclaw RGB`) — **wichtig:** die
+  Detector-Einstellungen müssen unter einem verschachtelten `"Detectors"`-Block
+  liegen (`{"Detectors": {"detectors": {...}}}`), nicht flach — eine falsch
+  verschachtelte Version griff beim ersten Versuch nicht und hat Apex3/Ironclaw
+  versehentlich nochmal in Direct Mode geschaltet (zweimal, sofort mit dem bekannten
+  Fix behoben, vom Nutzer bestätigt).
+- `automation/openrgb-lightmount-gui.sh`: manuelle GUI-Nutzung als reiner SDK-Client
+  (`--nodetect --client 127.0.0.1:6742 --gui`) — **wichtig:** `--noautoconnect`
+  bedeutet nur "nicht automatisch zu einem lokalen Server verbinden", **nicht**
+  "keine lokale Hardware-Erkennung" — dafür ist `--nodetect` nötig, sonst scannt auch
+  ein `--client`-Aufruf lokale Hardware und hätte wieder Apex3/Ironclaw angefasst
+  (live beobachtet).
+- `automation/lightmount_automation/` (Python, eigenes `.venv`, `openrgb-python`):
+  `zones.py` (löst benannte Zonen aus `config/zones.yaml` gegen
+  `lamp_id_key_mapping.json` auf), `openrgb_client.py` (SDK-Wrapper — **wichtig:**
+  viele einzelne `UpdateSingleLED`-Aufrufe hintereinander für ein komplettes Repaint
+  brachten den Client aus dem Tritt (`OpenRGBDisconnected`) — ab >8 geänderten Lampen
+  immer Bulk-`set_colors()`/`UpdateLEDs` verwenden, nicht einzeln loopen),
+  `layers.py` (Basis-Ebene + priorisierte Overlay-Regeln, Diff-basiertes Pushen),
+  `time_profiles.py` (Zeitprofile config-driven, analog Apex3, aber pro Zone),
+  `events/` (pluggable `EventSource`-Interface, MVP-Implementierung `ntfy_source.py`
+  nutzt den schon vorhandenen ntfy-Server statt neuer Infrastruktur), `api.py`
+  (lokale FastAPI, das "Gerät" für externe Systeme wie Home Assistant — keine
+  HA-spezifische Logik im Code, nur eine generische REST-Schnittstelle, HA bindet sich
+  über eigene RESTful-Command-Integration an), `cli.py`/`lightmount-ctl` (manuelle
+  Steuerung, u. a. der vom Nutzer gewünschte manuelle Gaming-Profil-Trigger).
+- `lightmount-automation.service` (systemd-User-Unit, `Requires=`/`After=` den
+  Server-Service): läuft den Daemon (Zeitplan-Loop + Event-Listener + API in einem
+  asyncio-Prozess).
+- udev-Regel `/etc/udev/rules.d/99-lightmount-openrgb.rules` (analog zur
+  Apex3-Regel): startet den Server-Service bei USB-Reconnect neu (OpenRGB erkennt
+  Hot-Plug nicht selbst) — Skript `/usr/local/bin/lightmount-reconnect.sh`, nutzt
+  `sudo -u mathias systemctl --user restart` aus dem Root-Kontext von udev heraus.
+  **Nicht live getestet** (kein tatsächlicher Replug durchgeführt).
+
+**Home Assistant:** Läuft echt unter `192.168.2.26:8123` (Korrektur des Nutzers
+gegenüber der ursprünglichen Recherche, die "kein HA vorhanden" ergab — das war die
+falsche/veraltete Vault-Notiz). Bestehende Token-Config unter
+`/opt/scripts/scripts/config/config.yaml` (root-only lesbar), genutzt von
+`~/homeassistant-automations/ha_common.py`. **Netzwerk von diesem Rechner zu
+192.168.2.26 war beim Testen nicht erreichbar** ("Keine Route zum Zielrechner") —
+muss vor echter HA-Anbindung geklärt werden, blockiert aber nicht den Daemon selbst.
+Bewusst **keine** HA-spezifische Logik im Code — der Daemon exponiert nur eine
+generische HTTP-API, HA bindet sich per RESTful-Integration an (Beispiel in
+`automation/README.md`), MQTT Discovery als möglicher späterer Ausbau.
+
+**End-to-End live verifiziert (alles vom Nutzer bestätigt):**
+- Bulk-Farbwechsel über die API (Zeitprofil "standard" → hellblau)
+- Zonen-Override per CLI (`lightmount-ctl zone light_bar FF0000`) über dem Basislayer
+- Manuelles Gaming-Profil (`lightmount-ctl profile gaming`: WASD cyan, Rest gedimmt,
+  Lichtleiste rot)
+- ntfy-Event-Trigger End-to-End: Test-Alarm `server_a_down` → Lichtleiste rot →
+  `server_a_up`-Nachricht → Overlay deaktiviert, zurück zum Basislayer
+
+## Nächster konkreter Schritt
+
+1. Upstream-MR für beide OpenRGB-Fixes vorbereiten (Commits `1443577`/`243f1f6` im
+   `openrgb-src-private`-Checkout liegen bereit, noch nicht gepusht).
+2. Netzwerk-Erreichbarkeit zu `192.168.2.26` (Home Assistant) klären, dann echte
+   HA-seitige RESTful-Integration einrichten und testen.
+3. udev-Reconnect-Regel mit einem echten Replug/KVM-Wechsel verifizieren.
+4. Bei Bedarf: MQTT-Discovery als native HA-Geräte-Integration ergänzen, sobald ein
+   MQTT-Broker in HA-Nähe bestätigt ist.
+
 ## Update — 2026-08-24: drei Tasten gleichzeitig unabhängig gefärbt (Ziel erreicht)
 
 Rein lesender `lamp_array_probe.py --json`-Lauf zeigt: von 135 Lampen haben nur **3**

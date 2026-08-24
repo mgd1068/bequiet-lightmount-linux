@@ -1,0 +1,40 @@
+# Time-of-day base profiles (same concept as the SteelSeries Apex 3 setup,
+# but per-zone instead of whole-device only). Times are local, 24h, the
+# active profile is whichever entry's [start, end) contains the current
+# time - see time_profiles.py.
+
+profiles:
+  standard:
+    start: "06:00"
+    end: "20:00"
+    zones:
+      main_matrix: [0, 120, 255]
+      light_bar: [0, 120, 255]
+      m_keys: [0, 120, 255]
+      dial: [0, 120, 255]
+
+  late:
+    start: "20:00"
+    end: "24:00"
+    zones:
+      main_matrix: [255, 60, 0]
+      light_bar: [255, 60, 0]
+      m_keys: [255, 60, 0]
+      dial: [255, 60, 0]
+
+  night:
+    start: "00:00"
+    end: "06:00"
+    zones:
+      main_matrix: [40, 0, 0]
+      light_bar: [40, 0, 0]
+      m_keys: [40, 0, 0]
+      dial: [40, 0, 0]
+
+# Manually-triggered profiles (not time-based) - "lightmount-ctl profile gaming"
+manual_profiles:
+  gaming:
+    zones:
+      main_matrix: [20, 20, 20]
+      wasd: [0, 200, 255]
+      light_bar: [255, 0, 0]

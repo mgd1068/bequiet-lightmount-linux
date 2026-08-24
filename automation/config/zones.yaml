@@ -1,0 +1,22 @@
+# Named lamp zones for the Light Mount, resolved against
+# docs/evidence/lamp_id_key_mapping.json. Edit freely - no code changes needed.
+#
+# A zone is either an explicit lamp_ids list, a lamp_range [start, end]
+# (inclusive), a list of key names (resolved via the mapping file), or
+# "all" minus a list of other zones to exclude.
+
+zones:
+  light_bar:
+    lamp_range: [110, 132]
+
+  m_keys:
+    lamp_ids: [16, 17, 18, 19, 20]
+
+  dial:
+    lamp_ids: [109]
+
+  wasd:
+    keys: [W, A, S, D]
+
+  main_matrix:
+    all_except: [light_bar, m_keys, dial]

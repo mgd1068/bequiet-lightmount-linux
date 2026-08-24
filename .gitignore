@@ -5,3 +5,7 @@ openrgb-src-private/
 *.pcapng
 build/
 .claude/
+automation/.venv/
+automation/__pycache__/
+automation/lightmount_automation/__pycache__/
+automation/lightmount_automation/events/__pycache__/
