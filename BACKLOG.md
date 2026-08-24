@@ -199,13 +199,19 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
       Plugin-Listen-Request. Gefunden via `coredumpctl`/`gdb`-Backtrace, gefixt (0
       Plugins statt Crash bei fehlendem `plugin_manager`), verifiziert (Server bleibt
       stabil, Bulk-Update von 135 Lampen in <1ms). Commit `243f1f6`.
-- [x] **Fixes propagierbar gemacht (2026-08-24):** Patch-Dateien im GitHub-Repo
+- [x] **Fixes propagiert (2026-08-24):** Patch-Dateien im GitHub-Repo
       (`openrgb-patches/`), Branch `fix/lightmount-lamparray-detection` auf GitLab-
-      Fork `gitlab.com/mgd681/OpenRGB` gepusht. **Noch offen:** die eigentliche
-      Merge-Request gegen `CalcProgrammer1/OpenRGB` öffnen (bewusst noch nicht
-      automatisch gemacht — öffentliche Aktion, braucht explizites Go). Ähnliche
+      Fork `gitlab.com/mgd681/OpenRGB`, **MR gegen `CalcProgrammer1/OpenRGB` offen:
+      https://gitlab.com/CalcProgrammer1/OpenRGB/-/merge_requests/3509**. Ähnliche
       offene Issues zur Beobachtung: #5505 (ASUS TUF A18), #2811 (ASUS ROG Strix
       Multi-Device).
+- [x] **Dedizierter Server zeigt jetzt alle Geräte (2026-08-24):** Detector-Sperre für
+      Apex3/Ironclaw aus `~/.config/openrgb-lightmount/OpenRGB.json` entfernt (Datei
+      wird von OpenRGB selbst beim Start auf alle ~2000 bekannten Detectoren
+      expandiert — nur die zwei `false`-Einträge mussten geändert werden). GUI zeigt
+      jetzt Light Mount + Apex3 + Ironclaw gemeinsam. Neustart mit voller Erkennung
+      hat Apex3/Ironclaw erwartungsgemäß kurz in Direct Mode geschaltet, sofort mit
+      dem bekannten Fix behoben, vom Nutzer bestätigt.
 
 ## Phase 4
 
