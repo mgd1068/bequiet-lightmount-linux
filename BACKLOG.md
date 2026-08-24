@@ -175,7 +175,14 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
 - [ ] Effekte (Matrix, Tornado, ColorWave, Breathing, Reactive) ergänzen, sobald
       Byte-Parameter bekannt sind
 - [ ] udev-Regeln mit minimalen Rechten
-- [ ] Upstream-tauglicher Patch/MR vorbereiten
+- [ ] Upstream-tauglicher Patch/MR vorbereiten — **Vorarbeit 2026-08-24:** GitLab-Issue
+      #4950 geprüft (weiterhin offen, keine Maintainer-Aktivität), Kommentar-Entwurf
+      erstellt (`docs/gitlab-issue-4950-draft-comment.md`, noch nicht gepostet, wartet
+      auf Freigabe). Ähnliche offene Issues gefunden (#5505 ASUS TUF A18, #2811 ASUS
+      ROG Strix Multi-Device) — kein exaktes Duplikat unseres
+      `skip_generic_detectors`-Fundes, aber verwandte LampArray-Detection-Themen.
+      Vorschlag im Entwurf: den Detection-Manager-Bug als eigenen, engeren Fix
+      (`skip_generic_detectors` pro Interface statt pro VID/PID) separat vorschlagen.
 
 ## Phase 4
 
