@@ -175,14 +175,19 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
 - [ ] Effekte (Matrix, Tornado, ColorWave, Breathing, Reactive) ergänzen, sobald
       Byte-Parameter bekannt sind
 - [ ] udev-Regeln mit minimalen Rechten
-- [ ] Upstream-tauglicher Patch/MR vorbereiten — **Vorarbeit 2026-08-24:** GitLab-Issue
-      #4950 geprüft (weiterhin offen, keine Maintainer-Aktivität), Kommentar-Entwurf
-      erstellt (`docs/gitlab-issue-4950-draft-comment.md`, noch nicht gepostet, wartet
-      auf Freigabe). Ähnliche offene Issues gefunden (#5505 ASUS TUF A18, #2811 ASUS
-      ROG Strix Multi-Device) — kein exaktes Duplikat unseres
-      `skip_generic_detectors`-Fundes, aber verwandte LampArray-Detection-Themen.
-      Vorschlag im Entwurf: den Detection-Manager-Bug als eigenen, engeren Fix
-      (`skip_generic_detectors` pro Interface statt pro VID/PID) separat vorschlagen.
+- [x] **Repo veröffentlicht (2026-08-24):** GitHub-Repo auf public gestellt
+      (https://github.com/mgd1068/bequiet-lightmount-linux), nachdem zwei echte
+      Geräte-Seriennummern in committeten Evidence-Dateien redigiert wurden
+      (`docs/evidence/own_capture_connect_raw.txt`,
+      `connection-handshake-analysis.md`, `lsusb_v.txt`, `STATE.md`). Mapping-Datei
+      zusätzlich als öffentliches GitLab-Snippet geteilt
+      (https://gitlab.com/-/snippets/6041483). Kommentar mit den Kernfunden (LampArray-
+      Weg, `skip_generic_detectors`-Bug) auf GitLab-Issue #4950 gepostet.
+- [ ] Upstream-tauglicher Patch/MR vorbereiten — nächster Schritt nach dem
+      Issue-Kommentar: auf Maintainer-Reaktion warten, dann ggf. echten MR für den
+      `skip_generic_detectors`-Fix (per-Interface statt VID/PID-weit) einreichen.
+      Ähnliche offene Issues zur Beobachtung: #5505 (ASUS TUF A18), #2811 (ASUS ROG
+      Strix Multi-Device).
 
 ## Phase 4
 
