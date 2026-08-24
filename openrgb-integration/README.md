@@ -25,35 +25,49 @@ gehen sollen. Sie liegen hier im Hauptrepo (GPL-2.0-or-later, wie OpenRGB selbst
    OpenRGB entdeckt neue Controller automatisch per Glob (`Controllers/*.cpp`,
    `Controllers/*.h` in `OpenRGB.pro`) — kein manueller Eintrag nötig.
 
-## Umfang (bewusst minimal)
+## Umfang (Stand 2026-08-24: alle 6 Effekte implementiert)
 
-Nur **eine statische Vollflächenfarbe** ist implementiert — das ist die einzige
-Funktion, die dieses Projekt mit einem selbst gewählten (nicht nur aus einem Capture
-kopierten) Wert auf echter Hardware verifiziert hat (siehe `PROTOCOL.md`, „Erster
-selbst konstruierter Hardwaretest"). Per-Key-Adressierung, Helligkeit und die
-eingebauten Effekte (Matrix, Tornado, ColorWave, Breathing, Reactive) existieren laut
-Gerätemanifest in der Firmware, aber ihr Byte-Protokoll ist nicht bestätigt — sie werden
-bewusst **nicht** geraten implementiert. Siehe `BACKLOG.md` für den Ausbaupfad.
+Alle 6 Firmware-Effekte (Static, ColorWave, Tornado, Breathing, Reactive, Matrix) sind
+implementiert und live gegen echte Hardware über den vollständigen OpenRGB-Stack
+getestet (SDK-Server → Client → Controller → Gerät), inkl. Helligkeit, Tempo und
+wählbarer Farben. Grundlage: vollständige Protokoll-Reverse-Engineering-Arbeit vom
+2026-08-24, siehe `PROTOCOL.md` ("Alle 6 Effekte entschlüsselt...", "...Parameter
+systematisch entschlüsselt..."). Nur **Whole-Keyboard**-Steuerung — dieser Kanal
+(Interface 2) ist nachweislich global/synchron, kein Per-Key. Echtes Per-Key läuft
+über den separaten, bereits fertigen generischen `HIDLampArrayController` auf
+Interface 3 desselben Geräts (siehe `docs/evidence/lamp_id_key_mapping.json`).
 
-## Bekannte Einschränkung: Zähler-Kaltstart ungelöst
+**Byte-Layout** (alle Effekte außer Static teilen sich ein Schema): `[Effekt-Typ]
+[Richtung][Helligkeit][Tempo][Farbanzahl-Modus]` gefolgt von 1/2 direkten RGB-Werten
+oder (3+ Farben) `[Keyframe-Anzahl]` + N×`[R,G,B,Prozent]`. Die Report-Längenfeld-
+Formel wurde am 2026-08-24 erstmals abgeleitet (vorher nie bekannt): `Länge =
+Payload-Bytes + 7`, bestätigt gegen 4 unabhängige echte Captures.
 
-**Status (2026-08-19): Build und Geräteerkennung funktionieren. Das Feld, das bis
-2026-08-18 als "16-Bit-Sequenznummer" bezeichnet wurde, ist tatsächlich zwei getrennte
-Bytes — ein 1-Byte-Zähler (Byte 4) und ein separates Marker-Byte (Byte 5, konstant
-`0x10` für Static-Color). Sobald der Zähler korrekt an den echten Gerätezustand
-anschließt, funktioniert einfaches Weiterzählen zuverlässig (bestätigt mit zwei
-aufeinanderfolgenden echten Hardwaretests, siehe `PROTOCOL.md`
-„Verbindungsaufbau-Capture").**
+**Bekannte, dokumentierte Design-Entscheidungen** (siehe Code-Kommentare in
+`LightMountController.h`/`RGBController_LightMount.cpp` für Details):
+- ColorWave hat 4 Richtungen (oben/unten/links/rechts, kombinierte
+  `HAS_DIRECTION_LR|UD`-Flags), Tornado nur 2 (im/gegen Uhrzeigersinn, `LR`
+  zweckentfremdet mangels passendem OpenRGB-Flag).
+- Bei Reactive ist das "Tempo"-Byte tatsächlich die Abklingzeit — live bestätigt.
+- Matrix' Richtungs-Byte ist auf den einzigen je beobachteten Wert (`0x01`) fest
+  codiert, nicht nutzersteuerbar (keine anderen Werte je getestet).
+- Farbanzahl-Obergrenze `8` ist ein dokumentiertes, ungetestetes Limit (nur 4 und 7
+  Keyframes live beobachtet, Payload-Puffer erlaubt bis 12).
+- **Offene Beobachtung, nicht behoben:** Beim eigenen `--color A,B`-CLI-Flag kamen
+  Basis-/Trigger-Rolle bei Reactive vertauscht heraus gegenüber dem, was eingetippt
+  wurde — nicht weiter verfolgt, da unklar ob CLI-spezifische Listen-Reihenfolge oder
+  auch GUI-relevant. Der Payload-Byte-Order selbst folgt dem echten, bestätigten
+  Geräteverhalten, wurde nicht zur Kompensation geändert.
 
-- `LightMountController` verlangt jetzt explizit `SetCounter()`, bevor
-  `SendStaticColor()` überhaupt schreibt (`IsCounterPrimed()` davor false) — der
-  Controller **rät den Startwert nicht mehr**, weil das nachweislich nicht funktioniert
-  (weder `1` noch `0x2000` wurden vom Gerät akzeptiert).
-- **Weiterhin ungelöst:** wie `SetCounter()` ohne einen frischen Live-Capture-Wert
-  automatisch befüllt werden kann. Der Zähler scheint einen längerfristigen, aber nicht
-  unbegrenzt persistenten Gerätezustand fortzusetzen (Details, inkl. einer
-  vielversprechenden, aber ungetesteten Hypothese zu einem möglichen
-  Timeout-/Reset-Verhalten: siehe `PROTOCOL.md`).
-- Bis das gelöst ist, ist dieser Controller **nur mit manuell eingespeistem
-  Startzähler nutzbar** (z. B. aus einem frischen `usbmon`-Mitschnitt) — er dient als
-  verifiziertes, korrektes Grundgerüst, nicht als für Endnutzer fertige Lösung.
+## Bekannte Einschränkung: Zähler-Kaltstart
+
+**Gelöst für den häufigsten Fall (2026-08-24):** Auf einer nachweislich
+verbindungsfreien Verbindung (keine andere Software spricht mit Interface 2)
+akzeptiert das Gerät `counter=0` beim allerersten Schreibversuch — bestätigt live,
+siehe `PROTOCOL.md` "Kaltstart-Problem des Zählers gelöst". `LightMountControllerDetect.cpp`
+ruft jetzt automatisch `SetCounter(0)` direkt nach der Geräte-Erkennung auf.
+**Weiterhin nicht abgesichert:** falls beim Verbindungsaufbau bereits eine andere
+Software (z. B. ein offener `iocenter.bequiet.com`-Browser-Tab) verbunden ist, könnte
+`counter=0` fälschlich kollidieren — dafür gibt es weiterhin keine Erkennung ohne
+Live-Capture. `SetCounter()`/`IsCounterPrimed()` bleiben öffentlich, falls ein Aufrufer
+einen echten, beobachteten Zählerstand manuell einspeisen möchte.

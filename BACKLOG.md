@@ -193,9 +193,19 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
       geplant über `input_binding` (nur 3 von 135 Lampen gesetzt), sondern per
       Koordinaten-Transformation + zeilenweiser Live-Verifikation. Siehe
       `docs/evidence/lamp_id_key_mapping.json`.
-- [ ] Effekte (Matrix, Tornado, ColorWave, Breathing, Reactive) in den OpenRGB-
-      Controller integrieren — Byte-Parameter jetzt für alle 6 bekannt (2026-08-24,
-      siehe `PROTOCOL.md`), Implementierung im `LightMountController` noch offen
+- [x] **Alle 6 Effekte im `LightMountController` implementiert und live end-to-end
+      getestet (2026-08-24).** Über den vollständigen OpenRGB-Stack (SDK-Server →
+      Client → Controller → Gerät) getestet: Static (mit echter Helligkeit), ColorWave,
+      Tornado, Breathing, Reactive, Matrix — alle vom Nutzer visuell bestätigt.
+      Dabei neu abgeleitet: Report-Längenfeld-Formel (`payload_bytes + 7`, vorher nie
+      bekannt), automatisches `SetCounter(0)`-Priming in `LightMountControllerDetect.cpp`
+      (nutzt den heutigen Kaltstart-Fund). Ein noch ungeklärter Nebenfund: das CLI-
+      `--color`-Flag lieferte bei Reactive Basis-/Trigger-Farbe vertauscht — nicht
+      behoben, da unklar ob CLI- oder auch GUI-Verhalten, siehe
+      `openrgb-integration/README.md`. Skurriler Debugging-Fund unterwegs: ein
+      vergessener, seit Stunden laufender alter `openrgb-lightmount-server.service`
+      (alter Build) beantwortete `--list-devices`-Testaufrufe per SDK-Autoconnect,
+      täuschte stundenlang "nur 1 Modus" vor, obwohl der neue Code korrekt kompilierte.
 - [ ] udev-Regeln mit minimalen Rechten
 - [x] **Repo veröffentlicht (2026-08-24):** GitHub-Repo auf public gestellt
       (https://github.com/mgd1068/bequiet-lightmount-linux), nachdem zwei echte

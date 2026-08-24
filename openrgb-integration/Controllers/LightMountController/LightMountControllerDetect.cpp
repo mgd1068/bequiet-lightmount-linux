@@ -22,6 +22,20 @@ DetectedControllers DetectLightMountControllers(hid_device_info* info, const std
     if(dev)
     {
         LightMountController*     controller     = new LightMountController(dev, info->path, name);
+
+        /*-------------------------------------------------------------*\
+        | Primes the running counter to 0. Confirmed live 2026-08-24:   |
+        | on a connection with demonstrably no prior traffic, counter=0 |
+        | is accepted on the very first write attempt (see PROTOCOL.md  |
+        | "Kaltstart-Problem des Zählers gelöst"). This closes the      |
+        | counter-priming gap for the common case, but is NOT proven    |
+        | safe if another client (e.g. an open iocenter.bequiet.com     |
+        | browser tab) is already connected at detection time - there   |
+        | is still no way to detect that condition without a live       |
+        | capture. See BACKLOG.md.                                      |
+        \*-------------------------------------------------------------*/
+        controller->SetCounter(0);
+
         RGBController_LightMount* rgb_controller = new RGBController_LightMount(controller);
 
         detected_controllers.push_back(rgb_controller);

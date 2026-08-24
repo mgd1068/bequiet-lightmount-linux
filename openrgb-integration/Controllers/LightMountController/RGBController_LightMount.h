@@ -12,18 +12,31 @@
 #include "RGBController.h"
 #include "LightMountController.h"
 
+/*-------------------------------------------------------------------*\
+| Mode values match LightMountEffect in LightMountController.h        |
+| directly (both are the device's own effect-type byte) so            |
+| DeviceUpdateMode()/DeviceUpdateLEDs() can switch on modes[].value    |
+| without a separate translation table.                               |
+\*-------------------------------------------------------------------*/
 enum
 {
-    LIGHT_MOUNT_MODE_STATIC = 0,
+    LIGHT_MOUNT_MODE_STATIC     = LIGHT_MOUNT_EFFECT_STATIC,
+    LIGHT_MOUNT_MODE_COLORWAVE  = LIGHT_MOUNT_EFFECT_COLORWAVE,
+    LIGHT_MOUNT_MODE_TORNADO    = LIGHT_MOUNT_EFFECT_TORNADO,
+    LIGHT_MOUNT_MODE_BREATHING  = LIGHT_MOUNT_EFFECT_BREATHING,
+    LIGHT_MOUNT_MODE_REACTIVE   = LIGHT_MOUNT_EFFECT_REACTIVE,
+    LIGHT_MOUNT_MODE_MATRIX     = LIGHT_MOUNT_EFFECT_MATRIX,
 };
 
 /*-------------------------------------------------------------------*\
-| Only "Static" (single color, whole keyboard) is exposed. Per-key    |
-| control, brightness, and the built-in effects (Matrix, Tornado,     |
-| ColorWave, Breathing, Reactive) exist on the device but their wire  |
-| parameters are not confirmed by this project - see BACKLOG.md.      |
-| Do not add modes here without a corresponding confirmed protocol    |
-| fact in PROTOCOL.md; guessed byte layouts do not belong in code.    |
+| All 6 firmware effects, fully decoded and live-confirmed 2026-08-24 |
+| - see PROTOCOL.md. Per-key control is intentionally still not       |
+| exposed here: it belongs to the separate, already-working generic   |
+| HIDLampArrayController on this device's Interface 3, not this       |
+| Interface-2 vendor channel, which is confirmed to be a genuinely    |
+| global/synchronized channel (see PROTOCOL.md "Architektur-          |
+| Erkenntnis" - the two channels cannot show independent state at     |
+| the same time anyway).                                              |
 \*-------------------------------------------------------------------*/
 class RGBController_LightMount : public RGBController
 {

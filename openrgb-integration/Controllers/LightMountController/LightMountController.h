@@ -11,7 +11,9 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 #include <hidapi.h>
+#include "RGBControllerInterface.h"
 
 /*-----------------------------------------------------------------------*\
 | be quiet! vendor ID / Light Mount product ID                            |
@@ -61,19 +63,46 @@
 |   bytes[8:62] payload, zero-padded                                    |
 |   bytes[62:64] crc16_modbus(bytes[0:62]), u16 LE                      |
 \*-----------------------------------------------------------------------*/
-#define LIGHT_MOUNT_SESSION                   0x0001
-#define LIGHT_MOUNT_MARKER_STATIC_COLOR       0x10
-#define LIGHT_MOUNT_SUBCMD_STATIC_COLOR       0x06
+#define LIGHT_MOUNT_SESSION                   0x0002
+#define LIGHT_MOUNT_MARKER_LIGHTING            0x10
+#define LIGHT_MOUNT_SUBCMD_LIGHTING            0x06
 
 /*-----------------------------------------------------------------------*\
-| Only the "set a single static color for the whole keyboard" command is |
-| implemented, because that is the only command this project has        |
-| actually confirmed on real hardware with a *chosen* (not just replayed |
-| verbatim) color. Per-key addressing, Matrix/Tornado/etc. effects, and  |
-| brightness control are NOT implemented - their exact byte-level        |
-| parameters are not confirmed, and this project does not guess at      |
-| protocol details in code. See BACKLOG.md for what would be needed.    |
+| All 6 firmware effects, fully decoded and live-confirmed on real       |
+| hardware 2026-08-24 via a real usbmon capture of the official          |
+| iocenter.bequiet.com web client (see PROTOCOL.md "Alle 6 Effekte       |
+| entschlüsselt..." and the two "...-Parameter..." sections). Static     |
+| keeps its own separate short payload shape; the other 5 share one      |
+| payload layout:                                                        |
+|   payload[0] effect type (matches the enum below)                     |
+|   payload[1] direction - meaning/range is effect-specific:             |
+|                ColorWave: 0=up,1=down,2=left,3=right (full compass)    |
+|                Tornado:   4=clockwise,5=counterclockwise (2 values     |
+|                           only - NOT the same encoding as ColorWave)   |
+|                Breathing/Reactive: always 0 (no spatial direction)     |
+|                Matrix: always 1 - only value ever observed, not        |
+|                        exposed as a user-controllable parameter here   |
+|   payload[2] brightness, 0-100 direct value                           |
+|   payload[3] tempo/speed, 0-100 direct value (for Reactive this is     |
+|              actually the fade-back/decay time, confirmed live)       |
+|   payload[4] color-count mode: 0x00=1 color (short form, RGB follows  |
+|              directly, no percent byte), 0x01=2 colors (medium form,  |
+|              two direct RGB triplets, no percent byte), 0x02=3+       |
+|              colors (long form: payload[5]=keyframe count N, then     |
+|              N x [R,G,B,percent] - percent = round(i*100/(N-1)))      |
+| The report length field for all of the above was NEVER derived from   |
+| payload size before today - it now is, via a formula confirmed        |
+| against 4 independent real captures: length = payload_bytes + 7.      |
 \*-----------------------------------------------------------------------*/
+enum LightMountEffect
+{
+    LIGHT_MOUNT_EFFECT_STATIC      = 0x00,
+    LIGHT_MOUNT_EFFECT_COLORWAVE   = 0x01,
+    LIGHT_MOUNT_EFFECT_TORNADO     = 0x02,
+    LIGHT_MOUNT_EFFECT_BREATHING   = 0x03,
+    LIGHT_MOUNT_EFFECT_REACTIVE    = 0x04,
+    LIGHT_MOUNT_EFFECT_MATRIX      = 0x05,
+};
 
 class LightMountController
 {
@@ -98,13 +127,46 @@ public:
     /*-------------------------------------------------------------------*\
     | Sets a single static color across the entire keyboard (confirmed   |
     | working: PROTOCOL.md "Erster selbst konstruierter Hardwaretest").  |
-    | Returns false without writing anything if the counter has not been |
-    | primed via SetCounter(), or if the write did not complete (device  |
-    | busy/detached).                                                    |
+    | brightness is 0-100, confirmed live 2026-08-24 (was hardcoded to   |
+    | 100 before that). Returns false without writing anything if the    |
+    | counter has not been primed via SetCounter(), or if the write did  |
+    | not complete (device busy/detached).                               |
     \*-------------------------------------------------------------------*/
-    bool SendStaticColor(uint8_t r, uint8_t g, uint8_t b);
+    bool SendStaticColor(uint8_t r, uint8_t g, uint8_t b, uint8_t brightness);
+
+    /*-------------------------------------------------------------------*\
+    | Sets one of the 5 dynamic effects (everything except Static) with  |
+    | its confirmed parameters. `direction`/`speed` are effect-specific  |
+    | (see the LightMountEffect/payload comment above) - callers must    |
+    | pass the raw device-level value already, this function does not    |
+    | re-interpret them per effect. `colors` selects the color-count     |
+    | mode: 1, 2, or 3+ entries switch between the three confirmed       |
+    | payload shapes automatically. `colors[0]` becomes the FIRST wire   |
+    | color (confirmed 2026-08-24 live capture: for Reactive this is the |
+    | base/resting color, `colors[1]` the keypress-trigger color) -      |
+    | matches the device's own byte order exactly. Observed once via     |
+    | this OpenRGB build's own `--color A,B` CLI flag that the resulting |
+    | visual base/trigger roles came out swapped versus what was typed;  |
+    | not chased further since it wasn't confirmed whether that's a CLI  |
+    | list-parsing quirk or applies to the GUI's colors[] too - the      |
+    | payload byte order itself is the device-confirmed fact and is not  |
+    | changed here to compensate for an unconfirmed client-side quirk.   |
+    | Same counter-priming requirement and return value semantics as     |
+    | SendStaticColor().                                                  |
+    \*-------------------------------------------------------------------*/
+    bool SendDynamicEffect(LightMountEffect effect, uint8_t direction, uint8_t brightness,
+                            uint8_t speed, const std::vector<RGBColor>& colors);
 
 private:
+    /*-------------------------------------------------------------------*\
+    | Shared report assembly: header (incl. counter increment) + given   |
+    | payload + length field (payload_bytes + 7, see header comment) +   |
+    | CRC16/MODBUS trailer, then a single hid_write(). Used by both      |
+    | SendStaticColor() and SendDynamicEffect() so the header/CRC/length |
+    | logic exists in exactly one place.                                 |
+    \*-------------------------------------------------------------------*/
+    bool SendReport(uint8_t marker, uint8_t subcmd, const std::vector<uint8_t>& payload);
+
     hid_device*     dev;
     std::string     location;
     std::string     name;
