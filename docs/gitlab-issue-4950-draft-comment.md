@@ -10,56 +10,44 @@ do via `.gitignore`).
 
 ---
 
-Hi, I've been reverse-engineering this device on Linux over the past week or so and
-wanted to share some findings that should make proper OpenRGB support fairly
-straightforward — possibly without even needing a device-specific controller.
+Hi, I've been reverse-engineering this device on Linux and have a finding that should
+make OpenRGB support fairly straightforward — possibly without a device-specific
+controller at all.
 
-**TL;DR: Interface 3 is a standard HID LampArray device (Usage Page 0x59, Usage 0x01),
-and it already works with OpenRGB's existing generic `HIDLampArrayController`.**
+**Interface 3 is a standard HID LampArray device (Usage Page 0x59, Usage 0x01) and
+already works with OpenRGB's existing generic `HIDLampArrayController`.** 135
+individually addressable lamps, `ArrayKind = Keyboard`. I've live-verified a
+near-complete lamp-ID → key mapping against real hardware (full matrix incl. numpad, 5
+macro keys, volume dial, 23-segment top light bar) — happy to share the JSON if
+useful. (My device's `bcdDevice`/iSerial differ from the original report — newer
+firmware, LampArray interface unaffected.)
 
-- 135 individually addressable lamps, `ArrayKind = Keyboard`, `MinUpdateInterval =
-  33333µs`.
-- I've live-verified a near-complete lamp-ID → physical-key mapping against real
-  hardware (full main matrix including a numpad, 5 macro keys M1-M5, the volume dial,
-  and all 23 segments of the top light bar). Happy to share the mapping table
-  (`lamp_id → key name`, JSON) if useful for a proper controller/detector.
-- My device's `bcdDevice` is `23.00` with a real iSerial string (`QUK...`), vs. the
-  `15.00`/no-serial reported in the original issue — looks like a newer firmware
-  revision, but the LampArray interface itself is unaffected.
+**One blocker that may matter beyond this device:** `DetectionManager` sets
+`skip_generic_detectors = true` for *every* interface of a VID/PID once any
+vendor-specific detector for that VID/PID activates, even on interfaces where that
+detector's own match fails. Here, an interface-2-only vendor detector silently blocked
+the generic LampArray detector from ever running on interface 3 of the same device.
+Worked around locally by disabling the vendor detector; a real fix would probably
+scope `skip_generic_detectors` per-interface instead of per-VID/PID.
 
-**One real blocker I hit, which may be relevant beyond just this device:** while
-prototyping a minimal vendor-protocol-only controller for Interface 2 (see below), I
-found that `DetectionManager` sets `skip_generic_detectors = true` for *every*
-interface of a VID/PID once any vendor-specific detector for that VID/PID activates —
-even on interfaces where that vendor detector's own interface/usage match fails. In my
-case, an interface-2-only vendor detector was silently blocking the generic
-Page-0x59/Usage-0x01 LampArray detector from ever running on interface 3 of the *same*
-device. Worked around locally with a detector config that disables the vendor
-detector, but that's obviously not a real fix. Given `HIDLampArrayController` already
-exists generically, I suspect other devices with a partial/legacy vendor detector
-alongside a real LampArray interface could hit the same thing — might be worth a
-narrower `skip_generic_detectors` scope (per-interface rather than per-VID/PID) as a
-separate fix.
+There's also a separate vendor channel (Interface 2, same one iocenter.bequiet.com
+uses) with a few global effects and two small accent lights outside the LampArray's
+address space, not individually controllable as far as I can tell — not needed for
+per-key operation, just FYI.
 
-**Also FYI, not blocking anything:** there's a second vendor channel on Interface 2
-(the same one `iocenter.bequiet.com`'s WebHID config page uses) that supports a
-handful of global effects (Static, ColorWave, Matrix confirmed working; Tornado,
-Breathing, Reactive not yet tested) plus two small RGB elements (side/underside
-accent lights) that live *outside* the LampArray's 135-lamp address space and, as far
-as I can tell after fairly thorough testing, aren't individually addressable at all —
-only settable as part of the same global command that colors everything else on that
-channel. Not needed for basic per-key operation via LampArray, just noting it in case
-someone wants full effect parity later.
-
-Happy to test patches/detector changes against real hardware, or share the full
-protocol writeup/mapping data — let me know what'd be useful.
+Happy to test patches against real hardware, or share the protocol notes.
 
 ---
 
 **Vor dem Posten bitte prüfen:**
-- Ton/Detailgrad okay so, oder kürzer?
-- Soll das Mapping (`docs/evidence/lamp_id_key_mapping.json`) tatsächlich angeboten
-  werden (dann müsste zumindest diese eine Datei früher oder später öffentlich
-  einsehbar sein, nicht das ganze Repo)?
 - GitLab-Account zum Posten (eigener Account? oder gar nicht selbst posten, nur als
   Grundlage für einen Maintainer-DM/E-Mail an be quiet! Support nutzen?)
+
+**Zur Mapping-Datei:** `docs/evidence/lamp_id_key_mapping.json` ist mit 561 Zeilen zu
+lang, um sie im Kommentar selbst einzufügen. Praktikabelster Weg, ohne das ganze
+(noch private) Repo zu veröffentlichen: als eigenständiges **GitLab Snippet**
+anhängen (Datei hochladen unter "Create new snippet", Link dann in den Kommentar
+einfügen) — das ist ein bewusster, separater Veröffentlichungsschritt, den nur du
+machen kannst (eigener GitLab-Account nötig), nicht etwas, das automatisch mit diesem
+Kommentar-Entwurf mitpassiert. Datei liegt bereit unter
+`~/bequiet-lightmount-linux/docs/evidence/lamp_id_key_mapping.json`.
