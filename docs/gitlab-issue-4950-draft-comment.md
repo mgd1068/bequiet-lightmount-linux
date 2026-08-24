@@ -19,8 +19,8 @@ already works with OpenRGB's existing generic `HIDLampArrayController`.** 135
 individually addressable lamps, `ArrayKind = Keyboard`. I've live-verified a
 near-complete lamp-ID → key mapping against real hardware (full matrix incl. numpad, 5
 macro keys, volume dial, 23-segment top light bar) — happy to share the JSON if
-useful. (My device's `bcdDevice`/iSerial differ from the original report — newer
-firmware, LampArray interface unaffected.)
+useful. (My device's `bcdDevice` is `23.00` with a real iSerial string, vs. `15.00`/no serial
+in the original report — newer firmware, LampArray interface unaffected.)
 
 **One blocker that may matter beyond this device:** `DetectionManager` sets
 `skip_generic_detectors = true` for *every* interface of a VID/PID once any

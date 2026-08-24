@@ -36,7 +36,7 @@ weiter**, wie oben gezeigt.
 
 | Byte4 | Subcmd | Antwort-Payload (Auszug) | Interpretation (Hypothese) |
 |---|---|---|---|
-| 02 | 02 | ASCII `"004H5380007453"` | Geräte-Identifikations-/Seriennummer-artiger String |
+| 02 | 02 | ASCII, 14 Zeichen (**redigiert vor Veröffentlichung, war ein echter Geräte-Identifikationsstring**) | Geräte-Identifikations-/Seriennummer-artiger String |
 | 03 | 05 | 1 Byte `17` | unklar |
 | 04 | 01 | `00 01 01 00 00 03` | evtl. Firmware-/Protokollversion |
 | 05 | 01 | identisch zu Byte4=04 | Wiederholung derselben Abfrage |

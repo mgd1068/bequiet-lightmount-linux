@@ -233,7 +233,7 @@ Nullzustand müssen alle betroffenen Lamp-IDs explizit auf Schwarz gesetzt werde
 - OpenRGB Issue #4950 geprüft (GitLab API, unauthentifiziert): keine neuen Kommentare,
   keine MR/Code seit Ticketerstellung. Ursprünglicher Melder hatte `bcdDevice 15.00`,
   `iSerial 0` (kein Serial-String) — abweichend von meinem Gerät (`23.00`,
-  `QUK123456789`); vermutlich neuere Firmware-Revision, nicht sicherheitsrelevant.
+  `[REDACTIERTE-SERIENNUMMER]`); vermutlich neuere Firmware-Revision, nicht sicherheitsrelevant.
 - `usbmon3_capture.pcapng.gz` aus dem Issue geladen (via GitLab API mit numerischer
   Projekt-ID — der direkte `/uploads/`-Pfad aus der Markdown-Vorschau lieferte 404),
   lokal unter `captures-private/` entpackt (git-ignoriert, nicht committet).
@@ -742,7 +742,7 @@ Erweiterung nachgezogen werden, sobald neue Erkenntnisse vorliegen.
   `RGBController_LightMount.cpp`/`LightMountControllerDetect.cpp`.
 - `./openrgb --list-devices` erkennt **"be quiet! Light Mount"** korrekt als eigenes
   Gerät: `Location: HID: /dev/hidraw10` (Interface 2, exakt wie vorgesehen),
-  `Serial: QUK123456789` (stimmt mit `lsusb -v` aus Iteration 1 überein), `Modes:
+  `Serial: [REDACTIERTE-SERIENNUMMER]` (stimmt mit `lsusb -v` aus Iteration 1 überein), `Modes:
   [Static]`, `Zones: Keyboard`, `LEDs: Keyboard` — alles wie im Controller-Code
   definiert. Erster echter End-to-End-Nachweis der Detection.
 - Noch kein Farbtest über OpenRGB selbst ausgeführt (würde erstmals die unverifizierte

@@ -15,7 +15,7 @@ Device Descriptor:
   bcdDevice           23.00
   iManufacturer           1 be quiet!
   iProduct                2 be quiet! Light Mount
-  iSerial                 3 QUK123456789
+  iSerial                 3 [REDACTED-vor-Veroeffentlichung, war ein echter Geraete-Seriennummer-String]
   bNumConfigurations      1
   Configuration Descriptor:
     bLength                 9
