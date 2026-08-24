@@ -401,10 +401,24 @@ ist aber ein synchroner Zeit-Zyklus über alle LEDs).
 Gleiches Strukturmuster (`[Typ][00][Helligkeit][0x32][?][Anzahl][Quadrupel...]`) auch
 im schon länger bekannten, aber nie vollständig gedeuteten 29-Byte-"Matrix"-Befehl
 (Frame 2341/3109) wiedererkannt: Typ `0x05`, 4 Keyframes, RGB-Werte bilden eine
-aufsteigende Grün-Helligkeitsrampe (dunkel→hell) bei Stufen 0/33/67/100% — passt zum
-bekannten Matrix-Effekt-Konzept (Helligkeits-Fade), nicht live nachgetestet (nur
-offline erneut analysiert, keine neue Hardware-Bestätigung nötig, da bereits früher
-als "Matrix" identifiziert).
+aufsteigende Grün-Helligkeitsrampe (dunkel→hell) bei Stufen 0/33/67/100%. **Ebenfalls
+live bestätigt** (2026-08-24, byteidentische Wiedergabe mit dem neuen Kaltstart-Zähler):
+klassischer grüner "Code-Regen"-Effekt, vom Nutzer bestätigt. Dabei **leuchten auch die
+zwei Unterseiten-Lichter mit** — bestätigt, dass sie nicht nur auf Static-Color,
+sondern generell auf alle Interface-2-Effektbefehle reagieren (global, wie erwartet).
+
+**Zwei weitere Live-Beobachtungen (Nutzer, 2026-08-24):**
+- Die Seiten-Lichter sind selbst **segmentiert** wie die obere Lichtleiste (nicht nur
+  zwei einzelne Punkte) — passt zur alten Vendor-Tabelle (`Led_KeyboardLeft/Right1-5`,
+  5+5=10 LEDs).
+- Beim Matrix-Effekt **wandert das Licht sichtbar über 4-5 Segmente** — d. h. der
+  Effekt ist keine reine Zeit-Synchronisation wie ColorWave (alle LEDs gleichzeitig
+  gleiche Farbe), sondern eine **räumliche, im Gerät selbst laufende Animation**.
+  **Konsequenz:** Die kurzen Interface-2-Effektbefehle (29-41 Byte, wenige Keyframes)
+  parametrisieren nur Farbe/Helligkeitsverlauf eines **fest in der Firmware
+  einprogrammierten** Animationsmusters — der Host steuert nicht Pixel-für-Pixel/
+  Frame-für-Frame, anders als bei LampArray Direct Mode (dort schickt der Host jeden
+  einzelnen Lampenwert selbst).
 
 **Wichtig:** Beide Effekt-Familien sind weiterhin **globale/synchrone** Kommandos, kein
 Hinweis auf Einzel-LED-Adressierung.
