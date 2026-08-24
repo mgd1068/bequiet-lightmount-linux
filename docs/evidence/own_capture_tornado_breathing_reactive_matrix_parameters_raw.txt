@@ -1,0 +1,53 @@
+Sanitisierter Auszug aus eigenen Captures (2026-08-24) - nur Interface-2-
+Lichtbefehle (Endpoint 4 OUT), keine Tastendrücke, kein Traffic anderer
+Busgeräte. Rohdateien lokal unter captures-private/ (git-ignoriert).
+
+Stichproben-Tests, um das bei ColorWave vollständig entschlüsselte Schema
+(siehe own_capture_static_colorwave_parameters_raw.txt) auch für die übrigen
+Effekte zu bestätigen - eine gezielte Änderung pro Aufzeichnung.
+
+== Tornado: Rotationsrichtung ==
+Standard (im Uhrzeigersinn):
+S Io:1:085:4 -115:1 64 = 29000200 0e100600 02046432 0207ff00 0000ffff 001100ff 002100ff ff320000
+Gegen den Uhrzeigersinn:
+S Io:1:085:4 -115:1 64 = 29000200 2a100600 02056432 0207ff00 0000ffff 001100ff 002100ff ff320000
+-> Byte1: 04=im Uhrzeigersinn, 05=gegen Uhrzeigersinn (eigener 2er-Wertebereich,
+   anders als ColorWaves 4er-Enum - macht Sinn, Rotation hat nur 2 Richtungen)
+
+== Tornado: einfarbig Rot (Stichprobe) ==
+S Io:1:085:4 -115:1 64 = 0f000200 bf100600 02056432 00e63000 00000000 00000000 00000000 00000000
+-> Byte4=00, kurzes Format wie bei ColorWave/Static - Schema bestätigt
+
+== Breathing: einfarbig Blau (Stichprobe) ==
+S Io:1:085:4 -115:1 64 = 0f000200 2c100600 03006432 000000ff 00000000 00000000 00000000 00000000
+-> Byte4=00, RGB 00 00 ff = Blau (Nutzerwahl) - Schema bestätigt
+
+== Reactive: zweifarbig, Geschwindigkeit/Abklingzeit 20 ==
+S Io:1:085:4 -115:1 64 = 12000200 61100600 04006414 01e63000 00ff0000 00000000 00000000 00000000
+-> Byte3=0x14=20 (Geschwindigkeitsregler = Abklingzeit, vom Nutzer bestätigt),
+   Byte4=01 (zweifarbig), Farbe1=e6 30 00 (Basis), Farbe2=00 ff 00 (Trigger-Grün)
+   - Schema bestätigt, inkl. Tempo-Byte-Wiederverwendung für Abklingzeit
+
+== Matrix: zweifarbig (Farbe 2 von Schwarz auf Blau geändert) ==
+S Io:1:085:4 -115:1 64 = 12000200 71100600 0501640a 0100ff00 00000000 00000000 00000000 00000000
+S Io:1:085:4 -115:1 64 = 12000200 77100600 0501640a 0100ff00 0000ff00 00000000 00000000 00000000
+-> Byte4=01 (zweifarbig), Farbe1=00 ff 00 (Grün), Farbe2 ändert sich von
+   Schwarz (implizit, erster Frame) zu 00 00 ff (Blau, zweiter Frame) - Schema
+   bestätigt. Byte1=01 durchgehend (vermutlich "Richtung=unten", passend zum
+   fallenden Matrix-Regen).
+
+== Matrix: Farbverlauf mit Tempo-Variation ==
+S Io:1:085:4 -115:1 64 = 29000200 53100600 05016432 0207ff00 0000ffff 001100ff 002100ff ff320000
+S Io:1:085:4 -115:1 64 = 29000200 58100600 05016464 0207ff00 0000ffff 001100ff 002100ff ff320000
+S Io:1:085:4 -115:1 64 = 29000200 5f100600 0501640a 0207ff00 0000ffff 001100ff 002100ff ff320000
+-> Byte3 wechselt 0x32(50)->0x64(100)->0x0a(10) bei Tempo-Reglerbewegung, Rest
+   unverändert (Regenbogen-Voreinstellung, dieselbe Palette wie ColorWave/Tornado
+   Default) - Tempo-Byte-Position bestätigt, auch für Matrix "Farbverlauf".
+
+== Fazit ==
+Das bei ColorWave vollständig entschlüsselte Schema (Byte0=Effekt, Byte1=Richtung,
+Byte2=Helligkeit, Byte3=Tempo/Geschwindigkeit, Byte4=Farbanzahl-Modus,
+Byte5=Keyframe-Anzahl im langen Format) gilt nachweislich unverändert für alle
+getesteten Effekte (ColorWave voll, Tornado/Breathing/Reactive/Matrix je per
+Stichprobe bestätigt) - ein einheitliches Payload-Schema über die ganze
+Effekt-Familie hinweg, nicht pro Effekt unterschiedlich kodiert.

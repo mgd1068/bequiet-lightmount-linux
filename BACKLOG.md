@@ -122,6 +122,18 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
       erklärt rückwirkend Frame 2747 aus Iteration 1) neu entschlüsselt. Siehe
       `PROTOCOL.md`, Rohauszug
       `docs/evidence/own_capture_tornado_breathing_colorwave_reactive_raw.txt`.
+- [x] **Effekt-Parameter vollständig entschlüsselt (2026-08-24, gezielter
+      Ein-Parameter-Test).** ColorWave komplett live durchgetestet (Richtung 0-3,
+      Tempo, Farbanzahl-Modi 1/2/3+), Tornado/Breathing/Reactive/Matrix je per
+      Stichprobe bestätigt — ein gemeinsames Payload-Schema für alle 5
+      nicht-statischen Effekte (Byte1=Richtung, Byte2=Helligkeit, Byte3=Tempo,
+      Byte4=Farbanzahl-Modus, Byte5=Keyframe-Anzahl). Bei Reactive ist Byte3 die
+      Abklingzeit, nicht die reine "Geschwindigkeit". Siehe `PROTOCOL.md`,
+      Rohauszüge `docs/evidence/own_capture_static_colorwave_parameters_raw.txt` +
+      `docs/evidence/own_capture_tornado_breathing_reactive_matrix_parameters_raw.txt`.
+      Damit ist die Byte-Parameter-Grundlage für eine vollständige OpenRGB-
+      Effekt-Integration gelegt (nächster Schritt: `LightMountController`
+      implementieren, siehe Eintrag oben).
 - [x] **Architektur-Erkenntnis (2026-08-24):** Interface 2 (global) und Interface 3
       (LampArray) bilden einen sauberen Zwei-Schichten-Anzeigeumschalter über
       LampArrays Autonomous-Flag, keine chaotische gegenseitige Überschreibung — siehe

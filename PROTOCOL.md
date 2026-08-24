@@ -451,10 +451,25 @@ einfarbig Rot (Byte4→`00`) → zweifarbig Rot+Weiß (Byte4→`01`) → Regenbo
 (identisch zum Default) → Preset 2 (4 statt 7 Keyframes, bestätigt Byte5 variiert
 wirklich).
 
-**Offen:** Tornados Richtungswert war in der ersten Live-Beobachtung `04` — außerhalb
-des bei ColorWave gefundenen 0-3-Enums. Ob Tornado eine andere Richtungs-Kodierung
-hat (z. B. nur zwei Rotationsrichtungen, andere Werte) oder Byte1 dort etwas anderes
-bedeutet, noch nicht systematisch getestet.
+**Nachtrag — Schema für alle Effekte bestätigt (2026-08-24, Stichprobentests):**
+Statt jeden Effekt einzeln komplett durchzutesten, wurde das ColorWave-Schema als
+gemeinsame Hypothese behandelt und je Effekt mit **einer** gezielten Stichprobe
+verifiziert (Rohauszug:
+`docs/evidence/own_capture_tornado_breathing_reactive_matrix_parameters_raw.txt`):
+
+| Effekt | Byte1 (Richtung) | Byte4=`01` (zweifarbig) bestätigt? | Byte3 (Tempo) bestätigt? | Sonstiges |
+|---|---|---|---|---|
+| Tornado | Eigener 2er-Wertebereich: `04`=im Uhrzeigersinn (Default), `05`=gegen Uhrzeigersinn — **nicht** dasselbe 0-3-Enum wie ColorWave, macht aber Sinn (Rotation hat nur 2 Richtungen) | Ja (einfarbig, Byte4=`00`) | — | — |
+| Breathing | `00` (einzig beobachteter Wert, vermutlich fix/"n/a" ohne räumliche Richtung) | Ja (einfarbig, Byte4=`00`, Blau `00 00 ff`) | — | — |
+| Reactive | `00` | Ja (Byte4=`01`, Basis `e6 30 00` + Trigger-Grün `00 ff 00`) | Ja — **Tempo-Byte ist hier die Abklingzeit** (`0x14`=20, Nutzer-Angabe "Geschwindigkeitsregler"), keine feste Konstante wie ursprünglich vermutet | Kein Static-artiger "aus"-Zustand nötig — Basis-Farbe ersetzt das |
+| Matrix | `01` (einzig beobachteter Wert, passend zum nach unten fallenden "Code-Regen") | Ja (Byte4=`01`, Grün→Blau als Farbe 2 beobachtet) | Ja (`0x32`→`0x64`→`0x0a` bei Reglerbewegung beobachtet, Rest unverändert) | "Farbverlauf"-Untermodus nutzt dieselbe Regenbogen-Standardpalette wie ColorWave/Tornado, nicht die grüne Rampe — die war offenbar nur der ursprünglich in den alten Captures zufällig aktive Zustand, kein Matrix-spezifisches Muster |
+
+**Ergebnis:** Ein einziges, einheitliches Payload-Schema (Byte0=Effekt, Byte1=Richtung,
+Byte2=Helligkeit, Byte3=Tempo, Byte4=Farbanzahl-Modus, Byte5=Keyframe-Anzahl im
+langen Format) deckt alle 5 nicht-statischen Effekte ab — nur die Wertebereiche
+einzelner Bytes (v. a. Richtung) unterscheiden sich je nach Effekt-Charakter.
+Static bleibt die einzige Ausnahme mit eigenem, noch kürzerem Format (kein
+Byte1/Byte4, nur Helligkeit+Farbe direkt).
 
 Das gleiche Strukturmuster wurde auch im schon länger bekannten 29-Byte-"Matrix"-Befehl
 (Frame 2341/3109) wiedererkannt: Typ `0x05`, 4 Keyframes, RGB-Werte bilden eine
