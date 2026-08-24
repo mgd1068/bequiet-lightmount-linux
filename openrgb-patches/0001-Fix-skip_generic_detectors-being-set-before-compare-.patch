@@ -1,0 +1,110 @@
+From 144357759518a480882f50bb55b5839bca04b826 Mon Sep 17 00:00:00 2001
+From: mgd1068 <gdocr@gmx.de>
+Date: Mon, 24 Aug 2026 12:15:45 +0200
+Subject: [PATCH 1/2] Fix skip_generic_detectors being set before compare()
+ check
+
+A VID/PID-specific detector's coarse matching_id() check alone was enough
+to flip skip_generic_detectors, even when the detector's own compare()
+(which checks interface number/usage) would later reject this interface.
+This silently blocked generic detectors (e.g. HIDLampArrayController) on
+other interfaces of the same VID/PID whenever a specific detector was
+registered for any one interface. Fix: only set skip_generic_detectors
+after compare() actually matched. Same bug duplicated in
+RunHIDDetector and RunHIDWrappedDetector, both fixed.
+
+Found while adding Linux support for the be quiet! Light Mount keyboard,
+see https://gitlab.com/CalcProgrammer1/OpenRGB/-/issues/4950
+---
+ DetectionManager.cpp | 56 +++++++++++++++++++++++++++-----------------
+ 1 file changed, 34 insertions(+), 22 deletions(-)
+
+diff --git a/DetectionManager.cpp b/DetectionManager.cpp
+index b4e3024..b209de9 100644
+--- a/DetectionManager.cpp
++++ b/DetectionManager.cpp
+@@ -1471,23 +1471,32 @@ void DetectionManager::RunHIDDetector(hid_device_info* current_hid_device, json&
+ 
+             if(this_device_enabled)
+             {
+-                /*-----------------------------------------*\
+-                | If this was a specific detector, this     |
+-                | device VID/PID has at least one specific  |
+-                | detector available, so ignore generic     |
+-                | detectors.                                |
+-                \*-----------------------------------------*/
+-                if(!generic_detector)
+-                {
+-                    skip_generic_detectors = true;
+-                }
+-
+                 /*-----------------------------------------*\
+                 | Now compare the detector to see if it     |
+                 | should run.                               |
+                 \*-----------------------------------------*/
+                 if(detector->compare(current_hid_device))
+                 {
++                    /*-------------------------------------*\
++                    | If this was a specific detector and   |
++                    | it actually matched this interface/   |
++                    | usage (not just VID/PID), this        |
++                    | interface has a specific detector, so |
++                    | ignore generic detectors for it.       |
++                    | Fixed 2026-08-24: previously set as    |
++                    | soon as matching_id() (VID/PID only)   |
++                    | passed, before compare() had a chance  |
++                    | to reject a wrong interface - this     |
++                    | silently blocked generic detectors     |
++                    | (e.g. HIDLampArrayController) on other |
++                    | interfaces of the same VID/PID. See    |
++                    | GitLab issue #4950.                    |
++                    \*-------------------------------------*/
++                    if(!generic_detector)
++                    {
++                        skip_generic_detectors = true;
++                    }
++
+                     detection_string = detector->name.c_str();
+ 
+                     SignalUpdate(DETECTIONMANAGER_UPDATE_REASON_DETECTION_PROGRESS_CHANGED);
+@@ -1587,23 +1596,26 @@ void DetectionManager::RunHIDWrappedDetector(const hidapi_wrapper* wrapper, hid_
+ 
+             if(this_device_enabled)
+             {
+-                /*-----------------------------------------*\
+-                | If this was a specific detector, this     |
+-                | device VID/PID has at least one specific  |
+-                | detector available, so ignore generic     |
+-                | detectors.                                |
+-                \*-----------------------------------------*/
+-                if(!generic_detector)
+-                {
+-                    skip_generic_detectors = true;
+-                }
+-
+                 /*-----------------------------------------*\
+                 | Now compare the detector to see if it     |
+                 | should run.                               |
+                 \*-----------------------------------------*/
+                 if(detector->compare(current_hid_device))
+                 {
++                    /*-------------------------------------*\
++                    | If this was a specific detector and   |
++                    | it actually matched this interface/   |
++                    | usage (not just VID/PID), this        |
++                    | interface has a specific detector, so |
++                    | ignore generic detectors for it. Fixed |
++                    | 2026-08-24, see RunHIDDetector above   |
++                    | and GitLab issue #4950 for details.    |
++                    \*-------------------------------------*/
++                    if(!generic_detector)
++                    {
++                        skip_generic_detectors = true;
++                    }
++
+                     detection_string = detector->name.c_str();
+ 
+                     SignalUpdate(DETECTIONMANAGER_UPDATE_REASON_DETECTION_PROGRESS_CHANGED);
+-- 
+2.53.0
+

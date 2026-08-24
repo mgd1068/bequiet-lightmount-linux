@@ -1,0 +1,58 @@
+From 243f1f6ef83a5ff3e788479173edf10828533ba2 Mon Sep 17 00:00:00 2001
+From: mgd1068 <gdocr@gmx.de>
+Date: Mon, 24 Aug 2026 12:15:45 +0200
+Subject: [PATCH 2/2] Fix null pointer crash in SendReply_PluginList
+
+plugin_manager is only set when the GUI's plugin subsystem starts
+(ResourceManager::SetPluginManager is never called for a headless
+--server run without --gui). SendReply_PluginList dereferenced it
+unconditionally, crashing the whole server (SIGSEGV) the instant any SDK
+client asked for the plugin list (openrgb-python's OpenRGBClient does
+this during connect()). The sibling PLUGINMANAGER_PLUGIN_SPECIFIC case
+already guarded this correctly; this one didn't. Report zero plugins
+instead of crashing when plugin_manager is null.
+---
+ NetworkServer.cpp | 19 +++++++++++++++++--
+ 1 file changed, 17 insertions(+), 2 deletions(-)
+
+diff --git a/NetworkServer.cpp b/NetworkServer.cpp
+index b026e11..d46d99b 100644
+--- a/NetworkServer.cpp
++++ b/NetworkServer.cpp
+@@ -1432,6 +1432,15 @@ void NetworkServer::ListenThreadFunction(NetworkClientInfo* client_info)
+         | PluginManager functions                           |
+         \*-------------------------------------------------*/
+             case NET_PACKET_ID_PLUGINMANAGER_GET_PLUGIN_LIST:
++                /*-----------------------------------------*\
++                | plugin_manager is only set when the GUI's |
++                | plugin subsystem starts                   |
++                | (ResourceManager::SetPluginManager is     |
++                | never called for a headless --server run  |
++                | without --gui) - SendReply_PluginList     |
++                | itself now handles a null plugin_manager  |
++                | by reporting zero plugins, see below.     |
++                \*-----------------------------------------*/
+                 SendReply_PluginList(client_info);
+                 break;
+ 
+@@ -3789,9 +3798,15 @@ void NetworkServer::SendReply_PluginList(NetworkClientInfo* client_info)
+     unsigned int data_ptr = 0;
+ 
+     /*---------------------------------------------------------*\
+-    | Calculate data size                                       |
++    | Fixed 2026-08-24: plugin_manager is nullptr in a headless |
++    | --server run (only set by the GUI's plugin subsystem     |
++    | startup, which never runs without --gui). This used to   |
++    | dereference it unconditionally, crashing the whole server|
++    | (SIGSEGV) the instant any SDK client asked for the plugin|
++    | list (openrgb-python does this during connect()). Report |
++    | zero plugins instead of crashing.                        |
+     \*---------------------------------------------------------*/
+-    unsigned short num_plugins = (unsigned short)plugin_manager->GetPluginCount();
++    unsigned short num_plugins = plugin_manager ? (unsigned short)plugin_manager->GetPluginCount() : 0;
+ 
+     data_size += sizeof(data_size);
+     data_size += sizeof(num_plugins);
+-- 
+2.53.0
+
