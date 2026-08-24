@@ -384,6 +384,75 @@ der Unterseiten-Lichter bestätigt) — sind also RGB-fähig und softwaregesteue
 **nicht individuell** adressierbar, solange kein Per-LED-Wire-Kommando für Interface 2
 bekannt ist (weiterhin ungelöst, siehe `BACKLOG.md`).
 
+## ColorWave-Effekt entschlüsselt (2026-08-24)
+
+Der bisher unentschlüsselte 41-Byte-Befehl (Frames 1453/3531 aus dem alten
+usbmon3-Capture, Subcmd `0x06`) wurde durch byteidentische Wiedergabe mit dem heute
+gefundenen `counter=0x00`-Kaltstart live reproduziert und **live bestätigt**.
+
+Struktur: `[Effekt-Typ=0x03][00][Helligkeit][0x32][?][Anzahl-Keyframes=0x07]` gefolgt
+von 7×`[R,G,B,Zeit-%]`-Quadrupeln (0/17/33/50/67/83/100%), ein Byte Padding am Ende.
+Live-Ergebnis: **zeitlicher** Farbwechsel (Rot→Gelb→Grün→Cyan→Blau→Magenta→Rot),
+**alle Tasten synchron gleichzeitig**, **kein räumlicher Verlauf** über die Tastatur —
+vom Nutzer explizit bestätigt/korrigiert. Vermutlich der in `SPEC.md`/Windows-Manifest
+genannte "ColorWave"-Effekt (Name impliziert räumliche Welle, tatsächliches Verhalten
+ist aber ein synchroner Zeit-Zyklus über alle LEDs).
+
+Gleiches Strukturmuster (`[Typ][00][Helligkeit][0x32][?][Anzahl][Quadrupel...]`) auch
+im schon länger bekannten, aber nie vollständig gedeuteten 29-Byte-"Matrix"-Befehl
+(Frame 2341/3109) wiedererkannt: Typ `0x05`, 4 Keyframes, RGB-Werte bilden eine
+aufsteigende Grün-Helligkeitsrampe (dunkel→hell) bei Stufen 0/33/67/100% — passt zum
+bekannten Matrix-Effekt-Konzept (Helligkeits-Fade), nicht live nachgetestet (nur
+offline erneut analysiert, keine neue Hardware-Bestätigung nötig, da bereits früher
+als "Matrix" identifiziert).
+
+**Wichtig:** Beide Effekt-Familien sind weiterhin **globale/synchrone** Kommandos, kein
+Hinweis auf Einzel-LED-Adressierung.
+
+## Architektur-Erkenntnis: Interface 2 und Interface 3 (LampArray) überschreiben sich gegenseitig (2026-08-24)
+
+Live getestet: Nach globalem Static-Color-Kommando über Interface 2 (alles Magenta,
+inkl. der zwei Unterseiten-Lichter) wurde versucht, zusätzlich einzelne Tasten über
+LampArray (Interface 3) umzufärben, in der Erwartung, dass Magenta als Hintergrund für
+alles Nicht-Adressierte bestehen bleibt.
+
+**Erstes Ergebnis (irreführend):** Nach LampArray-Kommando zeigte sich der Rest als
+"aus", nicht als das zuvor gesetzte Magenta — sah zunächst nach chaotischem
+gegenseitigem Überschreiben aus.
+
+**Präzisiert durch einen zweiten Test:** Ein danach erneut gesendetes
+Interface-2-Static-Color-Kommando (Magenta) wurde vom Gerät **akzeptiert** (normale
+kurze Bestätigung), zeigte aber **keine sichtbare Wirkung**, solange LampArray im
+Direct Mode aktiv blieb. Erst ein anschließendes `restore-autonomous`
+(Interface 3, Report 6 = `06 01`) machte das zuvor gesendete Magenta sichtbar —
+**inklusive der Seiten-Lichter**.
+
+**Tatsächlicher Mechanismus: ein sauberer Zwei-Schichten-Anzeigeumschalter, kein
+Chaos.**
+- Interface-2-Kommandos (globale Static-Color/Effekte) werden **immer entgegengenommen
+  und gespeichert**, unabhängig vom LampArray-Modus.
+- Ist LampArray im **Direct Mode** (Autonomous Mode aus, jedes `set-one`/`set-many`
+  schaltet das automatisch), **überdeckt es die Anzeige komplett** — die eigenen 135
+  Lampen zeigen ihre zuletzt individuell gespeicherten Werte, alles außerhalb des
+  LampArray-Adressraums (die zwei Unterseiten-Lichter) wird dabei **ausgeblendet**
+  (aus), unabhängig vom Interface-2-Zustand.
+- Ist LampArray im **Autonomous Mode** (`restore-autonomous`), fällt die Anzeige auf
+  den **aktuellen Interface-2-Zustand** zurück — für alles, auch für die
+  Haupttastenmatrix (LampArray-Einzelfarben werden dabei unsichtbar, vermutlich aber
+  weiterhin intern gespeichert, nicht neu getestet).
+- **Erklärt rückwirkend** den früheren Befund "`restore-autonomous` zeigt Weiß statt
+  des Ursprungszustands" (siehe oben, 2026-08-24 Fortsetzung 2): Das war schlicht der
+  damalige, noch nie explizit gesetzte Interface-2-Grundzustand (vermutlich
+  Werks-/Power-on-Default), keine LampArray-eigene Vorgabe.
+
+**Konsequenz:** Mit dem aktuellen Kenntnisstand sind "alle Tasten einzeln gefärbt" und
+"Seiten-Lichter an" weiterhin **nicht gleichzeitig sichtbar** — es ist aber ein klarer,
+vorhersagbarer Modus-Schalter (LampArray Autonomous-Flag), keine Race Condition. Relevant
+für die Architekturentscheidung LampArray- vs. Vendor-Controller in Phase 3
+(`DECISIONS.md`): eine künftige OpenRGB-Integration könnte den Autonomous-Flag gezielt
+nutzen, um zwischen "Haupttasten-Modus" und "globaler Modus (inkl. Seiten-Lichter)"
+umzuschalten, aber nicht beide gleichzeitig darstellen.
+
 ## Offene Fragen
 
 - Welche der vier HID-Interfaces entspricht welcher Usage Page / welchem Zweck?

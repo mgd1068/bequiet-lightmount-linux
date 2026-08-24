@@ -106,10 +106,23 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
       verbindungsfreiem Zustand wird `counter=0x00` als erster Versuch akzeptiert.
       Siehe `PROTOCOL.md`. Löst den seit Iteration 19 offenen Blocker für Phase 3.
 - [ ] Per-LED-Wire-Kommando für Interface 2 (Einzelansteuerung der Unterseiten-/
-      Seiten-Lichter sowie generell Per-Key über den Vendor-Kanal) — weiterhin
-      unbekannt. Für die Hauptmatrix/Sonderelemente nicht mehr nötig (LampArray auf
-      Interface 3 deckt das ab), nur noch relevant für die 10 Seiten-Strip-LEDs und
-      ggf. Effekte (Matrix/Tornado/etc.).
+      Seiten-Lichter sowie generell Per-Key über den Vendor-Kanal) — nach gründlicher
+      Prüfung (2026-08-24) aktuell keine Evidenz, dass es überhaupt existiert: IO Center
+      Web hat nie eine Einzelelement-UI, kein Capture zeigt je ein indiziertes
+      Kommando, und der Interface-3-Deskriptor hat nachweislich keine zusätzlichen
+      Lampen außerhalb der bekannten 135. Vermutlich echte Firmware-Grenze, nicht nur
+      Wissenslücke. Nicht weiter raten (Projektprinzip) — nur bei neuer Evidenz (z. B.
+      Firmware-Update, Hersteller-Support-Auskunft) wieder aufgreifen.
+- [x] ColorWave-Effekt entschlüsselt (2026-08-24) — live bestätigt (Zeit-Zyklus über
+      7 Keyframes, alle LEDs synchron, kein räumlicher Verlauf). Siehe `PROTOCOL.md`.
+- [x] **Architektur-Erkenntnis (2026-08-24):** Interface 2 (global) und Interface 3
+      (LampArray) bilden einen sauberen Zwei-Schichten-Anzeigeumschalter über
+      LampArrays Autonomous-Flag, keine chaotische gegenseitige Überschreibung — siehe
+      `PROTOCOL.md`. Interface-2-Kommandos werden immer gespeichert, aber nur sichtbar
+      im Autonomous Mode; LampArray-Direct-Mode überdeckt alles (inkl. Seiten-Lichter,
+      die dabei aus sind). Damit sind "alle Tasten einzeln" und "Seiten-Lichter an"
+      weiterhin nicht gleichzeitig sichtbar, aber der Mechanismus ist jetzt klar
+      verstanden und für Phase-3-Architekturentscheidung nutzbar (`DECISIONS.md`).
 - [ ] Vollständige Tastenmatrix/LED-Reihenfolge bestimmen
 - [ ] Obere/seitliche Leisten getrennt adressieren
 - [ ] Reconnect nach USB-Reset (noch nicht getestet — beim bisherigen Test kein Reset aufgetreten)
