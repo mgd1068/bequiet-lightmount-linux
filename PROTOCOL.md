@@ -426,6 +426,36 @@ interpretiert. Bei ColorWave wurden zusätzlich zwei kürzere Zwischenschritte
 (Typ `01`/`03`, Länge 15 bzw. 18) aufgezeichnet, vermutlich UI-Übergangszustände vor
 dem finalen Befehl, nicht weiter gedeutet.
 
+## ColorWave-Parameter systematisch entschlüsselt (2026-08-24, gezielter Parametertest)
+
+Nutzer hat gezielt einzelne UI-Regler geändert (nie mehrere gleichzeitig), damit sich
+jede Byte-Änderung eindeutig zuordnen lässt. Rohauszug:
+`docs/evidence/own_capture_static_colorwave_parameters_raw.txt`.
+
+**Vollständige, jetzt bekannte Byte-Positionen** (gelten strukturell auch für die
+anderen räumlich orientierten Effekte, nicht nur ColorWave):
+
+| Byte | Bedeutung | Belege |
+|---|---|---|
+| 0 | Effekt-Typ | `00`=Static,`01`=ColorWave,`02`=Tornado,`03`=Breathing,`04`=Reactive,`05`=Matrix |
+| 1 | **Richtung** | Sauberes 0-3-Enum, live durchgetestet: `00`=oben,`01`=unten,`02`=links,`03`=rechts (rechts=Default). Nur bei räumlich orientierten Effekten sinnvoll — bei Breathing im ersten Test `00` beobachtet, vermutlich Default/"n/a" |
+| 2 | **Helligkeit** | 0-100 direkt, doppelt bestätigt (`0x50`=80, exakt Nutzerangabe bei Static/Türkis) |
+| 3 | **Tempo/Geschwindigkeit** | 0-100 direkt, bestätigt (`0x46`=70, exakt Nutzerangabe bei ColorWave). Bei Reactive stand hier `0x3c`=60 — evtl. andere Bedeutung dort (Abkling-Geschwindigkeit?), nicht weiter getestet |
+| 4 | **Farbanzahl-Modus** | `00`=1 Farbe (kurzes 15-Byte-Format wie Static, eine direkte RGB-Farbe ohne %), `01`=2 Farben (18-Byte-Format, zwei direkte RGB-Tripel ohne %), `02`=3+ Farben (langes Format mit Byte5=Keyframe-Anzahl + `[R,G,B,%]`-Liste) |
+| 5 (nur langes Format) | **Keyframe-Anzahl** | Variiert tatsächlich, nicht konstant 7 — Preset 2 hatte nur 4 Keyframes (Rosa/Gold-Muster, Gesamtlänge 29 statt 41 Byte) |
+
+**Live-Testreihe (alle vom Nutzer bestätigt):** Static (Türkis `21 f1 ff`, Helligkeit
+80 → exakt `0x50`) → ColorWave Default (Richtung rechts, Tempo 10) → Tempo auf 70
+geändert (`0x46`, exakt bestätigt) → alle 4 Richtungen einzeln durchgetestet →
+einfarbig Rot (Byte4→`00`) → zweifarbig Rot+Weiß (Byte4→`01`) → Regenbogen-Preset 1
+(identisch zum Default) → Preset 2 (4 statt 7 Keyframes, bestätigt Byte5 variiert
+wirklich).
+
+**Offen:** Tornados Richtungswert war in der ersten Live-Beobachtung `04` — außerhalb
+des bei ColorWave gefundenen 0-3-Enums. Ob Tornado eine andere Richtungs-Kodierung
+hat (z. B. nur zwei Rotationsrichtungen, andere Werte) oder Byte1 dort etwas anderes
+bedeutet, noch nicht systematisch getestet.
+
 Das gleiche Strukturmuster wurde auch im schon länger bekannten 29-Byte-"Matrix"-Befehl
 (Frame 2341/3109) wiedererkannt: Typ `0x05`, 4 Keyframes, RGB-Werte bilden eine
 aufsteigende Grün-Helligkeitsrampe (dunkel→hell) bei Stufen 0/33/67/100%. **Live

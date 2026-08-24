@@ -1,0 +1,62 @@
+Sanitisierter Auszug aus eigenen Captures (2026-08-24) - nur Interface-2-
+Lichtbefehle (Endpoint 4 OUT), keine Tastendrücke, kein Traffic anderer
+Busgeräte. Rohdateien lokal unter captures-private/ (git-ignoriert).
+
+Systematischer Parametertest im echten Web-Client (iocenter.bequiet.com, WebHID):
+Nutzer hat gezielt einzelne Regler geändert (nicht mehrere gleichzeitig), damit sich
+jede Byte-Änderung eindeutig einem UI-Parameter zuordnen laesst.
+
+== Static: Farbe + Helligkeit (sonst nichts einstellbar) ==
+Türkis (21 f1 ff), Helligkeit 80 (Nutzer-Angabe):
+S Io:1:085:4 -115:1 64 = 0f000200 11100600 00005032 0021f1ff 00000000 00000000 00000000 00000000
+-> Byte2=0x50=80 (Helligkeit, exakt bestätigt), Byte5-7=21 f1 ff (Farbe)
+
+== ColorWave: Basis (Default-Einstellungen) ==
+S Io:1:085:4 -115:1 64 = 29000200 3a100600 0103640a 0207ff00 0000ffff 001100ff 002100ff ff320000
+-> Byte0=01 (Effekt=ColorWave), Byte1=03 (Richtung=rechts, Default), Byte2=64=100
+   (Helligkeit), Byte3=0a=10 (Tempo, Default), Byte4=02+Byte5=07 (7 interpolierte
+   Keyframes, Regenbogen-Palette)
+
+== ColorWave: Tempo geändert auf 70 (Nutzer-Angabe) ==
+S Io:1:085:4 -115:1 64 = 29000200 53100600 01036446 0207ff00 0000ffff 001100ff 002100ff ff320000
+-> Byte3=0x46=70 (exakt bestätigt) -> Byte3 = Tempo
+
+== ColorWave: Richtung durchgetestet (alle 4, Tempo weiterhin 70) ==
+links:   ...100600 01026446... -> Byte1=02
+rechts:  ...100600 01036446... -> Byte1=03
+oben:    ...100600 01006446... -> Byte1=00
+unten:   ...100600 01016446... -> Byte1=01
+-> Byte1 = Richtung, sauberes 0-3-Enum (00=oben,01=unten,02=links,03=rechts)
+
+== ColorWave: einfarbig (Rot-Preset), Richtung=unten, Tempo=70 ==
+S Io:1:085:4 -115:1 64 = 0f000200 ec100600 01016446 00e63000 00000000 00000000 00000000 00000000
+-> Byte4=00 (statt 02), kurzes 15-Byte-Format wie Static, eine direkte RGB-Farbe
+   (kein Keyframe-Prozentwert)
+
+== ColorWave: zweifarbig (Rot + Weiß) ==
+S Io:1:085:4 -115:1 64 = 12000200 31100600 01016446 01e63000 ffffff00 00000000 00000000 00000000
+-> Byte4=01, 18-Byte-Format, zwei direkte RGB-Tripel (Rot e6 30 00, Weiß ff ff ff),
+   kein Prozentwert pro Farbe
+
+== ColorWave: Regenbogen-Preset 1 (identisch zum Default) ==
+S Io:1:085:4 -115:1 64 = 29000200 79100600 01016446 0207ff00 0000ffff 001100ff 002100ff ff320000
+-> Byte4=02, Byte5=07 - selbe Struktur wie der Default-Zustand, nur explizit als
+   Preset gewählt
+
+== ColorWave: Preset 2 (Rosa/Gold-Muster) ==
+S Io:1:085:4 -115:1 64 = 1d000200 bb100600 01016446 0204ff2b 2b00ffe0 3c21ffe0 3c43ff2b 2b640000
+-> Byte4=02, Byte5=04 (nur 4 Keyframes statt 7!) - bestätigt: Byte5 variiert
+   tatsächlich und ist die Keyframe-Anzahl, nicht konstant 7. Gesamtlänge 29 Byte
+   statt 41 (kürzere Keyframe-Liste = kürzerer Report).
+
+== Zusammenfassung der jetzt bekannten Byte-Positionen (Static/ColorWave/allgemein) ==
+Byte0: Effekt-Typ (00=Static,01=ColorWave,02=Tornado,03=Breathing,04=Reactive,05=Matrix)
+Byte1: Richtung (nur bei räumlich-orientierten Effekten relevant; 00=oben,01=unten,
+       02=links,03=rechts - vermutlich 00 als Default/"n/a" bei Breathing)
+Byte2: Helligkeit (0-100, direkt als Wert)
+Byte3: Tempo/Geschwindigkeit (0-100, direkt als Wert; bei Reactive evtl. andere
+       Bedeutung - dort abweichender Wert 0x3c beobachtet, nicht weiter getestet)
+Byte4: Farbanzahl-Modus - 00=1 Farbe (kurzes Format, direkte RGB), 01=2 Farben
+       (mittleres Format, 2× direkte RGB ohne %), 02=3+ Farben (langes Format mit
+       Byte5=interpolierte Keyframe-Anzahl + [R,G,B,%]-Liste)
+Byte5 (nur im langen Format): Anzahl interpolierter Keyframes (beobachtet: 4 und 7)
