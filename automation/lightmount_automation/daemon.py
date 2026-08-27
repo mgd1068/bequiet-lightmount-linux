@@ -14,6 +14,7 @@ import yaml
 
 from .api import create_app
 from .events.ntfy_source import NtfySource
+from .events.wireguard_source import WireguardSource
 from .layers import LayerEngine
 from .openrgb_client import LightMountClient
 from .time_profiles import TimeProfileScheduler
@@ -51,6 +52,17 @@ async def main() -> None:
             matches=ntfy_cfg["matches"],
         )
         tasks.append(asyncio.create_task(ntfy_source.run()))
+
+    wireguard_cfg = events_config.get("wireguard")
+    if wireguard_cfg:
+        wireguard_source = WireguardSource(
+            engine,
+            tunnels=wireguard_cfg["tunnels"],
+            poll_interval_seconds=wireguard_cfg.get("poll_interval_seconds", 15),
+            ping_timeout_seconds=wireguard_cfg.get("ping_timeout_seconds", 2),
+            priority=wireguard_cfg.get("priority", 20),
+        )
+        tasks.append(asyncio.create_task(wireguard_source.run()))
 
     app = create_app(engine, zones, scheduler)
     config = uvicorn.Config(app, host="127.0.0.1", port=API_PORT, log_level="info")

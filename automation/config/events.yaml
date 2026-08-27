@@ -27,3 +27,27 @@ ntfy:
     - rule: server_a_down
       contains: "server_a_down"
       resolved_contains: "server_a_up"
+
+# WireGuard tunnel status source: each poll, sends one ICMP echo bound to
+# the tunnel interface (`ping -I <interface> ... <probe_target>`) at a
+# host known reachable through that specific tunnel, and keeps one zone
+# permanently green (ping succeeded) or red (it didn't) per tunnel. This
+# is a continuous status display, not a transient alert - no ttl_seconds,
+# nothing to "resolve". Deliberately not handshake-timestamp based: these
+# tunnels have no PersistentKeepalive configured, so an idle-but-healthy
+# tunnel can have an arbitrarily old handshake - an active probe is the
+# only way to tell "idle" from "actually down".
+wireguard:
+  poll_interval_seconds: 15
+  priority: 20
+  ping_timeout_seconds: 2
+  tunnels:
+    - interface: benslabbensheim
+      zone: light_bar_segment_1
+      probe_target: "192.168.200.130"
+    - interface: benslab-DA
+      zone: light_bar_segment_2
+      probe_target: "192.168.200.130"
+    - interface: AlphaLab-LAN
+      zone: light_bar_segment_3
+      probe_target: "192.168.103.122"

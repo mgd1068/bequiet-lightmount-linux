@@ -173,11 +173,11 @@ bool LightMountController::SendDynamicEffect(LightMountEffect effect, uint8_t di
     else if(colors.size() == 2)
     {
         payload.push_back(0x01);
-        for(const RGBColor& color : colors)
+        for(std::size_t color_idx = 0; color_idx < colors.size(); color_idx++)
         {
-            payload.push_back(RGBGetRValue(color));
-            payload.push_back(RGBGetGValue(color));
-            payload.push_back(RGBGetBValue(color));
+            payload.push_back(RGBGetRValue(colors[color_idx]));
+            payload.push_back(RGBGetGValue(colors[color_idx]));
+            payload.push_back(RGBGetBValue(colors[color_idx]));
         }
     }
     else

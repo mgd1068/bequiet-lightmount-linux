@@ -18,5 +18,21 @@ zones:
   wasd:
     keys: [W, A, S, D]
 
+  nav_cluster:
+    keys: [Insert, Home, PageUp, Delete, End, PageDown, UpArrow, LeftArrow, DownArrow, RightArrow]
+
+  # Individual light bar segments, for status indicators that own a
+  # single segment each (e.g. WireGuard tunnel state - see events.yaml's
+  # `wireguard` section). Segment numbering here is 1-based/physical
+  # (segment 1 = the first segment = LightBarSegment0/lamp 110).
+  light_bar_segment_1:
+    lamp_ids: [110]
+
+  light_bar_segment_2:
+    lamp_ids: [111]
+
+  light_bar_segment_3:
+    lamp_ids: [112]
+
   main_matrix:
-    all_except: [light_bar, m_keys, dial]
+    all_except: [light_bar, m_keys, dial, nav_cluster]

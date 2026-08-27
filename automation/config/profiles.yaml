@@ -1,35 +1,115 @@
 # Time-of-day base profiles (same concept as the SteelSeries Apex 3 setup,
 # but per-zone instead of whole-device only). Times are local, 24h, the
 # active profile is whichever entry's [start, end) contains the current
-# time - see time_profiles.py.
+# time and (if `days` is set) whose weekday matches - see
+# time_profiles.py. `days` uses mon/tue/wed/thu/fri/sat/sun; the schedule
+# day resets at 05:00 (not midnight), so a Friday profile's after-midnight
+# hours correctly count as still-Friday-night, not early Saturday.
+#
+# Requested layout (2026-08-24): weekday evenings wind down starting
+# 22:00, weekend (Fri/Sat) evenings run two hours later throughout -
+# each phase below exists twice, once per day group, same colors.
 
 profiles:
-  standard:
-    start: "06:00"
-    end: "20:00"
+  # Live-confirmed with the user on 2026-08-24: main matrix + numpad in a
+  # brightened turquoise (raw saturated 0x21F1FF read as too dark at full
+  # LampArray intensity - lightened toward white for more perceived
+  # brightness), nav cluster + M-keys + volume dial in a saturated-but-
+  # lightened green, light bar in dim magenta as an accent.
+  standard_weekday:
+    days: [sun, mon, tue, wed, thu]
+    start: "05:00"
+    end: "22:00"
     zones:
-      main_matrix: [0, 120, 255]
-      light_bar: [0, 120, 255]
-      m_keys: [0, 120, 255]
-      dial: [0, 120, 255]
+      main_matrix: [100, 255, 255]
+      nav_cluster: [20, 255, 20]
+      m_keys: [20, 255, 20]
+      dial: [20, 255, 20]
+      light_bar: [26, 0, 26]
 
-  late:
-    start: "20:00"
+  standard_weekend:
+    days: [fri, sat]
+    start: "05:00"
     end: "24:00"
     zones:
-      main_matrix: [255, 60, 0]
-      light_bar: [255, 60, 0]
-      m_keys: [255, 60, 0]
-      dial: [255, 60, 0]
+      main_matrix: [100, 255, 255]
+      nav_cluster: [20, 255, 20]
+      m_keys: [20, 255, 20]
+      dial: [20, 255, 20]
+      light_bar: [26, 0, 26]
 
-  night:
-    start: "00:00"
-    end: "06:00"
+  # Wind-down hour: whatever was turquoise (main matrix + numpad) goes
+  # yellow, whatever was green (nav cluster + M-keys + dial) goes red.
+  # Light bar isn't either of those colors, so it's left as-is
+  # (unmentioned in the request).
+  evening_weekday:
+    days: [sun, mon, tue, wed, thu]
+    start: "22:00"
+    end: "23:00"
     zones:
-      main_matrix: [40, 0, 0]
-      light_bar: [40, 0, 0]
-      m_keys: [40, 0, 0]
-      dial: [40, 0, 0]
+      main_matrix: [255, 255, 0]
+      nav_cluster: [255, 0, 0]
+      m_keys: [255, 0, 0]
+      dial: [255, 0, 0]
+      light_bar: [26, 0, 26]
+
+  evening_weekend:
+    days: [fri, sat]
+    start: "00:00"
+    end: "01:00"
+    zones:
+      main_matrix: [255, 255, 0]
+      nav_cluster: [255, 0, 0]
+      m_keys: [255, 0, 0]
+      dial: [255, 0, 0]
+      light_bar: [26, 0, 26]
+
+  # Everything red.
+  allred_weekday:
+    days: [sun, mon, tue, wed, thu]
+    start: "23:00"
+    end: "24:00"
+    zones:
+      main_matrix: [255, 0, 0]
+      nav_cluster: [255, 0, 0]
+      m_keys: [255, 0, 0]
+      dial: [255, 0, 0]
+      light_bar: [255, 0, 0]
+
+  allred_weekend:
+    days: [fri, sat]
+    start: "01:00"
+    end: "02:00"
+    zones:
+      main_matrix: [255, 0, 0]
+      nav_cluster: [255, 0, 0]
+      m_keys: [255, 0, 0]
+      dial: [255, 0, 0]
+      light_bar: [255, 0, 0]
+
+  # Everything red, reduced to 10% brightness, until the next standard
+  # window starts at 05:00.
+  night_dim_weekday:
+    days: [sun, mon, tue, wed, thu]
+    start: "00:00"
+    end: "05:00"
+    zones:
+      main_matrix: [26, 0, 0]
+      nav_cluster: [26, 0, 0]
+      m_keys: [26, 0, 0]
+      dial: [26, 0, 0]
+      light_bar: [26, 0, 0]
+
+  night_dim_weekend:
+    days: [fri, sat]
+    start: "02:00"
+    end: "05:00"
+    zones:
+      main_matrix: [26, 0, 0]
+      nav_cluster: [26, 0, 0]
+      m_keys: [26, 0, 0]
+      dial: [26, 0, 0]
+      light_bar: [26, 0, 0]
 
 # Manually-triggered profiles (not time-based) - "lightmount-ctl profile gaming"
 manual_profiles:

@@ -21,6 +21,23 @@ def _parse_hm(value: str) -> dt.time:
     return dt.time(int(hours) % 24, int(minutes))
 
 
+# Weekday abbreviations used in profiles.yaml's optional `days` list,
+# indexed the same as datetime.weekday() (Monday=0 .. Sunday=6).
+_WEEKDAY_NAMES = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+
+# The schedule "day" resets at 05:00, not midnight - a profile's late-night
+# hours (e.g. 00:00-05:00) belong to the evening that preceded them, not
+# the new calendar date, so a Friday-night `days: [fri, sat]` profile
+# correctly covers into Saturday morning without also matching plain
+# Saturday-night profiles one day early.
+_SCHEDULE_DAY_START = dt.time(5, 0)
+
+
+def _schedule_weekday(now: dt.datetime) -> str:
+    effective_date = now.date() if now.time() >= _SCHEDULE_DAY_START else now.date() - dt.timedelta(days=1)
+    return _WEEKDAY_NAMES[effective_date.weekday()]
+
+
 class TimeProfileScheduler:
     def __init__(self, profiles_yaml_path: Path, engine: LayerEngine):
         data = yaml.safe_load(profiles_yaml_path.read_text())
@@ -30,15 +47,20 @@ class TimeProfileScheduler:
         self._active_manual_profile: str | None = None
         self._current_profile_name: str | None = None
 
-    def _profile_for_time(self, now: dt.time) -> tuple[str, dict]:
+    def _profile_for_datetime(self, now: dt.datetime) -> tuple[str, dict]:
+        weekday = _schedule_weekday(now)
+        now_time = now.time()
         for name, profile in self.profiles.items():
+            days = profile.get("days")
+            if days is not None and weekday not in days:
+                continue
             start = _parse_hm(profile["start"])
             end = _parse_hm(profile["end"])
             if start <= end:
-                if start <= now < end:
+                if start <= now_time < end:
                     return name, profile
             else:  # wraps midnight, e.g. 20:00-24:00 handled as 20:00-00:00
-                if now >= start or now < end:
+                if now_time >= start or now_time < end:
                     return name, profile
         raise RuntimeError("no time profile covers the current time - check profiles.yaml")
 
@@ -51,7 +73,7 @@ class TimeProfileScheduler:
             name = self._active_manual_profile
             zones = self.manual_profiles[name]["zones"]
         else:
-            name, profile = self._profile_for_time(dt.datetime.now().time())
+            name, profile = self._profile_for_datetime(dt.datetime.now())
             zones = profile["zones"]
 
         if name == self._current_profile_name:
