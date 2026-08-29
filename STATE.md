@@ -1278,3 +1278,33 @@ Die usbmon-Aufzeichnung dieser Sitzung wurde ohne verwertbaren Per-Key-Traffic b
 (nie über die "Busy"-Sperre hinausgekommen) und nicht gesichert — bei Bedarf für Debugging
 der Busy-Frage könnte sie aber immer noch nützlich sein (zeigt zumindest den
 Verbindungsaufbau bei jedem der Reset-Versuche).
+
+## Update (2026-08-29) — Upstream-Community-Aktivität, Lücke 2026-08-21 bis -28 noch nicht nachgetragen
+
+**Hinweis:** Der reale Fortschritt zwischen dieser Notiz (Stand 20./21.08.) und heute ist
+erheblich (echter Windows-PC-Test, LampArray-Durchbruch für Interface 3, Repo public seit
+24.08., OpenRGB-MRs `!3509`/`!3511`) — bisher nur im Obsidian-Vault
+(`bequiet-lightmount-linux.md`) und in Auto-Memory dokumentiert, noch nicht rückwirkend
+hier nachgetragen. Diese Sektion deckt nur den heutigen Stand ab, keinen vollständigen
+Rückblick.
+
+**Upstream-Status:**
+- Issue [`#4950`](https://gitlab.com/CalcProgrammer1/OpenRGB/-/issues/4950) — ursprünglicher
+  Device-Request, LampArray-Fund dort gepostet.
+- MR [`!3509`](https://gitlab.com/CalcProgrammer1/OpenRGB/-/merge_requests/3509) —
+  zwei Bugfixes (`skip_generic_detectors`-Scope, Headless-Server-Plugin-List-Crash),
+  **gemerged**.
+- MR [`!3511`](https://gitlab.com/CalcProgrammer1/OpenRGB/-/merge_requests/3511) —
+  `LightMountController` (Interface-2-Vendor-Treiber, alle 6 Effekte), seit 24.08. als
+  Draft offen, bisher keine Reviewer-Rückmeldung.
+
+**Zwei neue, unabhängige Issues von Dritten gefunden (29.08.), beide kommentiert:**
+- [`#5726`](https://gitlab.com/CalcProgrammer1/OpenRGB/-/issues/5726) — Duplikat-Device-Request
+  für dieselbe Light Mount (`f.mueller81`). Kommentar mit Link auf dieses Repo + `!3511`/`!3509`:
+  https://gitlab.com/CalcProgrammer1/OpenRGB/-/work_items/5726#note_3757229805
+- [`#5761`](https://gitlab.com/CalcProgrammer1/OpenRGB/-/issues/5761) — Request für die
+  **Dark Mount** (`373f:0001`, Schwestermodell, PID-Range `373f:0001`–`0013` laut
+  `Cheezykins` in `#4950`). Kommentar stellt klar, dass diese Arbeit sich auf die
+  **Light Mount** bezieht (nicht gegen Dark-Mount-Hardware verifiziert), aber evtl. als
+  Ausgangspunkt nützlich ist:
+  https://gitlab.com/CalcProgrammer1/OpenRGB/-/work_items/5761#note_3757230753
