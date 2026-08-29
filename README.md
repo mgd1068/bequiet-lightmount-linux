@@ -6,6 +6,20 @@ Windows-/Web-Hersteller-Software (IO Center) unter Linux nachzubilden —
 bevorzugt als Controller in [OpenRGB](https://openrgb.org/), nicht als
 eigene RGB-Plattform.
 
+**Warum das trotz Hersteller-Tools nötig ist:** IO Center (Browser-Web-App)
+und die Windows-App färben die Tastatur immer nur einheitlich oder wenden
+eines der eingebauten Effekte an — echte Einzeltasten-Steuerung bietet keins
+von beiden. Selbst die Windows-App kommt bestenfalls auf eine Gruppierung in
+bis zu 7 "Ebenen" (gekoppelt an das protokollseitige 7-Farben-Limit) — Tasten
+teilen sich also eine von 7 Farben, statt vollständig unabhängig voneinander
+gefärbt zu werden. Echte unabhängige Steuerung pro Taste **und** pro
+einzelner LED (135 adressierbare Lampen, inkl. jedes Segments der
+Lichtleiste) wird erst über Interface 3 möglich (Standard-HID-LampArray,
+bereits über OpenRGBs generischen `HIDLampArrayController` unterstützt) —
+das bietet keines der beiden Hersteller-Tools. Der `LightMountController`
+in diesem Repo ergänzt das um Interface 2 (die eingebauten Firmware-Effekte,
+nützlich für autonomen Betrieb ohne Host).
+
 Status: **Phase 3 — OpenRGB-Integration (Grundgerüst).** Siehe [`STATE.md`](STATE.md)
 für den aktuellen Loop-Zustand und den nächsten konkreten Schritt.
 
