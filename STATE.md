@@ -1331,7 +1331,21 @@ Start-Reihenfolge. `openrgb-lightmount-server.service` war zudem nur indirekt ue
 `Requires=` des Automatisierungs-Daemons gestartet worden, nie selbst `enable`d --
 jetzt zusaetzlich explizit `systemctl --user enable` gesetzt.
 
-**Noch offen/nicht behoben:** Der eigentliche `free(): invalid pointer`-Heap-Bug in
-`RGBController_HIDLampArray`/`HIDLampArrayController` bei unsauberem Shutdown waehrend
-eines aktiven Device-Threads ist real und koennte unter anderen Umstaenden (nicht nur
-Port-Kollision) erneut zuschlagen -- noch nicht eigenstaendig untersucht oder gefixt.
+**Update (2026-08-31, spaeter am Tag) -- Root Cause gefunden und gefixt:**
+`RGBController_HIDLampArray::~RGBController_HIDLampArray()` rief `delete controller`
+auf, ohne vorher `Shutdown()` aufzurufen. Die Basisklasse `RGBController` stoppt den
+`DeviceCallThread` nur als Sicherheitsnetz in ihrem EIGENEN Destruktor -- der laeuft
+aber erst NACH dem Destruktor-Body der abgeleiteten Klasse, also zu spaet: der
+Hintergrund-Thread konnte weiterhin `DeviceUpdateLEDs()` auf dem bereits geloeschten
+`controller` aufrufen. Fix (upstream-Fork, `openrgb-src-private`, Branch
+`local-combined`, Commit `c864a25c`): `Shutdown();` als erste Zeile ergaenzt, exakt das
+Muster, das andere Controller (z.B. `RGBController_MountainKeyboard`) bereits nutzen.
+Verifiziert mit 8 sequenziellen Neustarts bei aktiver Automatisierung -- kein Absturz
+mehr (vorher stuerzte der allererste kontendierte Neustart ab).
+
+**Neuer, kleinerer Fund beim Extremtest:** Unter kuenstlich uebertriebenem Stress (15
+Neustarts binnen ~2s, weit jenseits realer Nutzung) stuerzt stattdessen `hid_close()`
+selbst mit Heap-Korruption ab -- vermutlich mehrere Prozesse, die kurzzeitig denselben
+physischen HID-Knoten anfassen. Das urspruengliche Trigger-Szenario (zwei Services
+konkurrieren einmalig um Port 6742 beim Login) kann durch die Port-Trennung ohnehin
+nicht mehr auftreten, daher bewusst zurueckgestellt, nicht weiter verfolgt.
