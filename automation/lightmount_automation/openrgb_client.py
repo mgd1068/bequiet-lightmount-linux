@@ -1,6 +1,6 @@
 """Thin wrapper around the openrgb-python SDK client, scoped to the Light
 Mount's HID LampArray device on the dedicated server
-(openrgb-lightmount-server.service, 127.0.0.1:6742). Never touches other
+(openrgb-lightmount-server.service, 127.0.0.1:6743). Never touches other
 RGB devices - the server itself is configured to never detect them
 (~/.config/openrgb-lightmount/OpenRGB.json), so there is nothing else to
 accidentally address here.
@@ -51,7 +51,7 @@ class LightMountClient:
     below, rather than trusting the device's power-on default.
     """
 
-    def __init__(self, address: str = "127.0.0.1", port: int = 6742):
+    def __init__(self, address: str = "127.0.0.1", port: int = 6743):
         self._address = address
         self._port = port
         self._client = OpenRGBClient(address=address, port=port, name="lightmount-automation")

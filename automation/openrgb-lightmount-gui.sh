@@ -6,5 +6,5 @@
 # Direct mode. See STATE.md 2026-08-24 for why --nodetect is required.
 exec /home/mathias/bequiet-lightmount-linux/openrgb-src-private/build/openrgb \
     --nodetect \
-    --client 127.0.0.1:6742 \
+    --client 127.0.0.1:6743 \
     --gui

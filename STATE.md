@@ -1308,3 +1308,30 @@ Rückblick.
   **Light Mount** bezieht (nicht gegen Dark-Mount-Hardware verifiziert), aber evtl. als
   Ausgangspunkt nützlich ist:
   https://gitlab.com/CalcProgrammer1/OpenRGB/-/work_items/5761#note_3757230753
+
+## Bugfix (2026-08-31) — Port-Kollision liess Tastatur ohne Automatisierung zurueck
+
+**Symptom:** Tastatur leuchtete falsch, kein sichtbarer Prozess-Absturz auf den ersten
+Blick. Root Cause: `openrgb-lightmount-server.service` (dediziert, custom Fork) UND der
+Ubuntu-Stock-`openrgb.service` binden beide standardmaessig an Port **6742** (OpenRGBs
+Default-SDK-Port) -- der dedizierte Server war nie auf einen eigenen Port konfiguriert.
+Bei einem Login/Neustart heute Morgen (10:27) starteten beide praktisch gleichzeitig,
+der dedizierte Server verlor das Rennen um den Port, stuerzte beim Neustart-Versuch
+sogar mit `free(): invalid pointer` in `HIDLampArrayController::SetLampMultiUpdateReport`
+ab (echter Heap-Bug bei unsauberem Shutdown waehrend eines laufenden LED-Writes), gab
+nach 3 Versuchen auf ("Start request repeated too quickly"). Der Automatisierungs-Daemon
+(`lightmount-automation.service`) fand daraufhin keinen Server mehr und faellte
+ebenfalls aus ("Dependency failed"). Ergebnis: Tastatur blieb >30 Minuten ohne jede
+Steuerung im letzten (mutmasslich mitten im Crash eingefrorenen) Zustand haengen.
+
+**Fix:** Dedizierten Server dauerhaft auf **Port 6743** verlegt (`ExecStart` in
+`openrgb-lightmount-server.service`, Default in `openrgb_client.py`, `--client`-Flag in
+`openrgb-lightmount-gui.sh`, README) -- keine Kollision mehr moeglich, unabhaengig von
+Start-Reihenfolge. `openrgb-lightmount-server.service` war zudem nur indirekt ueber die
+`Requires=` des Automatisierungs-Daemons gestartet worden, nie selbst `enable`d --
+jetzt zusaetzlich explizit `systemctl --user enable` gesetzt.
+
+**Noch offen/nicht behoben:** Der eigentliche `free(): invalid pointer`-Heap-Bug in
+`RGBController_HIDLampArray`/`HIDLampArrayController` bei unsauberem Shutdown waehrend
+eines aktiven Device-Threads ist real und koennte unter anderen Umstaenden (nicht nur
+Port-Kollision) erneut zuschlagen -- noch nicht eigenstaendig untersucht oder gefixt.

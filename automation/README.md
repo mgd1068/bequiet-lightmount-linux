@@ -12,7 +12,7 @@ See `~/.claude/plans/hazy-hatching-gosling.md` for the full design writeup.
 
 | Component | What |
 |---|---|
-| `openrgb-lightmount-server.service` | Dedicated OpenRGB SDK server (port 6742), owns the hardware. Detectors for other RGB devices (Apex 3, Corsair Ironclaw) are explicitly disabled in `~/.config/openrgb-lightmount/OpenRGB.json` so this instance can never touch them. |
+| `openrgb-lightmount-server.service` | Dedicated OpenRGB SDK server (port 6743), owns the hardware. Detectors for other RGB devices (Apex 3, Corsair Ironclaw) are explicitly disabled in `~/.config/openrgb-lightmount/OpenRGB.json` so this instance can never touch them. |
 | `openrgb-lightmount-gui.sh` | Manual GUI, connects as a pure SDK client (`--nodetect --client`) - never scans hardware itself. |
 | `lightmount-automation.service` | This daemon: time profiles + event overlays + local HTTP API. |
 | `lightmount-ctl` | CLI: `lightmount-ctl zone light_bar FF0000`, `lightmount-ctl profile gaming`, `lightmount-ctl status`. |
