@@ -1343,6 +1343,12 @@ Muster, das andere Controller (z.B. `RGBController_MountainKeyboard`) bereits nu
 Verifiziert mit 8 sequenziellen Neustarts bei aktiver Automatisierung -- kein Absturz
 mehr (vorher stuerzte der allererste kontendierte Neustart ab).
 
+**Eigene, fokussierte Upstream-MR eroeffnet:**
+[`!3544`](https://gitlab.com/CalcProgrammer1/OpenRGB/-/merge_requests/3544) --
+sauberer 1-Zeilen-Diff, sauber von `origin/master` abgezweigt (nicht von
+`local-combined`, das noch andere unfertige Aenderungen enthaelt), unabhaengig von
+`!3509`/`!3511`.
+
 **Neuer, kleinerer Fund beim Extremtest:** Unter kuenstlich uebertriebenem Stress (15
 Neustarts binnen ~2s, weit jenseits realer Nutzung) stuerzt stattdessen `hid_close()`
 selbst mit Heap-Korruption ab -- vermutlich mehrere Prozesse, die kurzzeitig denselben
