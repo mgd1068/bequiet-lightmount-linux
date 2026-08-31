@@ -1343,6 +1343,40 @@ Muster, das andere Controller (z.B. `RGBController_MountainKeyboard`) bereits nu
 Verifiziert mit 8 sequenziellen Neustarts bei aktiver Automatisierung -- kein Absturz
 mehr (vorher stuerzte der allererste kontendierte Neustart ab).
 
+## Update (2026-08-31, spaeter) -- skip_generic_detectors-Teil von !3509 zurueckgerollt, neu geloest
+
+**Fund beim Kommentar-Check:** CalcProgrammer1 hat die komplette `!3509` auf `master`
+per `git revert` zurueckgerollt (Commit `2c23fd6a`, betrifft auch den unabhaengigen
+Plugin-List-Nullpointer-Fix, da beide in einem gemeinsamen Commit steckten). Grund:
+Der `skip_generic_detectors`-Scoping-Fix (Flag erst NACH `compare()` statt davor
+setzen) loeste auf seinem eigenen Gigabyte-Board eine unerwuenschte doppelte
+LampArray-Registrierung aus -- dort soll ein Vendor-Detector auf einem Interface
+bewusst generische Detectors fuer das GESAMTE Geraet sperren, nicht nur sein eigenes
+Interface.
+
+**Kernproblem:** Beide Erwartungen sind für ihr jeweiliges Geraet legitim, aber
+gegensaetzlich. Rein strukturell (Interface-Nummer, Usage Page, VID/PID) lassen sich
+"Gigabyte will nur einen Controller" und "Light Mount will bewusst zwei unabhaengige,
+sich nicht ueberschneidende Controller" nicht unterscheiden -- das muss der jeweilige
+Detector selbst festlegen.
+
+**Loesung (statt Verhaltensaenderung ein Opt-in):** `BasicHIDBlock::
+allow_generic_other_interfaces` (Default `false`, erhaelt das zurueckgerollte/sichere
+Verhalten fuer JEDEN bestehenden Detector exakt) + neue `REGISTER_HID_DETECTOR_
+{I,IP,IPU}_COEXIST`-Makros, die das Flag setzen. `LightMountControllerDetect.cpp`
+nutzt jetzt `REGISTER_HID_DETECTOR_IPU_COEXIST` -- live gegen echte Hardware
+verifiziert: Vendor-Controller (Effekte) UND generischer HIDLampArrayController
+(Per-Key) registrieren wieder gleichzeitig.
+
+**Zwei getrennte Aktionen (bewusst nicht in `!3511` gemischt):**
+- Neue, eigenstaendige MR [`!3545`](https://gitlab.com/CalcProgrammer1/OpenRGB/-/merge_requests/3545)
+  fuer den Framework-Teil (Opt-in-Mechanismus), sauber von `origin/master` abgezweigt.
+  `!3511` selbst bewusst noch NICHT auf `_COEXIST` umgestellt -- erst Feedback zu
+  `!3545` abwarten (steht so auch in der MR-Beschreibung).
+- Antwort auf CalcProgrammer1s Revert-Kommentar in `!3509`:
+  https://gitlab.com/CalcProgrammer1/OpenRGB/-/work_items/3509#note_3762355431 --
+  Punkt anerkannt, Loesungsansatz erklaert, auf `!3545` verwiesen.
+
 **Eigene, fokussierte Upstream-MR eroeffnet:**
 [`!3544`](https://gitlab.com/CalcProgrammer1/OpenRGB/-/merge_requests/3544) --
 sauberer 1-Zeilen-Diff, sauber von `origin/master` abgezweigt (nicht von
