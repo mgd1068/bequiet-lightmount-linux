@@ -14,6 +14,8 @@ gehen sollen. Sie liegen hier im Hauptrepo (GPL-2.0-or-later, wie OpenRGB selbst
 2. Diese Controller-Dateien hineinkopieren:
    ```
    cp -r openrgb-integration/Controllers/LightMountController openrgb-src-private/Controllers/
+   cd openrgb-src-private
+   git apply ../openrgb-integration/HIDLampArrayController-subclass.patch
    ```
 3. Bauen (siehe `openrgb-src-private/Documentation/Compiling.md` für Abhängigkeiten,
    Debian/Ubuntu: `qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools libusb-1.0-0-dev
@@ -25,17 +27,25 @@ gehen sollen. Sie liegen hier im Hauptrepo (GPL-2.0-or-later, wie OpenRGB selbst
    OpenRGB entdeckt neue Controller automatisch per Glob (`Controllers/*.cpp`,
    `Controllers/*.h` in `OpenRGB.pro`) — kein manueller Eintrag nötig.
 
-## Umfang (Stand 2026-08-24: alle 6 Effekte implementiert)
+## Umfang (Stand 2026-09-02: kombinierter Controller)
 
-Alle 6 Firmware-Effekte (Static, ColorWave, Tornado, Breathing, Reactive, Matrix) sind
-implementiert und live gegen echte Hardware über den vollständigen OpenRGB-Stack
-getestet (SDK-Server → Client → Controller → Gerät), inkl. Helligkeit, Tempo und
-wählbarer Farben. Grundlage: vollständige Protokoll-Reverse-Engineering-Arbeit vom
-2026-08-24, siehe `PROTOCOL.md` ("Alle 6 Effekte entschlüsselt...", "...Parameter
-systematisch entschlüsselt..."). Nur **Whole-Keyboard**-Steuerung — dieser Kanal
-(Interface 2) ist nachweislich global/synchron, kein Per-Key. Echtes Per-Key läuft
-über den separaten, bereits fertigen generischen `HIDLampArrayController` auf
-Interface 3 desselben Geräts (siehe `docs/evidence/lamp_id_key_mapping.json`).
+Ein einzelner gerätespezifischer `RGBController_LightMount` besitzt beide HID-Endpunkte:
+
+- `Direct` nutzt HID LampArray auf Interface 3 für 135 einzeln adressierbare Lampen.
+- `Static`, `ColorWave`, `Tornado`, `Breathing`, `Reactive` und `Matrix` nutzen das
+  Vendor-Protokoll auf Interface 2 und schalten LampArray anschließend in Autonomous.
+- Die nicht einzeln adressierbaren Unterseitenlichter sind in den Firmwareeffekten
+  enthalten und im LampArray-Direct-Modus hardwarebedingt aus.
+
+Der Detector ist gerätespezifisch auf dem LampArray-Endpunkt registriert, öffnet beide
+Interfaces und verhindert damit den generischen zweiten LampArray-Geräteeintrag ohne
+Änderung am `DetectionManager`. Mehrere Tastaturen werden über ihre Seriennummern
+gepaart; ohne Seriennummer ist die sichere Ein-Gerät-Fallback-Erkennung erlaubt, eine
+mehrdeutige Paarung dagegen nicht.
+
+Alle sechs Vendor-Effekte wurden bereits am 2026-08-24 live bestätigt. Der kombinierte
+Controller wurde am 2026-09-02 vollständig gegen den aktuellen OpenRGB-Master gebaut
+und read-only erkannt; ein erneuter Hardware-Schreibtest steht noch aus.
 
 **Byte-Layout** (alle Effekte außer Static teilen sich ein Schema): `[Effekt-Typ]
 [Richtung][Helligkeit][Tempo][Farbanzahl-Modus]` gefolgt von 1/2 direkten RGB-Werten
@@ -59,7 +69,7 @@ Payload-Bytes + 7`, bestätigt gegen 4 unabhängige echte Captures.
   auch GUI-relevant. Der Payload-Byte-Order selbst folgt dem echten, bestätigten
   Geräteverhalten, wurde nicht zur Kompensation geändert.
 
-## Bekannte Einschränkung: Zähler-Kaltstart
+## Vendor-Antworten und Zähler
 
 **Gelöst für den häufigsten Fall (2026-08-24):** Auf einer nachweislich
 verbindungsfreien Verbindung (keine andere Software spricht mit Interface 2)
@@ -68,6 +78,15 @@ siehe `PROTOCOL.md` "Kaltstart-Problem des Zählers gelöst". `LightMountControl
 ruft jetzt automatisch `SetCounter(0)` direkt nach der Geräte-Erkennung auf.
 **Weiterhin nicht abgesichert:** falls beim Verbindungsaufbau bereits eine andere
 Software (z. B. ein offener `iocenter.bequiet.com`-Browser-Tab) verbunden ist, könnte
-`counter=0` fälschlich kollidieren — dafür gibt es weiterhin keine Erkennung ohne
-Live-Capture. `SetCounter()`/`IsCounterPrimed()` bleiben öffentlich, falls ein Aufrufer
-einen echten, beobachteten Zählerstand manuell einspeisen möchte.
+`counter=0` fälschlich kollidieren. Der Controller prüft nun die bestätigte 64-Byte-
+Antwort inklusive CRC, Counter, Marker und Subcommand. Der Zähler wird erst nach einem
+gültigen ACK erhöht. Nach Timeout oder Ablehnung wird er als unsynchron markiert und
+kein geratenes Retry gesendet. Unabhängige Tastendruck-Telemetrie auf Interface 2 wird
+beim Warten auf das ACK ignoriert und niemals protokolliert.
+
+## Kleine Änderung an der LampArray-Basis
+
+`HIDLampArrayController-subclass.patch` macht den Destruktor virtuell, initialisiert
+Report-IDs deterministisch und liefert die HID-Schreibergebnisse zurück. Das ist nötig,
+damit der Light-Mount-Controller die LampArray-Basis sicher ableiten und Moduswechsel
+auf Fehler prüfen kann. Bestehende LampArray-Aufrufer bleiben quellkompatibel.

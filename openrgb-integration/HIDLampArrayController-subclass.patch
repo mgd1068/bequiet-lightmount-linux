@@ -1,0 +1,86 @@
+diff --git a/Controllers/HIDLampArrayController/HIDLampArrayController.cpp b/Controllers/HIDLampArrayController/HIDLampArrayController.cpp
+index 694ce110..f3967674 100644
+--- a/Controllers/HIDLampArrayController/HIDLampArrayController.cpp
++++ b/Controllers/HIDLampArrayController/HIDLampArrayController.cpp
+@@ -15,11 +15,13 @@
+ #include "HIDLampArrayController.h"
+ #include "StringUtils.h"
+ 
+-HIDLampArrayController::HIDLampArrayController(hid_device *dev_handle, const char *path)
++HIDLampArrayController::HIDLampArrayController(hid_device *dev_handle, const char *path) :
++    dev(dev_handle),
++    ids{},
++    location(path),
++    Lamps{},
++    LampArray{}
+ {
+-    dev                                 = dev_handle;
+-    location                            = path;
+-
+     /*-----------------------------------------------------*\
+     | Parse report IDs from descriptor                      |
+     \*-----------------------------------------------------*/
+@@ -270,7 +272,7 @@ void HIDLampArrayController::GetLampAttributesResponseReport()
+     Lamps.push_back(attributes);
+ }
+ 
+-void HIDLampArrayController::SetLampArrayControlReport(unsigned char AutonomousMode)
++bool HIDLampArrayController::SetLampArrayControlReport(unsigned char AutonomousMode)
+ {
+     unsigned char   usb_buf[sizeof(LampArrayControl) + 1];
+ 
+@@ -289,7 +291,7 @@ void HIDLampArrayController::SetLampArrayControlReport(unsigned char AutonomousM
+     /*-----------------------------------------------------*\
+     | Send the report                                       |
+     \*-----------------------------------------------------*/
+-    hid_send_feature_report(dev, usb_buf, sizeof(usb_buf));
++    return(hid_send_feature_report(dev, usb_buf, sizeof(usb_buf)) == sizeof(usb_buf));
+ }
+ 
+ void HIDLampArrayController::SetLampAttributesRequestReport(unsigned short LampId)
+@@ -314,8 +316,13 @@ void HIDLampArrayController::SetLampAttributesRequestReport(unsigned short LampI
+     hid_send_feature_report(dev, usb_buf, sizeof(usb_buf));
+ }
+ 
+-void HIDLampArrayController::SetLampMultiUpdateReport(unsigned char LampCount, unsigned char LampUpdateFlags, unsigned short * LampIds, LampArrayColor * UpdateColors)
++bool HIDLampArrayController::SetLampMultiUpdateReport(unsigned char LampCount, unsigned char LampUpdateFlags, unsigned short * LampIds, LampArrayColor * UpdateColors)
+ {
++    if(LampCount > LAMP_MULTI_UPDATE_LAMP_COUNT)
++    {
++        return(false);
++    }
++
+     unsigned char   usb_buf[sizeof(LampMultiUpdate) + 1];
+ 
+     memset(usb_buf, 0, sizeof(usb_buf));
+@@ -340,5 +347,5 @@ void HIDLampArrayController::SetLampMultiUpdateReport(unsigned char LampCount, u
+     /*-----------------------------------------------------*\
+     | Send the report                                       |
+     \*-----------------------------------------------------*/
+-    hid_send_feature_report(dev, usb_buf, sizeof(usb_buf));
++    return(hid_send_feature_report(dev, usb_buf, sizeof(usb_buf)) == sizeof(usb_buf));
+ }
+diff --git a/Controllers/HIDLampArrayController/HIDLampArrayController.h b/Controllers/HIDLampArrayController/HIDLampArrayController.h
+index 2adda02b..7e23e122 100644
+--- a/Controllers/HIDLampArrayController/HIDLampArrayController.h
++++ b/Controllers/HIDLampArrayController/HIDLampArrayController.h
+@@ -110,7 +110,7 @@ class HIDLampArrayController
+ {
+ public:
+     HIDLampArrayController(hid_device *dev_handle, const char *path);
+-    ~HIDLampArrayController();
++    virtual ~HIDLampArrayController();
+ 
+     std::string GetDeviceLocation();
+     std::string GetDeviceName();
+@@ -121,8 +121,8 @@ public:
+     unsigned int GetLampCount();
+     std::vector<LampAttributes> GetLamps();
+ 
+-    void SetLampArrayControlReport(unsigned char AutonomousMode);
+-    void SetLampMultiUpdateReport(unsigned char LampCount, unsigned char LampUpdateFlags, unsigned short * LampIds, LampArrayColor * UpdateColors);
++    bool SetLampArrayControlReport(unsigned char AutonomousMode);
++    bool SetLampMultiUpdateReport(unsigned char LampCount, unsigned char LampUpdateFlags, unsigned short * LampIds, LampArrayColor * UpdateColors);
+ 
+ private:
+     hid_device *                dev;

@@ -2,10 +2,40 @@
 
 ## Aktuelle Phase
 
-Phase 3 — OpenRGB-Integration. Architekturwechsel in Arbeit: statt des Vendor-Protokolls
-auf Interface 2 (nur statische Vollflächenfarbe, Sequenznummer-Kaltstart-Problem
-ungelöst) führt der HID-LampArray-Standardweg auf Interface 3 direkt zu echter
-Per-Key-Adressierung — live bestätigt (siehe Update 2026-08-23 unten).
+Phase 3 — OpenRGB-Integration. Der gerätespezifische kombinierte Controller für
+Interface 2 (Firmwareeffekte) und Interface 3 (LampArray Direct/Per-Key) ist
+implementiert, gebaut und read-only erkannt. Ausstehend sind der kontrollierte
+Hardware-Schreibtest und die unabhängige Verifikation mit der zweiten Tastatur.
+
+## Update — 2026-09-02: kombinierter OpenRGB-Controller implementiert
+
+Der Light-Mount-Controller leitet nun `HIDLampArrayController` ab und besitzt zusätzlich
+das Vendor-Handle. Ein einzelner `RGBController_LightMount` exponiert `Direct` sowie
+`Static`, `ColorWave`, `Tornado`, `Breathing`, `Reactive` und `Matrix`. Vendorzustände
+werden zuerst gesendet und bestätigt; erst danach wird LampArray auf Autonomous
+geschaltet. Direct schaltet wieder auf LampArray-Steuerung.
+
+Der gerätespezifische Detector ist exakt auf Interface 3 / Usage Page `0x59` / Usage
+`0x01` registriert, findet Interface 2 über dieselbe Seriennummer und öffnet beide
+Endpunkte. Dadurch wird der generische LampArray-Fallback nur für diesen Endpunkt
+unterdrückt und der `DetectionManager` braucht keine Coexistence-Sonderlogik. Bei alter
+Firmware ohne Seriennummer wird nur dann gepaart, wenn genau ein Vendor-Kandidat
+existiert; eine mehrdeutige Zuordnung wird aus Sicherheitsgründen abgelehnt.
+
+Zusätzliche Härtung: virtueller LampArray-Destruktor, initialisierte Report-IDs,
+auswertbare HID-Schreibergebnisse, Vendor-ACK-Prüfung inklusive CRC/Counter/Marker/
+Subcommand und Counter-Inkrement erst nach gültigem ACK. Nach Timeout/Ablehnung wird
+der Zähler als unsynchron markiert und nicht geraten wiederholt. Unabhängige
+Tastendruck-Telemetrie auf Interface 2 wird ohne Logging verworfen, während innerhalb
+eines festen 500-ms-Fensters auf das passende ACK gewartet wird.
+
+Verifikation: vollständiger OpenRGB-Build gegen `origin/master` (`999cbd25`) bestanden;
+`--list-detailed --noautoconnect` erkennt genau ein `be quiet! Light Mount` mit
+Seriennummer, 135 LampArray-LEDs und allen sieben Modi. Der bestehende Protokolltest
+mit 20 Capture-Fixtures besteht. Kein Effekt-/Farb-Schreibtest wurde in dieser
+Iteration ohne gesonderte Hardware-Testfreigabe ausgeführt. MR `!3511` wurde auf
+Commit `9b6c7c0c` force-with-lease aktualisiert und bleibt bis zu diesen Tests Draft;
+der nun unnötige Coexistence-MR `!3545` wurde mit Verweis auf `!3511` geschlossen.
 
 ## Update — 2026-09-02: Upstream-Feedback und KBD-Switch-Watchdog repariert
 

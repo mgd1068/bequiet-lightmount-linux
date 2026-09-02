@@ -152,9 +152,11 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
       udev-Restart erzeugt über `PartOf=` eine neue Automationsverbindung; 30-s-Timer
       prüft read-only SDK-Gerät + HTTP-API und startet bei Fehler beide Dienste neu.
       Gesunder und absichtlich fehlerhafter Pfad live verifiziert.
-- [ ] Gemäß Maintainer-Feedback in `!3545` einen einzigen Light-Mount-RGBController
-      bauen, der Interface 2 (Firmwareeffekte) und Interface 3 (LampArray Direct Mode)
-      gemeinsam besitzt; danach `!3511` aktualisieren und `!3545` ablösen.
+- [x] Gemäß Maintainer-Feedback in `!3545` einen einzigen Light-Mount-RGBController
+      gebaut, der Interface 2 (Firmwareeffekte) und Interface 3 (LampArray Direct Mode)
+      gemeinsam besitzt (2026-09-02): vollständiger Build gegen aktuellen Master und
+      read-only Erkennung als genau ein Gerät mit 135 LEDs und sieben Modi bestanden.
+      `!3511` auf Commit `9b6c7c0c` aktualisiert; `!3545` mit Erklärung geschlossen.
 - [ ] Zweite reale Light Mount mit Nutzer `f.mueller81` aus Issue `#5726` testen,
       sobald der vereinheitlichte Controller als testbarer Branch vorliegt.
 - [ ] Headless-Plugin-List-Fix aus der zurückgerollten `!3509` erneut als isolierte MR
@@ -175,8 +177,8 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
       1-Byte-Zähler, Byte 5 = separates Marker-Feld (nicht Zähler-Hochbyte). Kontinuität
       bestätigt mit zwei echten, aufeinanderfolgenden Hardwaretests. `report.h`/`.cpp`,
       CLI-Tools und OpenRGB-Controller entsprechend korrigiert.
-- [ ] **Kritisch, weiterhin ungelöst:** Kaltstart-Problem — wie lernt ein frisch
-      startender Client den aktuell gültigen Zählerstand ohne Live-Capture? Zähler
+- [x] **Kaltstart für den verkehrsfreien Normalfall gelöst (2026-08-24):** Ein frisch
+      startender Client verwendet nachweislich `counter=0`. Der Zähler
       scheint nach einiger Zeit/Inaktivität zurückgesetzt zu werden (heute bei `02`
       begonnen, obwohl gestern bei `~0xad`/`~0x11` endend, ohne erkennbare
       Neuenumerierung) — Trigger unklar (Timeout? Standby?). Vielversprechende, noch
@@ -185,12 +187,15 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
       wäre "unsere eigenen Testversuche konkurrierten mit einer noch aktiven
       Browser-Session", nicht "der Zähler ist grundsätzlich unbekannbar" — siehe
       `docs/evidence/connection-handshake-analysis.md`. Interface-3-Report-ID-1-
-      Telemetrie als Quelle bereits geprüft und verworfen (2026-08-18).
+      Telemetrie als Quelle bereits geprüft und verworfen (2026-08-18). Restrestrisiko
+      bleibt bei einem bereits parallel aktiven Vendor-Client; ACK-Prüfung und Abbruch
+      bei Desynchronisierung sind seit 2026-09-02 implementiert.
 - [ ] Identifikations-Handshake (Byte2-3=`0x0000`, 6 Kommandos beim Verbindungsaufbau)
       weiter entschlüsseln — Geräte-Seriennummer-String und Fähigkeitenliste teilweise
       erkannt, nicht vollständig gedeutet, siehe `docs/evidence/connection-handshake-analysis.md`
-- [x] `Shutdown()`-Aufruf im `RGBController_LightMount`-Destruktor nachgerüstet
-      (2026-08-18, verhinderte OpenRGB-Warnung beim Beenden)
+- [x] `Shutdown()` wird seit dem kombinierten Controller durch den geerbten
+      `RGBController_HIDLampArray`-Destruktor ausgeführt; der virtuelle LampArray-
+      Controller-Destruktor schließt anschließend beide Handles sicher (2026-09-02).
 - [x] HID-LampArray-Weg (Interface 3) als eigentlicher Per-Key-Kanal identifiziert und
       live bestätigt (2026-08-23) — macht das gesuchte "Wire-Kommando" auf Interface 2
       obsolet, siehe `docs/evidence/`. OpenRGB bringt mit `HIDLampArrayController`

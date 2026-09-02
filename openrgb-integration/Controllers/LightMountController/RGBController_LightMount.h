@@ -1,57 +1,43 @@
 /*---------------------------------------------------------*\
-| RGBController_LightMount.h                                 |
-|                                                             |
+| RGBController_LightMount.h                                |
+|                                                           |
 |   RGBController for be quiet! Light Mount                  |
-|                                                             |
+|                                                           |
 |   This file is part of the OpenRGB project                 |
 |   SPDX-License-Identifier: GPL-2.0-or-later                |
 \*---------------------------------------------------------*/
 
 #pragma once
 
-#include "RGBController.h"
+#include "RGBController_HIDLampArray.h"
 #include "LightMountController.h"
 
-/*-------------------------------------------------------------------*\
-| Mode values match LightMountEffect in LightMountController.h        |
-| directly (both are the device's own effect-type byte) so            |
-| DeviceUpdateMode()/DeviceUpdateLEDs() can switch on modes[].value    |
-| without a separate translation table.                               |
-\*-------------------------------------------------------------------*/
 enum
 {
-    LIGHT_MOUNT_MODE_STATIC     = LIGHT_MOUNT_EFFECT_STATIC,
-    LIGHT_MOUNT_MODE_COLORWAVE  = LIGHT_MOUNT_EFFECT_COLORWAVE,
-    LIGHT_MOUNT_MODE_TORNADO    = LIGHT_MOUNT_EFFECT_TORNADO,
-    LIGHT_MOUNT_MODE_BREATHING  = LIGHT_MOUNT_EFFECT_BREATHING,
-    LIGHT_MOUNT_MODE_REACTIVE   = LIGHT_MOUNT_EFFECT_REACTIVE,
-    LIGHT_MOUNT_MODE_MATRIX     = LIGHT_MOUNT_EFFECT_MATRIX,
+    LIGHT_MOUNT_MODE_DIRECT      = 0,
+    LIGHT_MOUNT_MODE_STATIC      = 1,
+    LIGHT_MOUNT_MODE_COLORWAVE   = 2,
+    LIGHT_MOUNT_MODE_TORNADO     = 3,
+    LIGHT_MOUNT_MODE_BREATHING   = 4,
+    LIGHT_MOUNT_MODE_REACTIVE    = 5,
+    LIGHT_MOUNT_MODE_MATRIX      = 6,
 };
 
 /*-------------------------------------------------------------------*\
-| All 6 firmware effects, fully decoded and live-confirmed 2026-08-24 |
-| - see PROTOCOL.md. Per-key control is intentionally still not       |
-| exposed here: it belongs to the separate, already-working generic   |
-| HIDLampArrayController on this device's Interface 3, not this       |
-| Interface-2 vendor channel, which is confirmed to be a genuinely    |
-| global/synchronized channel (see PROTOCOL.md "Architektur-          |
-| Erkenntnis" - the two channels cannot show independent state at     |
-| the same time anyway).                                              |
+| One RGBController represents the physical keyboard. Direct mode    |
+| uses LampArray on interface 3; all other modes use the firmware     |
+| effects on interface 2 and then return LampArray to Autonomous.     |
 \*-------------------------------------------------------------------*/
-class RGBController_LightMount : public RGBController
+class RGBController_LightMount : public RGBController_HIDLampArray
 {
 public:
     RGBController_LightMount(LightMountController* controller_ptr);
-    ~RGBController_LightMount();
+    ~RGBController_LightMount() override;
 
-    void        SetupZones();
-
-    void        DeviceUpdateLEDs();
-    void        DeviceUpdateZoneLEDs(int zone);
-    void        DeviceUpdateSingleLED(int led);
-
-    void        DeviceUpdateMode();
-    void        DeviceSaveMode();
+    void DeviceUpdateLEDs() override;
+    void DeviceUpdateZoneLEDs(int zone) override;
+    void DeviceUpdateSingleLED(int led) override;
+    void DeviceUpdateMode() override;
 
 private:
     LightMountController* controller;
