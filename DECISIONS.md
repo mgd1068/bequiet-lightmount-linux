@@ -2,6 +2,26 @@
 
 Kurze Architecture Decision Records. Neueste zuerst.
 
+## 2026-09-02 — Ein OpenRGB-Controller besitzt beide Light-Mount-Interfaces
+
+**Kontext:** Die bisherige lokale Integration registriert den Vendor-Controller auf
+Interface 2 und OpenRGBs generischen HIDLampArrayController auf Interface 3 als zwei
+separate Geräte. Der dafür vorgeschlagene DetectionManager-Coexistence-Schalter
+(`!3545`) funktioniert technisch, widerspricht aber laut Maintainer der OpenRGB-
+Erwartung „ein RGBController pro physischem Gerät“ und erzeugt zwei UI-Einträge.
+
+**Entscheidung:** Die Upstream-Zielarchitektur wird ein einziger gerätespezifischer
+Light-Mount-RGBController. Sein Detector öffnet beide HID-Endpunkte. Der Controller
+exponiert Direct/LampArray und die sechs Vendor-Firmwareeffekte gemeinsam und schaltet
+beim Moduswechsel gezielt zwischen Interface 3 und Interface 2. `!3545` wird nicht als
+dauerhafte Voraussetzung weiterverfolgt.
+
+**Konsequenz:** `!3511` muss strukturell überarbeitet werden. Bis dahin verwendet der
+lokale Runtime-Build vorübergehend den bereits live erprobten per-Interface-Detection-
+Fix, damit Automatisierung und Per-Key-Beleuchtung weiter funktionieren. Die angebotene
+zweite Light Mount aus OpenRGB-Issue `#5726` soll den kombinierten Controller unabhängig
+verifizieren.
+
 ## 2026-08-19 — Controller verlangt explizites Zähler-Priming statt Rätselei
 
 **Kontext:** Verbindungsaufbau-Capture zeigt, dass Byte 4 ein eigenständiger,

@@ -1,0 +1,15 @@
+[Unit]
+Description=Light Mount Automatisierung (Zeitprofile, Event-Overlays, HTTP-API)
+After=openrgb-lightmount-server.service
+Requires=openrgb-lightmount-server.service
+PartOf=openrgb-lightmount-server.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/mathias/bequiet-lightmount-linux/automation
+ExecStart=/home/mathias/bequiet-lightmount-linux/automation/.venv/bin/python3 -m lightmount_automation.daemon
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

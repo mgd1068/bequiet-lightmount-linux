@@ -1,0 +1,11 @@
+[Unit]
+Description=Light-Mount-Steuerung regelmaessig pruefen
+
+[Timer]
+OnBootSec=30
+OnUnitActiveSec=30
+AccuracySec=5
+Unit=lightmount-watchdog.service
+
+[Install]
+WantedBy=timers.target

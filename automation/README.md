@@ -15,6 +15,7 @@ See `~/.claude/plans/hazy-hatching-gosling.md` for the full design writeup.
 | `openrgb-lightmount-server.service` | Dedicated OpenRGB SDK server (port 6743), owns the hardware. Detectors for other RGB devices (Apex 3, Corsair Ironclaw) are explicitly disabled in `~/.config/openrgb-lightmount/OpenRGB.json` so this instance can never touch them. |
 | `openrgb-lightmount-gui.sh` | Manual GUI, connects as a pure SDK client (`--nodetect --client`) - never scans hardware itself. |
 | `lightmount-automation.service` | This daemon: time profiles + event overlays + local HTTP API. |
+| `lightmount-watchdog.timer` | Read-only SDK/API health probe every 30 seconds; restarts the stack when OpenRGB stops answering or the automation API is down. |
 | `lightmount-ctl` | CLI: `lightmount-ctl zone light_bar FF0000`, `lightmount-ctl profile gaming`, `lightmount-ctl status`. |
 | `config/{zones,profiles,events}.yaml` | All user-editable, no hardcoded backend logic. |
 
@@ -67,9 +68,16 @@ checked, "no route to host" - check routing/VLAN first).
 
 ```bash
 systemctl --user status openrgb-lightmount-server.service lightmount-automation.service
+journalctl --user -u lightmount-watchdog.service -u openrgb-lightmount-server.service
 journalctl --user -u lightmount-automation.service -f
 ./lightmount-ctl status
 ```
+
+The unit files tracked in `automation/systemd/` are the canonical copies.
+`lightmount-automation.service` is tied to the OpenRGB server with `PartOf=`,
+so a udev-triggered server restart after a KBD/KVM switch also creates a fresh
+SDK connection and reapplies the active time profile. The watchdog does not
+touch hardware while the keyboard is connected to the other host.
 
 The dedicated server's own config lives in `~/.config/openrgb-lightmount/`
 (separate from `~/.config/OpenRGB/`, which the system package + Apex 3

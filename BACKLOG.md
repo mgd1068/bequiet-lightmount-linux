@@ -148,6 +148,19 @@ Offene Arbeitspakete, grob nach Phase. Nicht priorisiert innerhalb einer Phase �
 
 ## Phase 3 (OpenRGB-Integration)
 
+- [x] KBD-/KVM-Switch-Reconnect und echten Health-Watchdog implementieren (2026-09-02):
+      udev-Restart erzeugt über `PartOf=` eine neue Automationsverbindung; 30-s-Timer
+      prüft read-only SDK-Gerät + HTTP-API und startet bei Fehler beide Dienste neu.
+      Gesunder und absichtlich fehlerhafter Pfad live verifiziert.
+- [ ] Gemäß Maintainer-Feedback in `!3545` einen einzigen Light-Mount-RGBController
+      bauen, der Interface 2 (Firmwareeffekte) und Interface 3 (LampArray Direct Mode)
+      gemeinsam besitzt; danach `!3511` aktualisieren und `!3545` ablösen.
+- [ ] Zweite reale Light Mount mit Nutzer `f.mueller81` aus Issue `#5726` testen,
+      sobald der vereinheitlichte Controller als testbarer Branch vorliegt.
+- [ ] Headless-Plugin-List-Fix aus der zurückgerollten `!3509` erneut als isolierte MR
+      einreichen; lokal ist der Fix zwingend, sonst antwortet der Server nicht auf
+      `openrgb-python` und der Automationsdienst läuft in eine Restart-Schleife.
+
 - [x] Idiomatischer OpenRGB-Controller-Grundgerüst (2026-08-18,
       `openrgb-integration/Controllers/LightMountController/`) — bewusst minimal:
       nur statische Vollflächenfarbe (einzige mit selbst gewähltem Wert verifizierte

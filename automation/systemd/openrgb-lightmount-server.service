@@ -1,0 +1,12 @@
+[Unit]
+Description=OpenRGB SDK-Server fuer die be quiet! Light Mount (dediziert, isoliert von Apex3/Ironclaw)
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/home/mathias/openrgb-lightmount-runtime/build/openrgb --config /home/mathias/.config/openrgb-lightmount --server --server-host 127.0.0.1 --server-port 6743 --noautoconnect
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

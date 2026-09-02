@@ -7,6 +7,51 @@ auf Interface 2 (nur statische Vollflächenfarbe, Sequenznummer-Kaltstart-Proble
 ungelöst) führt der HID-LampArray-Standardweg auf Interface 3 direkt zu echter
 Per-Key-Adressierung — live bestätigt (siehe Update 2026-08-23 unten).
 
+## Update — 2026-09-02: Upstream-Feedback und KBD-Switch-Watchdog repariert
+
+**Upstream:** MR `!3544` (HIDLampArray-Destruktor: `Shutdown()` vor `delete`) wurde
+am 31.08. gemergt und ist im aktuellen `origin/master` enthalten. MR `!3511` ist
+weiterhin Draft, konfliktfrei und ohne Review. Zu `!3545` hat CalcProgrammer1
+klargestellt, dass OpenRGB ein RGBController-Objekt pro physischem Gerät erwartet:
+Der Light-Mount-Controller soll den LampArray-Controller ableiten/integrieren, beide
+HID-Endpunkte öffnen und Direct/LampArray plus Vendor-Effekte in einer Modusliste
+zusammenführen. Der DetectionManager-Coexistence-Ansatz soll daher nicht weiter die
+Zielarchitektur sein; `!3545` ist zusätzlich nach neuen Master-Änderungen konfliktbehaftet.
+Issue `#5726` bietet inzwischen eine zweite reale Light Mount zum Testen an. Auf dem
+GitHub-Begleitrepo gibt es weiterhin keine Issues, PRs, Forks oder Stars.
+
+**Lokale Root Cause des KBD-Switch-Problems:** Der udev-Hotplug-Hook hat den
+OpenRGB-Server beim Zurückschalten tatsächlich neu gestartet (am 02.09. um 10:37
+im Journal belegt), war aber nie ein echter Health-Watchdog. Gleichzeitig lief seit
+dem Branch-Wechsel am 31.08. ein inkonsistenter OpenRGB-Build ohne den zurückgerollten
+Headless-Plugin-List-Fix: Der Server lauschte auf Port 6743, beantwortete
+`PluginList` bei `plugin_manager == nullptr` aber nicht. `openrgb-python` lief dadurch
+in 10-Sekunden-Timeouts; `lightmount-automation.service` hatte bereits mehr als 9600
+fehlgeschlagene Restarts. Deshalb wurde nach einem KBD-Switch kein Profil angewendet.
+
+**Fix und Live-Verifikation:** Ein sauberer Runtime-Worktree unter
+`~/openrgb-lightmount-runtime` basiert auf aktuellem OpenRGB-Master und enthält lokal
+nur den Light-Mount-Controller, den Headless-Plugin-Reply-Fix sowie vorübergehend den
+alten per-Interface-Detection-Fix. Der gemergte `!3544`-Fix kommt direkt aus Master.
+Der User-Service nutzt diesen frisch gebauten Stand. `lightmount-automation.service`
+hat nun `PartOf=openrgb-lightmount-server.service`; der udev-Hook setzt die User-Bus-
+Adresse explizit, protokolliert Erfolg/Fehler und ein Server-Restart erzeugt wieder
+eine frische SDK-Verbindung mit sofortiger Profilanwendung.
+
+Zusätzlich läuft `lightmount-watchdog.timer` alle 30 Sekunden. Er prüft rein lesend
+einen vollständigen OpenRGB-SDK-Handshake samt LampArray-Gerät (mindestens 100 LEDs)
+und die lokale API auf Port 8420. Bei Fehler startet er Server und Automation neu;
+ist die Tastatur am anderen KBD-Switch-Port, bleibt er absichtlich untätig. Erfolgreich
+getestet: gesunder Check verändert keine PID; gestoppter Automationsdienst wird erkannt,
+beide Dienste werden neu gestartet, danach SDK-Healthcheck erfolgreich und `/status`
+liefert wieder die Zonen/Overlays. Projekt-Offlinetests: 1/1 bestanden.
+
+**Nächster Upstream-Schritt:** `!3511` in einen einzigen gerätespezifischen Controller
+umbauen, der Interface 2 und LampArray/Interface 3 zusammenführt; danach mit der in
+`#5726` angebotenen zweiten Tastatur gegenprüfen. `!3545` nicht weiter rebasen, solange
+diese Zielarchitektur verfolgt wird. Den unabhängigen Headless-Plugin-Reply-Fix erneut
+als eng begrenzte MR anbieten, weil der heutige Ausfall seine Notwendigkeit bestätigt.
+
 ## Update — 2026-08-23: Erste echte Per-Key-Farbe live bestätigt (HID LampArray, Interface 3)
 
 **Kontextwechsel gegenüber Iteration 28 (2026-08-19/20):** Der dort beschriebene

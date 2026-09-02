@@ -1,0 +1,9 @@
+[Unit]
+Description=Health check fuer die Light-Mount-Steuerung
+After=openrgb-lightmount-server.service lightmount-automation.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/mathias/bequiet-lightmount-linux/automation
+ExecStart=/home/mathias/bequiet-lightmount-linux/automation/lightmount-watchdog.sh
+TimeoutStartSec=20
