@@ -32,10 +32,14 @@ eines festen 500-ms-Fensters auf das passende ACK gewartet wird.
 Verifikation: vollständiger OpenRGB-Build gegen `origin/master` (`999cbd25`) bestanden;
 `--list-detailed --noautoconnect` erkennt genau ein `be quiet! Light Mount` mit
 Seriennummer, 135 LampArray-LEDs und allen sieben Modi. Der bestehende Protokolltest
-mit 20 Capture-Fixtures besteht. Kein Effekt-/Farb-Schreibtest wurde in dieser
-Iteration ohne gesonderte Hardware-Testfreigabe ausgeführt. MR `!3511` wurde auf
+mit 20 Capture-Fixtures besteht. Der lokale Runtime-Dienst wurde auf Commit `90a2b4e3`
+neu gestartet; Automation, SDK-Healthcheck und HTTP-API sind anschließend aktiv und
+der etablierte Direct-Pfad wurde wiederhergestellt. Ein gezielter Vendor-Effektwechsel
+wurde ohne gesonderte Hardware-Testfreigabe nicht ausgeführt. MR `!3511` wurde auf
 Commit `9b6c7c0c` force-with-lease aktualisiert und bleibt bis zu diesen Tests Draft;
 der nun unnötige Coexistence-MR `!3545` wurde mit Verweis auf `!3511` geschlossen.
+Der Tester aus `#5726` wurde freundlich auf den nun verfügbaren Branch hingewiesen und
+um Prüfung von Erkennung, Direct, Moduswechsel und Reconnect gebeten.
 
 ## Update — 2026-09-02: Upstream-Feedback und KBD-Switch-Watchdog repariert
 

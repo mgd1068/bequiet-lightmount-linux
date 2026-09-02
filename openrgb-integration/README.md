@@ -45,7 +45,9 @@ mehrdeutige Paarung dagegen nicht.
 
 Alle sechs Vendor-Effekte wurden bereits am 2026-08-24 live bestätigt. Der kombinierte
 Controller wurde am 2026-09-02 vollständig gegen den aktuellen OpenRGB-Master gebaut
-und read-only erkannt; ein erneuter Hardware-Schreibtest steht noch aus.
+und read-only erkannt. Der lokale Produktivdienst läuft bereits mit dem kombinierten
+Direct-Pfad und bestand SDK-/API-Healthchecks; der gezielte Wechsel zu und von einem
+Vendor-Firmwareeffekt steht noch aus.
 
 **Byte-Layout** (alle Effekte außer Static teilen sich ein Schema): `[Effekt-Typ]
 [Richtung][Helligkeit][Tempo][Farbanzahl-Modus]` gefolgt von 1/2 direkten RGB-Werten
