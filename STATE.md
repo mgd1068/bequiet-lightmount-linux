@@ -7,6 +7,10 @@ Interface 2 (Firmwareeffekte) und Interface 3 (LampArray Direct/Per-Key) ist
 implementiert, gebaut und read-only erkannt. Ausstehend sind der kontrollierte
 Hardware-Schreibtest und die unabhängige Verifikation mit der zweiten Tastatur.
 
+## Update — 2026-11-12: !3511 auf Ready gesetzt
+
+Statuscheck: seit 02.09. keine externen Reaktionen (GitHub: 0 Stars/Forks/Issues; #5726-Tester hat nicht mehr geantwortet; !3511 ohne Review, konfliktfrei). Entscheidung des Users: Nischenprodukt, kein weiterer aktiver Aufwand — !3511 per `glab mr update --ready` aus dem Draft genommen (ohne zusätzlichen Hardware-Schreibtest der Moduswechsel und ohne Zweitgerät-Test). Künftig nur gelegentlich auf neue Reaktionen/Anforderungen prüfen.
+
 ## Update — 2026-09-02: kombinierter OpenRGB-Controller implementiert
 
 Der Light-Mount-Controller leitet nun `HIDLampArrayController` ab und besitzt zusätzlich
